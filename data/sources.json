@@ -1,0 +1,35 @@
+{
+  "$schema": "Curated catalog of canonical primary sources used during seeding. Add entries here when you discover a new authoritative URL; reference it by URL from seed scripts.",
+  "sources": [
+    {
+      "url": "https://investors.bldr.com/news/news-details/2021/Builders-FirstSource-and-BMC-Complete-Transformative-Merger-of-Equals/default.aspx",
+      "title": "Builders FirstSource and BMC Complete Transformative Merger of Equals",
+      "publication": "Builders FirstSource Investor Relations",
+      "publishedDate": "2021-01-01"
+    },
+    {
+      "url": "https://www.uslbm.com/news/bain-capital-private-equity-completes-acquisition-of-us-lbm/",
+      "title": "Bain Capital Private Equity Completes Acquisition of US LBM",
+      "publication": "US LBM",
+      "publishedDate": "2020-12-22"
+    },
+    {
+      "url": "https://www.platinumequity.com/news/platinum-equity-and-bain-capital-private-equity-announce-strategic-partnership-to-co-own-us-lbm",
+      "title": "Platinum Equity and Bain Capital Private Equity Announce Strategic Partnership to Co-Own US LBM",
+      "publication": "Platinum Equity",
+      "publishedDate": "2021-12-20"
+    },
+    {
+      "url": "https://www.abcsupply.com/news-room/abc-supply-acquires-lw-supply/",
+      "title": "ABC Supply Acquires L&W Supply",
+      "publication": "ABC Supply",
+      "publishedDate": "2016-10-31"
+    },
+    {
+      "url": "https://corporate.homedepot.com/news/business/home-depot-completes-acquisition-srs-distribution",
+      "title": "The Home Depot Completes Acquisition of SRS Distribution",
+      "publication": "The Home Depot",
+      "publishedDate": "2024-06-18"
+    }
+  ]
+}

@@ -1,0 +1,107 @@
+@import "tailwindcss";
+
+@theme {
+  --font-serif: var(--font-source-serif), Charter, "Iowan Old Style", Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Liberation Mono", monospace;
+
+  --color-ink: oklch(0.18 0.01 240);
+  --color-paper: oklch(0.99 0 0);
+  --color-rule: oklch(0.88 0.005 240);
+  --color-muted: oklch(0.45 0.005 240);
+  --color-muted-bg: oklch(0.96 0.003 240);
+
+  /* Editorial accent — desaturated forest green */
+  --color-accent: oklch(0.43 0.05 155);
+  --color-accent-muted: oklch(0.93 0.02 155);
+
+  /* Ownership badge palette */
+  --color-badge-independent: oklch(0.45 0.10 145);
+  --color-badge-pe: oklch(0.50 0.16 25);
+  --color-badge-public: oklch(0.50 0.13 240);
+  --color-badge-coop: oklch(0.45 0.13 295);
+  --color-badge-family: oklch(0.55 0.12 70);
+  --color-badge-unknown: oklch(0.55 0.005 240);
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-feature-settings: "ss01", "cv11";
+}
+
+a {
+  color: inherit;
+  text-decoration-skip-ink: auto;
+}
+
+.prose-editorial {
+  max-width: 65ch;
+}
+
+.prose-editorial h1,
+.prose-editorial h2,
+.prose-editorial h3 {
+  font-family: var(--font-serif);
+  letter-spacing: -0.01em;
+}
+
+.prose-editorial h1 {
+  font-size: 2.25rem;
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+.prose-editorial h2 {
+  font-size: 1.5rem;
+  margin-top: 2rem;
+  margin-bottom: 0.75rem;
+}
+
+.prose-editorial h3 {
+  font-size: 1.15rem;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.prose-editorial p,
+.prose-editorial li {
+  font-size: 1rem;
+  line-height: 1.7;
+}
+
+.prose-editorial p {
+  margin-bottom: 1rem;
+}
+
+.prose-editorial ul {
+  list-style: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.prose-editorial a {
+  color: var(--color-accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.citation-link {
+  color: var(--color-accent);
+  text-decoration: none;
+  font-feature-settings: "tnum";
+}
+
+.citation-link:hover {
+  text-decoration: underline;
+}
