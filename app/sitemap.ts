@@ -6,12 +6,19 @@ import { STATE_NAME_BY_CODE, US_STATES } from "@/lib/constants";
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://whoownsmylumberyard.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [locRows, compRows] = await Promise.all([
-    db.select({ slug: locations.slug, updatedAt: locations.updatedAt }).from(locations),
-    db
-      .select({ slug: companies.slug, type: companies.type, updatedAt: companies.updatedAt })
-      .from(companies),
-  ]);
+  // Tolerant of a not-yet-migrated database so the first deploy succeeds.
+  let locRows: { slug: string; updatedAt: Date }[] = [];
+  let compRows: { slug: string; type: string; updatedAt: Date }[] = [];
+  try {
+    [locRows, compRows] = await Promise.all([
+      db.select({ slug: locations.slug, updatedAt: locations.updatedAt }).from(locations),
+      db
+        .select({ slug: companies.slug, type: companies.type, updatedAt: companies.updatedAt })
+        .from(companies),
+    ]);
+  } catch (err) {
+    console.warn("[sitemap] DB read failed (likely no migrations yet)", err);
+  }
 
   const staticPaths: MetadataRoute.Sitemap = [
     { url: `${SITE_URL}/`, changeFrequency: "weekly", priority: 1 },

@@ -132,16 +132,20 @@ export default async function StatePage({ params }: { params: Params }) {
   );
 }
 
-// Pre-render a static set of states; others fall back to ISR.
+// Pre-render a static set of states; others fall back to ISR. If the DB is
+// not yet migrated at build time, return an empty list and let ISR fill in.
 export async function generateStaticParams() {
-  const rows = await db
-    .selectDistinct({ state: locations.state })
-    .from(locations);
-  return rows
-    .map((r) => {
-      const name = STATE_NAME_BY_CODE[r.state];
-      if (!name) return null;
-      return { state: name.toLowerCase().replace(/\s+/g, "-") };
-    })
-    .filter((x): x is { state: string } => Boolean(x));
+  try {
+    const rows = await db.selectDistinct({ state: locations.state }).from(locations);
+    return rows
+      .map((r) => {
+        const name = STATE_NAME_BY_CODE[r.state];
+        if (!name) return null;
+        return { state: name.toLowerCase().replace(/\s+/g, "-") };
+      })
+      .filter((x): x is { state: string } => Boolean(x));
+  } catch (err) {
+    console.warn("[state] generateStaticParams DB read failed", err);
+    return [];
+  }
 }

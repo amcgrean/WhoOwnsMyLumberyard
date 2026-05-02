@@ -51,7 +51,7 @@ export function SubmitForm() {
       <div className="rounded-md border border-[var(--color-rule)] p-6">
         <h2 className="font-serif text-xl">Thanks — submission received.</h2>
         <p className="mt-2 text-[var(--color-muted)]">
-          We review every submission. If your tip leads to a database update, you'll see it
+          We review every submission. If your tip leads to a database update, you&rsquo;ll see it
           appear within a few days.
         </p>
         <button

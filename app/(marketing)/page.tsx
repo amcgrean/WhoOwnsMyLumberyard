@@ -8,30 +8,37 @@ import { SITE_TAGLINE } from "@/lib/constants";
 export const revalidate = 600; // 10 minutes
 
 async function getStats() {
-  const [yardRow] = await db
-    .select({ count: sql<number>`cast(count(*) as int)` })
-    .from(locations);
-  const totalYards = yardRow?.count ?? 0;
+  // Build runs before migrations may have been applied. Wrap each query so a
+  // missing table degrades to zero rather than crashing the whole render.
+  try {
+    const [yardRow] = await db
+      .select({ count: sql<number>`cast(count(*) as int)` })
+      .from(locations);
+    const totalYards = yardRow?.count ?? 0;
 
-  // % consolidated = locations whose operating company has any active parent edge
-  const [consolidatedRow] = await db
-    .select({ count: sql<number>`cast(count(distinct ${locations.id}) as int)` })
-    .from(locations)
-    .innerJoin(ownershipEdges, sql`${ownershipEdges.childId} = ${locations.companyId} AND ${ownershipEdges.endDate} IS NULL`);
-  const consolidatedYards = consolidatedRow?.count ?? 0;
+    // % consolidated = locations whose operating company has any active parent edge
+    const [consolidatedRow] = await db
+      .select({ count: sql<number>`cast(count(distinct ${locations.id}) as int)` })
+      .from(locations)
+      .innerJoin(ownershipEdges, sql`${ownershipEdges.childId} = ${locations.companyId} AND ${ownershipEdges.endDate} IS NULL`);
+    const consolidatedYards = consolidatedRow?.count ?? 0;
 
-  const [peRow] = await db
-    .select({ count: sql<number>`cast(count(*) as int)` })
-    .from(companies)
-    .where(sql`${companies.type} IN ('pe_firm','family_office')`);
-  const peFirms = peRow?.count ?? 0;
+    const [peRow] = await db
+      .select({ count: sql<number>`cast(count(*) as int)` })
+      .from(companies)
+      .where(sql`${companies.type} IN ('pe_firm','family_office')`);
+    const peFirms = peRow?.count ?? 0;
 
-  return {
-    totalYards,
-    consolidatedYards,
-    peFirms,
-    pctConsolidated: totalYards > 0 ? Math.round((consolidatedYards / totalYards) * 100) : 0,
-  };
+    return {
+      totalYards,
+      consolidatedYards,
+      peFirms,
+      pctConsolidated: totalYards > 0 ? Math.round((consolidatedYards / totalYards) * 100) : 0,
+    };
+  } catch (err) {
+    console.warn("[home] getStats failed (likely no migrations yet)", err);
+    return { totalYards: 0, consolidatedYards: 0, peFirms: 0, pctConsolidated: 0 };
+  }
 }
 
 export default async function HomePage() {
