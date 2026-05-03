@@ -126,6 +126,23 @@ const KNOWN_BRANDS: Record<string, { name: string; slug: string }> = {
   "trussfab.com": { name: "TrussFab", slug: "trussfab" },
   "azbuildingsupply.com": { name: "AZ Building Supply", slug: "az-building-supply" },
   "homesteadbuildingsystemsinc.com": { name: "Homestead Building Systems", slug: "homestead-building-systems" },
+  "apiebs.com": { name: "API EBS", slug: "api-ebs" },
+  "arrowheadstairs.com": { name: "Arrowhead Stairs", slug: "arrowhead-stairs" },
+  "bellevuebuilders.com": { name: "Bellevue Builders Supply", slug: "bellevue-builders-supply" },
+  "betterbuilttruss.com": { name: "Better Built Truss", slug: "better-built-truss" },
+  "breckenridgebuildingcenter.com": { name: "Breckenridge Building Center", slug: "breckenridge-building-center" },
+  "darbydoors.com": { name: "Darby Doors", slug: "darby-doors" },
+  "desertlbm.com": { name: "Desert LBM", slug: "desert-lbm" },
+  "eaglecreeksiding.com": { name: "Eagle Creek Siding", slug: "eagle-creek-siding" },
+  "edwardsbuildingcenter.com": { name: "Edwards Building Center", slug: "edwards-building-center" },
+  "evergreenlumber.com": { name: "Evergreen Lumber", slug: "evergreen-lumber" },
+  "juniorsbuildingmaterials.com": { name: "Junior's Building Materials", slug: "juniors-building-materials" },
+  "meeksmidwest.com": { name: "Meek's Midwest", slug: "meeks-midwest" },
+  "meekswest.com": { name: "Meek's West", slug: "meeks-west" },
+  "oldhamlumber.com": { name: "Oldham Lumber", slug: "oldham-lumber" },
+  "raks.com": { name: "RAKS Building Supply", slug: "raks-building-supply" },
+  "southendexteriors.com": { name: "South End Exteriors", slug: "south-end-exteriors" },
+  "texasbuildingsupply.com": { name: "Texas Building Supply", slug: "texas-building-supply" },
 };
 
 function brandFromHost(host: string): { slug: string; name: string } {
