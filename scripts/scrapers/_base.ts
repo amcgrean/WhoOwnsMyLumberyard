@@ -17,6 +17,13 @@ export type ScrapedLocation = {
   lng?: number | null;
   services?: string[];
   sourceUrl: string;
+  /**
+   * Per-row override for the operating-company slug. Use this when a single
+   * scrape file contains rows belonging to multiple owned brands (e.g. Carter
+   * Lumber's family includes Holmes / Kight / Kempsville / Townsend). When
+   * absent, the importer falls back to the file-level consolidator slug.
+   */
+  operatingCompanySlug?: string;
 };
 
 export type ScraperOptions = {
