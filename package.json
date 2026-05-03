@@ -20,6 +20,7 @@
     "db:check": "drizzle-kit check",
     "seed": "tsx --env-file=.env.local scripts/seed/index.ts",
     "scrape:bfs": "tsx --env-file=.env.local scripts/scrapers/builders-firstsource.ts",
+    "scrape:carter": "tsx --env-file=.env.local scripts/scrapers/carter-lumber.ts",
     "import:scraped": "tsx --env-file=.env.local scripts/import-scraped.ts",
     "import:places": "tsx --env-file=.env.local scripts/import-google-places.ts"
   },

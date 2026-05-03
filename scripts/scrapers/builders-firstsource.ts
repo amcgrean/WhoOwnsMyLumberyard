@@ -1,4 +1,4 @@
-import { chromium, type Page } from "playwright";
+import { load } from "cheerio";
 import {
   parseCliArgs,
   RateLimiter,
@@ -7,115 +7,123 @@ import {
 } from "./_base";
 
 /**
- * Builders FirstSource store-locator scraper.
+ * Builders FirstSource yard scraper.
  *
- * Strategy: load the public locations directory, harvest each location's
- * detail page, parse address / phone / coords from page DOM and any embedded
- * JSON-LD or window state.
+ * Strategy: BFS publishes a static directory at /location/all-locations
+ * containing every branch URL. Each detail page exposes structured fields
+ * we can parse cleanly without a browser:
+ *   - <h1>           → display name
+ *   - .address > a   → street, city, state, zip (google-maps href)
+ *   - .phone tel:    → phone
+ *   - data-lat / data-lng on the embedded map element
  *
- * Note on robustness: store locators redesign frequently. If the layout has
- * changed by the time you run this, adjust the selectors below. The two
- * resilient patterns to look for are: (1) a JSON-LD <script> with
- * "@type":"LocalBusiness", and (2) <a href="/locations/..."> links on the
- * directory page.
- *
- * Usage:
- *   pnpm scrape:bfs                     # full run
- *   pnpm scrape:bfs --limit 5 --dry-run # smoke test
+ * Run:
+ *   pnpm scrape:bfs                       # full run
+ *   pnpm scrape:bfs --limit 5 --dry-run   # smoke test
  */
 
-const ROOT = "https://www.bldr.com/locations";
+const ROOT = "https://www.bldr.com";
+const DIRECTORY = `${ROOT}/location/all-locations`;
+const USER_AGENT =
+  "Mozilla/5.0 (compatible; WhoOwnsMyLumberyardBot/1.0; +https://whoownsmylumberyard.com)";
 
-async function harvestDirectoryUrls(page: Page, limit?: number): Promise<string[]> {
-  await page.goto(ROOT, { waitUntil: "domcontentloaded", timeout: 60000 });
-  // Wait for at least one location anchor to render
-  await page.waitForSelector('a[href*="/locations/"]', { timeout: 30000 });
-  const hrefs = await page.$$eval('a[href*="/locations/"]', (els) =>
-    Array.from(new Set(els.map((a) => (a as HTMLAnchorElement).href)))
-  );
-  // Skip the listing root itself
-  const filtered = hrefs.filter((u) => !u.endsWith("/locations") && !u.endsWith("/locations/"));
-  return typeof limit === "number" ? filtered.slice(0, limit) : filtered;
+async function fetchHtml(url: string): Promise<string> {
+  const res = await fetch(url, {
+    redirect: "follow",
+    headers: { "user-agent": USER_AGENT, accept: "text/html,*/*" },
+  });
+  if (!res.ok) {
+    throw new Error(`${url} → HTTP ${res.status}`);
+  }
+  return res.text();
 }
 
-async function harvestLocation(page: Page, url: string): Promise<ScrapedLocation | null> {
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 60000 });
-  // Try JSON-LD first
-  const jsonLdRaw = await page.$$eval(
-    'script[type="application/ld+json"]',
-    (els) => els.map((e) => e.textContent ?? "")
-  );
-  for (const blob of jsonLdRaw) {
-    try {
-      const parsed = JSON.parse(blob);
-      const items: unknown[] = Array.isArray(parsed) ? parsed : [parsed];
-      for (const item of items) {
-        if (
-          typeof item === "object" &&
-          item !== null &&
-          ("@type" in item) &&
-          /LocalBusiness|Store/.test(String((item as { "@type": string })["@type"]))
-        ) {
-          const it = item as Record<string, unknown>;
-          const addr = (it.address ?? {}) as Record<string, unknown>;
-          const geo = (it.geo ?? {}) as Record<string, unknown>;
-          const street = String(addr.streetAddress ?? "");
-          if (!street) continue;
-          return {
-            name: String(it.name ?? ""),
-            addressLine1: street,
-            city: String(addr.addressLocality ?? ""),
-            state: String(addr.addressRegion ?? "").toUpperCase(),
-            zip: String(addr.postalCode ?? ""),
-            phone: it.telephone ? String(it.telephone) : null,
-            lat: geo.latitude != null ? Number(geo.latitude) : null,
-            lng: geo.longitude != null ? Number(geo.longitude) : null,
-            sourceUrl: url,
-          };
-        }
-      }
-    } catch {
-      // fall through
-    }
-  }
+function discoverDirectoryUrls(html: string): string[] {
+  const $ = load(html);
+  const hrefs = new Set<string>();
+  $('a[href*="/location/"]').each((_, el) => {
+    const href = $(el).attr("href");
+    if (!href) return;
+    // Filter to leaf detail pages: /location/<slug>/<id>. Exclude the directory
+    // index and the all-locations page. IDs may contain mixed case and slashes
+    // (e.g. /location/grand-junction-co-yard-27-1/2-rd, /location/aberdeen-nc-lumber-yard/SABNYD).
+    if (!/^\/location\/[^/]+\/[^"\s]+$/.test(href)) return;
+    if (href.startsWith("/location/all-locations")) return;
+    hrefs.add(href);
+  });
+  return [...hrefs].map((h) => ROOT + h);
+}
 
-  // Fallback: minimal DOM scrape — heading + first address line. The operator
-  // should refine this once the live page structure is known.
-  const name = (await page.locator("h1").first().textContent())?.trim();
+const ADDRESS_RE = /maps\/place\/([^,]+),([^,]+),([A-Z]{2}),(\d{5}(?:-\d{4})?)/;
+
+function parseLocationPage(html: string, sourceUrl: string): ScrapedLocation | null {
+  const $ = load(html);
+  const name = ($("div.location-header h1").first().text() || $("h1").first().text())
+    .trim()
+    .replace(/\s+/g, " ");
   if (!name) return null;
-  return null;
+
+  const placeHref = $(".address a.placeLink").first().attr("href") ?? "";
+  const m = ADDRESS_RE.exec(placeHref);
+  if (!m) return null;
+
+  const [, street, city, state, zip] = m;
+
+  const phoneHref = $('.phone a[href^="tel:"]').first().attr("href") ?? "";
+  const phone = phoneHref.replace(/^tel:/i, "").trim() || null;
+
+  const latStr =
+    $("[data-lat]").first().attr("data-lat") ??
+    $("[data-location]").first().attr("data-location")?.split(",")[0];
+  const lngStr =
+    $("[data-lng]").first().attr("data-lng") ??
+    $("[data-location]").first().attr("data-location")?.split(",")[1];
+  const lat = latStr ? Number(latStr) : null;
+  const lng = lngStr ? Number(lngStr) : null;
+
+  return {
+    name,
+    addressLine1: street.trim(),
+    city: city.trim(),
+    state: state.trim().toUpperCase(),
+    zip: zip.trim(),
+    phone,
+    lat: Number.isFinite(lat) ? lat : null,
+    lng: Number.isFinite(lng) ? lng : null,
+    sourceUrl,
+  };
 }
 
 async function run() {
   const opts = parseCliArgs();
-  const browser = await chromium.launch({ headless: true });
-  const ctx = await browser.newContext({
-    userAgent:
-      "Mozilla/5.0 (compatible; WhoOwnsMyLumberyardBot/1.0; +https://whoownsmylumberyard.com)",
-  });
-  const page = await ctx.newPage();
-  const limiter = new RateLimiter(opts.minIntervalMs ?? 1000);
+  const limiter = new RateLimiter(opts.minIntervalMs ?? 750);
 
-  console.log("[bfs] fetching directory…");
-  const urls = await harvestDirectoryUrls(page, opts.limit);
-  console.log(`[bfs] found ${urls.length} candidate location urls`);
+  console.log(`[bfs] fetching directory ${DIRECTORY}`);
+  const directoryHtml = await fetchHtml(DIRECTORY);
+  let urls = discoverDirectoryUrls(directoryHtml);
+  console.log(`[bfs] found ${urls.length} location URLs`);
+  if (typeof opts.limit === "number") urls = urls.slice(0, opts.limit);
 
   const rows: ScrapedLocation[] = [];
+  let failures = 0;
   for (const [i, url] of urls.entries()) {
     await limiter.wait();
     try {
-      const row = await harvestLocation(page, url);
-      if (row) {
-        rows.push(row);
-        if ((i + 1) % 20 === 0) console.log(`[bfs] ${i + 1}/${urls.length}`);
+      const html = await fetchHtml(url);
+      const row = parseLocationPage(html, url);
+      if (row) rows.push(row);
+      else failures++;
+      if ((i + 1) % 25 === 0 || i + 1 === urls.length) {
+        console.log(`[bfs] ${i + 1}/${urls.length}  parsed=${rows.length}  failed=${failures}`);
       }
     } catch (err) {
-      console.warn(`[bfs] failed ${url}`, err);
+      failures++;
+      console.warn(`[bfs] ${url} failed:`, err instanceof Error ? err.message : err);
     }
   }
 
   await writeScrape("builders-firstsource", rows, opts);
-  await browser.close();
+  console.log(`[bfs] done — parsed=${rows.length}, failed=${failures}`);
 }
 
 run().catch((err) => {

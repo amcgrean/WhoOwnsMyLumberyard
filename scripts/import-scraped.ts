@@ -48,17 +48,31 @@ async function main() {
   const raw = await fs.readFile(filepath, "utf8");
   const parsed: { consolidator: string; rows: ScrapedLocation[] } = JSON.parse(raw);
 
-  // Match consolidator slug to its company row, falling back to the
-  // unverified-independent placeholder.
-  const operatingCompanySlug = slugify(parsed.consolidator);
-  const company =
-    (await db.query.companies.findFirst({
-      where: eq(companies.slug, operatingCompanySlug),
-    })) ?? (await ensureUnverifiedIndependent());
+  // File-level fallback operating company. Per-row `operatingCompanySlug`
+  // overrides this when present.
+  const fallbackSlug = slugify(parsed.consolidator);
+  const fallbackCompany =
+    (await db.query.companies.findFirst({ where: eq(companies.slug, fallbackSlug) })) ??
+    (await ensureUnverifiedIndependent());
+
+  // Cache resolved companies by slug to avoid re-querying for repeat brands.
+  const companyCache = new Map<string, typeof fallbackCompany>();
+  companyCache.set(fallbackSlug, fallbackCompany);
+
+  async function resolveCompany(slug: string | undefined) {
+    const target = slug ?? fallbackSlug;
+    const cached = companyCache.get(target);
+    if (cached) return cached;
+    const found = await db.query.companies.findFirst({ where: eq(companies.slug, target) });
+    const resolved = found ?? fallbackCompany;
+    companyCache.set(target, resolved);
+    return resolved;
+  }
 
   let inserted = 0;
   let updated = 0;
   for (const r of parsed.rows) {
+    const company = await resolveCompany(r.operatingCompanySlug);
     const slug = locationSlug({ name: r.name, city: r.city, state: r.state });
     const existing = await db.query.locations.findFirst({
       where: and(eq(locations.companyId, company.id), eq(locations.slug, slug)),

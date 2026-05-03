@@ -7,6 +7,7 @@ import { seedUsLbm } from "./us-lbm";
 import { seedAbcSupply } from "./abc-supply";
 import { seedBeacon } from "./beacon";
 import { seedSrs } from "./srs-distribution";
+import { seedCarterLumber } from "./carter";
 import { seedCoops } from "./coops";
 
 /**
@@ -25,6 +26,8 @@ async function main() {
   console.log("  ✓ Beacon Building Products");
   await seedSrs();
   console.log("  ✓ SRS Distribution (Home Depot)");
+  await seedCarterLumber();
+  console.log("  ✓ Carter Lumber + Holmes/Kight/Kempsville/Townsend");
   await seedCoops();
   console.log("  ✓ Co-ops (LMC, Do it Best, Ace, True Value, ENAP, LBM Advantage)");
   console.log("\nDone. All ownership edges seeded with verified=false; review and verify in Drizzle Studio.");
