@@ -18,10 +18,10 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check",
-    "seed": "tsx scripts/seed/index.ts",
-    "scrape:bfs": "tsx scripts/scrapers/builders-firstsource.ts",
-    "import:scraped": "tsx scripts/import-scraped.ts",
-    "import:places": "tsx scripts/import-google-places.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed/index.ts",
+    "scrape:bfs": "tsx --env-file=.env.local scripts/scrapers/builders-firstsource.ts",
+    "import:scraped": "tsx --env-file=.env.local scripts/import-scraped.ts",
+    "import:places": "tsx --env-file=.env.local scripts/import-google-places.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

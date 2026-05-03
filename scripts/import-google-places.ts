@@ -1,4 +1,7 @@
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
+config({ path: ".env" });
+
 import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { companies, locations } from "@/lib/db/schema";
