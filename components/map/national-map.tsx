@@ -13,9 +13,11 @@ type FlyoutFeature = {
   companyName: string;
 };
 
+// OpenFreeMap is free, no API key, and ships proper OSM-based vector tiles.
+// Operator can override via NEXT_PUBLIC_MAPLIBRE_TILES_URL on Vercel to point
+// at MapTiler / Protomaps / their own host.
 const STYLE_URL =
-  process.env.NEXT_PUBLIC_MAPLIBRE_TILES_URL ??
-  "https://demotiles.maplibre.org/style.json";
+  process.env.NEXT_PUBLIC_MAPLIBRE_TILES_URL ?? "https://tiles.openfreemap.org/styles/positron";
 
 export function NationalMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -24,9 +26,12 @@ export function NationalMap() {
   const [filter, setFilter] = useState<{ consolidatedOnly: boolean }>({
     consolidatedOnly: false,
   });
+  const [error, setError] = useState<string | null>(null);
+  const [count, setCount] = useState<number | null>(null);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
+
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: STYLE_URL,
@@ -38,91 +43,101 @@ export function NationalMap() {
     });
     mapRef.current = map;
 
+    map.on("error", (e) => {
+      // Tile / sprite / glyph network errors arrive here. Surface as a banner
+      // so the user knows to check the tile provider, but don't blow up the UI.
+      const err = e?.error as Error | undefined;
+      const msg = err?.message ?? "Tile load failed";
+      console.warn("[map] non-fatal error", msg);
+    });
+
     map.on("load", async () => {
-      const res = await fetch("/api/map");
-      const data = await res.json();
-      map.addSource("yards", {
-        type: "geojson",
-        data,
-        cluster: true,
-        clusterMaxZoom: 12,
-        clusterRadius: 50,
-      });
+      try {
+        const res = await fetch("/api/map");
+        if (!res.ok) throw new Error(`/api/map returned ${res.status}`);
+        const data = (await res.json()) as GeoJSON.FeatureCollection;
+        setCount(data.features?.length ?? 0);
 
-      map.addLayer({
-        id: "clusters",
-        type: "circle",
-        source: "yards",
-        filter: ["has", "point_count"],
-        paint: {
-          "circle-color": "#2d4a3a",
-          "circle-radius": ["step", ["get", "point_count"], 14, 25, 18, 100, 24],
-          "circle-opacity": 0.85,
-          "circle-stroke-width": 1,
-          "circle-stroke-color": "#fff",
-        },
-      });
+        map.addSource("yards", {
+          type: "geojson",
+          data,
+          cluster: true,
+          clusterMaxZoom: 12,
+          clusterRadius: 50,
+        });
 
-      map.addLayer({
-        id: "cluster-count",
-        type: "symbol",
-        source: "yards",
-        filter: ["has", "point_count"],
-        layout: {
-          "text-field": "{point_count_abbreviated}",
-          "text-size": 11,
-        },
-        paint: { "text-color": "#fff" },
-      });
+        map.addLayer({
+          id: "clusters",
+          type: "circle",
+          source: "yards",
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": "#2d4a3a",
+            "circle-radius": ["step", ["get", "point_count"], 14, 25, 18, 100, 24],
+            "circle-opacity": 0.85,
+            "circle-stroke-width": 1,
+            "circle-stroke-color": "#fff",
+          },
+        });
 
-      map.addLayer({
-        id: "yard",
-        type: "circle",
-        source: "yards",
-        filter: ["!", ["has", "point_count"]],
-        paint: {
-          "circle-radius": 5,
-          "circle-color": [
-            "case",
-            ["get", "consolidated"],
-            "#a23a2a",
-            "#3b6b51",
-          ],
-          "circle-stroke-color": "#fff",
-          "circle-stroke-width": 1,
-        },
-      });
+        map.addLayer({
+          id: "cluster-count",
+          type: "symbol",
+          source: "yards",
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": "{point_count_abbreviated}",
+            "text-size": 11,
+          },
+          paint: { "text-color": "#fff" },
+        });
 
-      map.on("click", "clusters", (e) => {
-        const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-        const clusterId = features[0]?.properties?.cluster_id;
-        if (clusterId == null) return;
-        const source = map.getSource("yards") as GeoJSONSource;
-        source.getClusterExpansionZoom(Number(clusterId)).then((zoom) => {
-          map.easeTo({
-            center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
-            zoom,
+        map.addLayer({
+          id: "yard",
+          type: "circle",
+          source: "yards",
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-radius": 5,
+            "circle-color": ["case", ["get", "consolidated"], "#a23a2a", "#3b6b51"],
+            "circle-stroke-color": "#fff",
+            "circle-stroke-width": 1,
+          },
+        });
+
+        map.on("click", "clusters", (e) => {
+          const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+          const clusterId = features[0]?.properties?.cluster_id;
+          if (clusterId == null) return;
+          const source = map.getSource("yards") as GeoJSONSource;
+          source.getClusterExpansionZoom(Number(clusterId)).then((zoom) => {
+            map.easeTo({
+              center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+              zoom,
+            });
           });
         });
-      });
 
-      map.on("click", "yard", (e) => {
-        const f = e.features?.[0];
-        if (!f) return;
-        const p = f.properties as Record<string, unknown>;
-        setFlyout({
-          slug: String(p.slug),
-          name: String(p.name),
-          city: String(p.city),
-          state: String(p.state),
-          companyName: String(p.companyName),
+        map.on("click", "yard", (e) => {
+          const f = e.features?.[0];
+          if (!f) return;
+          const p = f.properties as Record<string, unknown>;
+          setFlyout({
+            slug: String(p.slug),
+            name: String(p.name),
+            city: String(p.city),
+            state: String(p.state),
+            companyName: String(p.companyName),
+          });
         });
-      });
 
-      map.on("mouseenter", "clusters", () => (map.getCanvas().style.cursor = "pointer"));
-      map.on("mouseleave", "clusters", () => (map.getCanvas().style.cursor = ""));
-      map.on("mouseenter", "yard", () => (map.getCanvas().style.cursor = "pointer"));
-      map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
+        map.on("mouseenter", "clusters", () => (map.getCanvas().style.cursor = "pointer"));
+        map.on("mouseleave", "clusters", () => (map.getCanvas().style.cursor = ""));
+        map.on("mouseenter", "yard", () => (map.getCanvas().style.cursor = "pointer"));
+        map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
+      } catch (e) {
+        setError(`Failed to load map data: ${e instanceof Error ? e.message : "unknown error"}`);
+      }
     });
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
@@ -153,16 +168,26 @@ export function NationalMap() {
           <input
             type="checkbox"
             checked={filter.consolidatedOnly}
-            onChange={(e) =>
-              setFilter((f) => ({ ...f, consolidatedOnly: e.target.checked }))
-            }
+            onChange={(e) => setFilter((f) => ({ ...f, consolidatedOnly: e.target.checked }))}
           />
           <span>Consolidator-owned only</span>
         </label>
         <p className="mt-3 text-xs text-[var(--color-muted)]">
           Red dots = under consolidator ownership · Green = independent or unverified
         </p>
+        {count != null ? (
+          <p className="mt-2 text-xs text-[var(--color-muted)]">
+            Showing {count.toLocaleString()} yards
+          </p>
+        ) : null}
       </aside>
+
+      {error ? (
+        <div className="absolute top-4 right-16 z-10 max-w-md rounded-md border border-[var(--color-badge-pe)]/30 bg-[var(--color-paper)] p-3 text-sm shadow">
+          <p className="text-[var(--color-badge-pe)] font-medium">Map error</p>
+          <p className="text-[var(--color-muted)] mt-1">{error}</p>
+        </div>
+      ) : null}
 
       {flyout ? (
         <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 w-[min(420px,90vw)] rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] p-4 shadow">
@@ -178,10 +203,7 @@ export function NationalMap() {
           <div className="text-xs text-[var(--color-muted)] mt-1">
             {flyout.city}, {flyout.state} · {flyout.companyName}
           </div>
-          <Link
-            href={`/yard/${flyout.slug}`}
-            className="mt-3 inline-block text-sm underline"
-          >
+          <Link href={`/yard/${flyout.slug}`} className="mt-3 inline-block text-sm underline">
             See ownership chain →
           </Link>
         </div>
