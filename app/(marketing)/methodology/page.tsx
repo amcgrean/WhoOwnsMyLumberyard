@@ -16,7 +16,7 @@ export default function MethodologyPage() {
         Every ownership claim on this site links to at least one public source. Acceptable
         sources, in rough order of preference: SEC filings (10-K, 8-K, S-1, proxies),
         company press releases, financial-news coverage that references one of the prior
-        items, and the company's own store-locator pages or corporate website. Where a
+        items, and the company&rsquo;s own store-locator pages or corporate website. Where a
         source is a press release republished on a third-party site, the original release
         is preferred when reachable.
       </p>
@@ -26,7 +26,7 @@ export default function MethodologyPage() {
         the citation survives link rot.
       </p>
 
-      <h2>What "verified" means</h2>
+      <h2>What &ldquo;verified&rdquo; means</h2>
       <p>
         Ownership edges in the database carry a <code>verified</code> flag. An edge is
         marked verified only after the operator has independently re-read each linked

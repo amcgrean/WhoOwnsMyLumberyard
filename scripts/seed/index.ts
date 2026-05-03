@@ -1,4 +1,7 @@
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
+config({ path: ".env" });
+
 import { seedBuildersFirstSource } from "./builders-firstsource";
 import { seedUsLbm } from "./us-lbm";
 import { seedAbcSupply } from "./abc-supply";

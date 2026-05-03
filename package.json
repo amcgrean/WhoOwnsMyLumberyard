@@ -4,7 +4,7 @@
   "private": true,
   "packageManager": "pnpm@10.0.0",
   "engines": {
-    "node": ">=22.0.0"
+    "node": ">=22.0.0 <25.0.0"
   },
   "scripts": {
     "dev": "next dev",
@@ -18,10 +18,10 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:check": "drizzle-kit check",
-    "seed": "tsx scripts/seed/index.ts",
-    "scrape:bfs": "tsx scripts/scrapers/builders-firstsource.ts",
-    "import:scraped": "tsx scripts/import-scraped.ts",
-    "import:places": "tsx scripts/import-google-places.ts"
+    "seed": "tsx --env-file=.env.local scripts/seed/index.ts",
+    "scrape:bfs": "tsx --env-file=.env.local scripts/scrapers/builders-firstsource.ts",
+    "import:scraped": "tsx --env-file=.env.local scripts/import-scraped.ts",
+    "import:places": "tsx --env-file=.env.local scripts/import-google-places.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -48,6 +48,8 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@tailwindcss/postcss": "^4.0.0-beta.8",
     "@types/node": "^22.10.5",
     "@types/react": "^19.0.4",
     "@types/react-dom": "^19.0.2",
@@ -61,7 +63,6 @@
     "prettier": "^3.4.2",
     "prettier-plugin-tailwindcss": "^0.6.9",
     "tailwindcss": "^4.0.0-beta.8",
-    "@tailwindcss/postcss": "^4.0.0-beta.8",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2"
   }

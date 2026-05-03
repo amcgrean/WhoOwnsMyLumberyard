@@ -1,4 +1,7 @@
-import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".env.local" });
+config({ path: ".env" });
+
 import fs from "node:fs/promises";
 import path from "node:path";
 import { eq, and } from "drizzle-orm";
