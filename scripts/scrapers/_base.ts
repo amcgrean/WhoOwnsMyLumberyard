@@ -24,6 +24,30 @@ export type ScrapedLocation = {
    * absent, the importer falls back to the file-level consolidator slug.
    */
   operatingCompanySlug?: string;
+  /**
+   * Optional metadata for auto-creating the operating-company row when it
+   * doesn't yet exist in the database. The importer creates a yard-type
+   * company with these fields and parents it to the file-level consolidator
+   * via a subsidiary_of edge. Leave undefined to skip auto-creation; the
+   * importer will fall back to the file-level company instead.
+   */
+  operatingCompanyName?: string;
+  operatingCompanyWebsite?: string;
+};
+
+export type ScrapeOutput = {
+  consolidator: string;
+  scrapedAt: string;
+  count: number;
+  rows: ScrapedLocation[];
+  /**
+   * If set, the importer auto-creates any new per-row operating companies as
+   * children of this slug, with relationship `subsidiary_of`. Sourced to the
+   * file-level locator URL.
+   */
+  autoCreateChildrenOf?: string;
+  /** Source URL used to back any auto-created ownership edges. */
+  autoCreateSourceUrl?: string;
 };
 
 export type ScraperOptions = {
@@ -53,7 +77,12 @@ export class RateLimiter {
   }
 }
 
-export async function writeScrape(slug: string, rows: ScrapedLocation[], opts: ScraperOptions) {
+export async function writeScrape(
+  slug: string,
+  rows: ScrapedLocation[],
+  opts: ScraperOptions,
+  extra?: { autoCreateChildrenOf?: string; autoCreateSourceUrl?: string }
+) {
   if (opts.dryRun) {
     console.log(`[${slug}] dry-run: ${rows.length} rows (not writing)`);
     return null;
@@ -62,19 +91,15 @@ export async function writeScrape(slug: string, rows: ScrapedLocation[], opts: S
   const date = new Date().toISOString().slice(0, 10);
   const filename = `${slug}-${date}.json`;
   const filepath = path.join(OUTPUT_DIR, filename);
-  await fs.writeFile(
-    filepath,
-    JSON.stringify(
-      {
-        consolidator: slug,
-        scrapedAt: new Date().toISOString(),
-        count: rows.length,
-        rows,
-      },
-      null,
-      2
-    )
-  );
+  const out: ScrapeOutput = {
+    consolidator: slug,
+    scrapedAt: new Date().toISOString(),
+    count: rows.length,
+    rows,
+    autoCreateChildrenOf: extra?.autoCreateChildrenOf,
+    autoCreateSourceUrl: extra?.autoCreateSourceUrl,
+  };
+  await fs.writeFile(filepath, JSON.stringify(out, null, 2));
   console.log(`[${slug}] wrote ${rows.length} rows → ${filepath}`);
   return filepath;
 }

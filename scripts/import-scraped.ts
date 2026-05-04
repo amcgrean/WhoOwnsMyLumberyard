@@ -6,9 +6,9 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, locations } from "@/lib/db/schema";
+import { companies, locations, ownershipEdges, sources, claimSources } from "@/lib/db/schema";
 import { locationSlug, slugify } from "@/lib/slug";
-import type { ScrapedLocation } from "./scrapers/_base";
+import type { ScrapeOutput } from "./scrapers/_base";
 
 /**
  * Reads a scraped JSON file and upserts each location.
@@ -38,6 +38,13 @@ async function ensureUnverifiedIndependent() {
   return created;
 }
 
+async function ensureSource(url: string) {
+  const existing = await db.query.sources.findFirst({ where: eq(sources.url, url) });
+  if (existing) return existing;
+  const [created] = await db.insert(sources).values({ url }).returning();
+  return created;
+}
+
 async function main() {
   const file = process.argv[2];
   if (!file) {
@@ -46,7 +53,7 @@ async function main() {
   }
   const filepath = path.resolve(process.cwd(), file);
   const raw = await fs.readFile(filepath, "utf8");
-  const parsed: { consolidator: string; rows: ScrapedLocation[] } = JSON.parse(raw);
+  const parsed: ScrapeOutput = JSON.parse(raw);
 
   // File-level fallback operating company. Per-row `operatingCompanySlug`
   // overrides this when present.
@@ -55,24 +62,80 @@ async function main() {
     (await db.query.companies.findFirst({ where: eq(companies.slug, fallbackSlug) })) ??
     (await ensureUnverifiedIndependent());
 
+  // Resolve the parent for auto-created brands (e.g. US LBM for its 60+ banners).
+  const autoCreateParent = parsed.autoCreateChildrenOf
+    ? await db.query.companies.findFirst({
+        where: eq(companies.slug, slugify(parsed.autoCreateChildrenOf)),
+      })
+    : null;
+
   // Cache resolved companies by slug to avoid re-querying for repeat brands.
   const companyCache = new Map<string, typeof fallbackCompany>();
   companyCache.set(fallbackSlug, fallbackCompany);
 
-  async function resolveCompany(slug: string | undefined) {
-    const target = slug ?? fallbackSlug;
+  async function resolveCompany(row: {
+    operatingCompanySlug?: string;
+    operatingCompanyName?: string;
+    operatingCompanyWebsite?: string;
+  }) {
+    const target = row.operatingCompanySlug;
+    if (!target) return fallbackCompany;
     const cached = companyCache.get(target);
     if (cached) return cached;
     const found = await db.query.companies.findFirst({ where: eq(companies.slug, target) });
-    const resolved = found ?? fallbackCompany;
-    companyCache.set(target, resolved);
-    return resolved;
+    if (found) {
+      companyCache.set(target, found);
+      return found;
+    }
+    // Auto-create only when we have both a name and a parent — otherwise fall
+    // back to the file-level company so we don't pollute companies with
+    // partially-formed rows.
+    if (!row.operatingCompanyName || !autoCreateParent) {
+      companyCache.set(target, fallbackCompany);
+      return fallbackCompany;
+    }
+    const [created] = await db
+      .insert(companies)
+      .values({
+        slug: target,
+        name: row.operatingCompanyName,
+        type: "yard",
+        website: row.operatingCompanyWebsite ?? null,
+        description: `Operates as part of ${autoCreateParent.name}'s portfolio of brands. Auto-created from scraped store-locator data; details await operator review.`,
+        status: "active",
+      })
+      .returning();
+    // Parent edge — sourced to the scrape's locator URL when available.
+    const [edge] = await db
+      .insert(ownershipEdges)
+      .values({
+        parentId: autoCreateParent.id,
+        childId: created.id,
+        relationship: "subsidiary_of",
+        note: `Auto-created from ${parsed.consolidator} store-locator scrape.`,
+      })
+      .returning({ id: ownershipEdges.id });
+    if (parsed.autoCreateSourceUrl) {
+      const src = await ensureSource(parsed.autoCreateSourceUrl);
+      await db
+        .insert(claimSources)
+        .values({ sourceId: src.id, subjectType: "ownership_edge", subjectId: edge.id })
+        .onConflictDoNothing();
+      await db
+        .insert(claimSources)
+        .values({ sourceId: src.id, subjectType: "company", subjectId: created.id })
+        .onConflictDoNothing();
+    }
+    companyCache.set(target, created);
+    return created;
   }
 
   let inserted = 0;
   let updated = 0;
+  const distinctBrands = new Set<string>();
   for (const r of parsed.rows) {
-    const company = await resolveCompany(r.operatingCompanySlug);
+    const company = await resolveCompany(r);
+    distinctBrands.add(company.slug);
     const slug = locationSlug({ name: r.name, city: r.city, state: r.state });
     const existing = await db.query.locations.findFirst({
       where: and(eq(locations.companyId, company.id), eq(locations.slug, slug)),
@@ -101,7 +164,10 @@ async function main() {
       inserted++;
     }
   }
-  console.log(`Imported ${parsed.rows.length} rows: ${inserted} inserted, ${updated} updated.`);
+  console.log(
+    `Imported ${parsed.rows.length} rows: ${inserted} inserted, ${updated} updated. ` +
+      `${distinctBrands.size} distinct operating companies seen.`
+  );
 }
 
 main().catch((err) => {
