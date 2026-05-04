@@ -147,6 +147,28 @@ Brand identity comes directly from `company.fields.name` — no hostname
 heuristics. `region.fields.name` is filtered to US 2-letter codes (Canadian
 provinces are dropped silently). 56 distinct US sub-brands result.
 
+### `lmc.ts` *(co-op member directory, `member_of` edges)*
+
+POST to `https://www.lmctogetherwebuild.com/api/dealer_locator.php` with a
+wide radius from any zip — returns the entire active LMC member roster as
+HTML in one call. Parse `.dealer-card` divs for name + `.dealer_address1`
+(street) + `.dealer_address2` (city, state zip) + `tel:` link.
+
+~1,715 dealers. No coordinates — geocode after import.
+
+Auto-creates yard companies with `relationship: "member_of"` (not
+`subsidiary_of`) parented to LMC. See `docs/INDEPENDENT_YARDS.md`.
+
+### `do-it-best.ts` *(co-op member directory, `member_of` edges)*
+
+GraphQL `storeLocator(filter: { zipCityOrState, distance: 5000, limit: 10000 })`
+against `https://www.doitbest.com/api/graphql`. One call returns 3,274
+members; we filter `member_status` to **Lumber + Home Center** (~1,392
+members), skipping pure Hardware. Pass `--include-hardware` to override.
+
+Members carry full lat/lng/phone in the API response. Auto-creates yard
+companies with `member_of` edges to Do it Best.
+
 ### `boise-cascade.ts`
 
 Awesome Store Locator admin-ajax:

@@ -42,10 +42,18 @@ export type ScrapeOutput = {
   rows: ScrapedLocation[];
   /**
    * If set, the importer auto-creates any new per-row operating companies as
-   * children of this slug, with relationship `subsidiary_of`. Sourced to the
+   * children of this slug. Defaults to the `subsidiary_of` relationship; pass
+   * `autoCreateRelationship` to override (e.g. `member_of` for co-op
+   * directories where the parent doesn't *own* the member). Sourced to the
    * file-level locator URL.
    */
   autoCreateChildrenOf?: string;
+  autoCreateRelationship?:
+    | "owns"
+    | "controls"
+    | "member_of"
+    | "franchise_of"
+    | "subsidiary_of";
   /** Source URL used to back any auto-created ownership edges. */
   autoCreateSourceUrl?: string;
 };
@@ -81,7 +89,11 @@ export async function writeScrape(
   slug: string,
   rows: ScrapedLocation[],
   opts: ScraperOptions,
-  extra?: { autoCreateChildrenOf?: string; autoCreateSourceUrl?: string }
+  extra?: {
+    autoCreateChildrenOf?: string;
+    autoCreateRelationship?: ScrapeOutput["autoCreateRelationship"];
+    autoCreateSourceUrl?: string;
+  }
 ) {
   if (opts.dryRun) {
     console.log(`[${slug}] dry-run: ${rows.length} rows (not writing)`);
@@ -97,6 +109,7 @@ export async function writeScrape(
     count: rows.length,
     rows,
     autoCreateChildrenOf: extra?.autoCreateChildrenOf,
+    autoCreateRelationship: extra?.autoCreateRelationship,
     autoCreateSourceUrl: extra?.autoCreateSourceUrl,
   };
   await fs.writeFile(filepath, JSON.stringify(out, null, 2));

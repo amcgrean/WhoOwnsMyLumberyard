@@ -73,6 +73,50 @@ async function main() {
   const companyCache = new Map<string, typeof fallbackCompany>();
   companyCache.set(fallbackSlug, fallbackCompany);
 
+  const relationship = parsed.autoCreateRelationship ?? "subsidiary_of";
+  const isMember = relationship === "member_of";
+
+  /**
+   * Idempotently ensure an ownership edge exists between the auto-create
+   * parent and the given child company. Multiple scrapes can target the same
+   * yard (e.g. an LMC member that's also a Do it Best member); each scrape
+   * adds its own membership edge with its own source.
+   */
+  async function ensureParentEdge(childCompanyId: string) {
+    if (!autoCreateParent) return;
+    const existingEdge = await db.query.ownershipEdges.findFirst({
+      where: and(
+        eq(ownershipEdges.parentId, autoCreateParent.id),
+        eq(ownershipEdges.childId, childCompanyId),
+        eq(ownershipEdges.relationship, relationship)
+      ),
+    });
+    let edgeId: string;
+    if (existingEdge) {
+      edgeId = existingEdge.id;
+    } else {
+      const [edge] = await db
+        .insert(ownershipEdges)
+        .values({
+          parentId: autoCreateParent.id,
+          childId: childCompanyId,
+          relationship,
+          note: `Auto-created from ${parsed.consolidator} ${
+            isMember ? "member directory" : "store-locator"
+          } scrape.`,
+        })
+        .returning({ id: ownershipEdges.id });
+      edgeId = edge.id;
+    }
+    if (parsed.autoCreateSourceUrl) {
+      const src = await ensureSource(parsed.autoCreateSourceUrl);
+      await db
+        .insert(claimSources)
+        .values({ sourceId: src.id, subjectType: "ownership_edge", subjectId: edgeId })
+        .onConflictDoNothing();
+    }
+  }
+
   async function resolveCompany(row: {
     operatingCompanySlug?: string;
     operatingCompanyName?: string;
@@ -81,10 +125,16 @@ async function main() {
     const target = row.operatingCompanySlug;
     if (!target) return fallbackCompany;
     const cached = companyCache.get(target);
-    if (cached) return cached;
+    if (cached) {
+      // Even on cache hit we may need to add a membership edge — different
+      // scrapes from different parents can land on the same yard company.
+      await ensureParentEdge(cached.id);
+      return cached;
+    }
     const found = await db.query.companies.findFirst({ where: eq(companies.slug, target) });
     if (found) {
       companyCache.set(target, found);
+      await ensureParentEdge(found.id);
       return found;
     }
     // Auto-create only when we have both a name and a parent — otherwise fall
@@ -94,6 +144,10 @@ async function main() {
       companyCache.set(target, fallbackCompany);
       return fallbackCompany;
     }
+    const description = isMember
+      ? `Independently owned member of ${autoCreateParent.name}. Auto-created from scraped member-directory data; details await operator review.`
+      : `Operates as part of ${autoCreateParent.name}'s portfolio of brands. Auto-created from scraped store-locator data; details await operator review.`;
+
     const [created] = await db
       .insert(companies)
       .values({
@@ -101,31 +155,18 @@ async function main() {
         name: row.operatingCompanyName,
         type: "yard",
         website: row.operatingCompanyWebsite ?? null,
-        description: `Operates as part of ${autoCreateParent.name}'s portfolio of brands. Auto-created from scraped store-locator data; details await operator review.`,
+        description,
         status: "active",
       })
       .returning();
-    // Parent edge — sourced to the scrape's locator URL when available.
-    const [edge] = await db
-      .insert(ownershipEdges)
-      .values({
-        parentId: autoCreateParent.id,
-        childId: created.id,
-        relationship: "subsidiary_of",
-        note: `Auto-created from ${parsed.consolidator} store-locator scrape.`,
-      })
-      .returning({ id: ownershipEdges.id });
     if (parsed.autoCreateSourceUrl) {
       const src = await ensureSource(parsed.autoCreateSourceUrl);
-      await db
-        .insert(claimSources)
-        .values({ sourceId: src.id, subjectType: "ownership_edge", subjectId: edge.id })
-        .onConflictDoNothing();
       await db
         .insert(claimSources)
         .values({ sourceId: src.id, subjectType: "company", subjectId: created.id })
         .onConflictDoNothing();
     }
+    await ensureParentEdge(created.id);
     companyCache.set(target, created);
     return created;
   }
