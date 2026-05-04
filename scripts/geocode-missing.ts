@@ -28,7 +28,7 @@ import { locations } from "@/lib/db/schema";
  */
 
 const ENDPOINT = "https://maps.googleapis.com/maps/api/geocode/json";
-const KEY = process.env.GOOGLE_PLACES_API_KEY;
+const KEY = process.env.MAPS_API ?? process.env.GOOGLE_PLACES_API_KEY;
 
 type GeocodeResult = {
   status: string;
@@ -84,7 +84,7 @@ async function geocodeOne(query: string): Promise<{
 }
 
 async function main() {
-  if (!KEY) throw new Error("GOOGLE_PLACES_API_KEY is not set");
+  if (!KEY) throw new Error("MAPS_API (or GOOGLE_PLACES_API_KEY) is not set");
   const opts = parseArgs();
 
   const missing = await db

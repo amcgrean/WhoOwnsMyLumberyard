@@ -13,11 +13,32 @@ type FlyoutFeature = {
   companyName: string;
 };
 
-// OpenFreeMap is free, no API key, and ships proper OSM-based vector tiles.
-// Operator can override via NEXT_PUBLIC_MAPLIBRE_TILES_URL on Vercel to point
-// at MapTiler / Protomaps / their own host.
+// Carto's positron basemap — free, OSM-derived, no API key, served from a CDN
+// battle-tested by analytics dashboards. Override via
+// NEXT_PUBLIC_MAPLIBRE_TILES_URL on Vercel to swap in MapTiler / Protomaps /
+// OpenFreeMap / a self-hosted style.
 const STYLE_URL =
-  process.env.NEXT_PUBLIC_MAPLIBRE_TILES_URL ?? "https://tiles.openfreemap.org/styles/positron";
+  process.env.NEXT_PUBLIC_MAPLIBRE_TILES_URL ??
+  "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
+
+// Inline raster fallback — used only if the primary style.json fails to load.
+// OSM tile usage policy permits low-traffic / editorial use.
+const FALLBACK_STYLE: maplibregl.StyleSpecification = {
+  version: 8,
+  sources: {
+    osm: {
+      type: "raster",
+      tiles: [
+        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+      ],
+      tileSize: 256,
+      attribution: "© OpenStreetMap contributors",
+    },
+  },
+  layers: [{ id: "osm", type: "raster", source: "osm" }],
+};
 
 export function NationalMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -28,6 +49,8 @@ export function NationalMap() {
   });
   const [error, setError] = useState<string | null>(null);
   const [count, setCount] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [usingFallback, setUsingFallback] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -43,13 +66,45 @@ export function NationalMap() {
     });
     mapRef.current = map;
 
+    // If the primary style fails to load (network block, CORS, 404), swap in
+    // the inline OSM raster fallback once. Tile-by-tile errors are logged but
+    // don't trigger a fallback — only a style-document failure does.
+    let fallbackTriggered = false;
     map.on("error", (e) => {
-      // Tile / sprite / glyph network errors arrive here. Surface as a banner
-      // so the user knows to check the tile provider, but don't blow up the UI.
-      const err = e?.error as Error | undefined;
+      const err = e?.error as { message?: string; status?: number } | undefined;
       const msg = err?.message ?? "Tile load failed";
-      console.warn("[map] non-fatal error", msg);
+      console.warn("[map] non-fatal error", msg, err);
+      const styleHasFailed =
+        !fallbackTriggered &&
+        ((typeof err?.status === "number" && (err.status === 0 || err.status >= 400)) ||
+          /style\.json|sprite|glyphs/i.test(msg));
+      if (styleHasFailed && !map.isStyleLoaded()) {
+        fallbackTriggered = true;
+        console.warn("[map] primary style failed; switching to OSM raster fallback");
+        try {
+          map.setStyle(FALLBACK_STYLE);
+          setUsingFallback(true);
+        } catch (swapErr) {
+          console.error("[map] fallback swap failed", swapErr);
+        }
+      }
     });
+
+    // Belt-and-suspenders: if neither `load` nor `error` fires within 8s, the
+    // primary style is presumably stuck. Switch to the fallback proactively.
+    const loadTimeout = window.setTimeout(() => {
+      if (!fallbackTriggered && !map.isStyleLoaded()) {
+        fallbackTriggered = true;
+        console.warn("[map] style load timed out; switching to OSM raster fallback");
+        try {
+          map.setStyle(FALLBACK_STYLE);
+          setUsingFallback(true);
+        } catch (swapErr) {
+          console.error("[map] fallback swap failed", swapErr);
+        }
+      }
+    }, 8000);
+    map.once("load", () => window.clearTimeout(loadTimeout));
 
     map.on("load", async () => {
       try {
@@ -137,6 +192,8 @@ export function NationalMap() {
         map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
       } catch (e) {
         setError(`Failed to load map data: ${e instanceof Error ? e.message : "unknown error"}`);
+      } finally {
+        setLoading(false);
       }
     });
 
@@ -159,8 +216,16 @@ export function NationalMap() {
   }, [filter]);
 
   return (
-    <div className="relative h-[calc(100vh-9rem)] w-full">
+    <div className="relative h-[calc(100vh-9rem)] w-full bg-[var(--color-muted-bg)]">
       <div ref={containerRef} className="absolute inset-0" />
+
+      {loading ? (
+        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+          <div className="rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] px-4 py-2 text-sm shadow">
+            Loading map…
+          </div>
+        </div>
+      ) : null}
 
       <aside className="absolute top-4 left-4 z-10 w-64 max-w-[80vw] rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] p-3 shadow-sm text-sm">
         <p className="font-serif text-base mb-2">Filters</p>
@@ -178,6 +243,11 @@ export function NationalMap() {
         {count != null ? (
           <p className="mt-2 text-xs text-[var(--color-muted)]">
             Showing {count.toLocaleString()} yards
+          </p>
+        ) : null}
+        {usingFallback ? (
+          <p className="mt-2 text-xs text-[var(--color-muted)]">
+            Using OSM raster fallback (primary tile provider unreachable).
           </p>
         ) : null}
       </aside>
