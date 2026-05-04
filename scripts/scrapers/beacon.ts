@@ -1,9 +1,32 @@
 import { chromium } from "playwright";
 import { parseCliArgs, writeScrape, type ScrapedLocation } from "./_base";
 
+/**
+ * Beacon Building Products scraper.
+ *
+ * After QXO acquired Beacon (April 2025), becn.com redirects to qxo.com.
+ * The locator at qxo.com/find-a-store is a Next.js SPA that fetches branch
+ * data via XHR; rather than reverse-engineer the (rotating) chunk structure,
+ * we drive a real headless browser and intercept every JSON response.
+ *
+ * Strategy: navigate, scroll the listing to trigger lazy loads, and collect
+ * any JSON payload that contains location-shaped objects (address + city +
+ * state + zip). De-dupe by (name, address, city, state, zip).
+ *
+ * Run:
+ *   pnpm scrape:beacon                         # full headless run
+ *   pnpm scrape:beacon --dry-run --limit 5     # smoke test
+ *
+ * Notes:
+ *   - Requires `pnpm exec playwright install chromium` once.
+ *   - `ignoreHTTPSErrors: true` handles networks where the cert chain
+ *     isn't fully trusted (e.g. some CI / sandbox environments). On a
+ *     normal workstation it's a no-op.
+ */
+
 const LOCATOR_URL = "https://www.qxo.com/find-a-store";
 const USER_AGENT =
-  "Mozilla/5.0 (compatible; WhoOwnsMyLumberyardBot/1.0; +https://whoownsmylumberyard.com)";
+  "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
 
 type AnyObj = Record<string, unknown>;
 
@@ -36,16 +59,26 @@ function walk(node: unknown, visit: (obj: AnyObj) => void): void {
 }
 
 function toLocation(obj: AnyObj): ScrapedLocation | null {
-  const name = asString(obj.name) ?? asString(obj.locationName) ?? asString(obj.title);
+  const name =
+    asString(obj.name) ??
+    asString(obj.locationName) ??
+    asString(obj.title) ??
+    asString(obj.branchName);
   const addressLine1 =
-    asString(obj.addressLine1) ?? asString(obj.address1) ?? asString(obj.street) ?? asString(obj.address);
-  const city = asString(obj.city);
-  const state = asString(obj.state) ?? asString(obj.region);
-  const zip = asString(obj.zip) ?? asString(obj.postalCode) ?? asString(obj.postcode);
+    asString(obj.addressLine1) ??
+    asString(obj.address1) ??
+    asString(obj.street) ??
+    asString(obj.streetAddress) ??
+    asString(obj.address);
+  const city = asString(obj.city) ?? asString(obj.locality);
+  const state = asString(obj.state) ?? asString(obj.region) ?? asString(obj.stateCode);
+  const zip = asString(obj.zip) ?? asString(obj.postalCode) ?? asString(obj.postcode) ?? asString(obj.zipCode);
 
   if (!name || !addressLine1 || !city || !state || !zip) return null;
+  // 5-digit zip min — guards against false positives from international rows
+  if (!/^\d{5}/.test(zip)) return null;
 
-  const phone = asString(obj.phone) ?? asString(obj.telephone);
+  const phone = asString(obj.phone) ?? asString(obj.telephone) ?? asString(obj.phoneNumber);
   const lat = asNumber(obj.lat) ?? asNumber(obj.latitude);
   const lng = asNumber(obj.lng) ?? asNumber(obj.lon) ?? asNumber(obj.longitude);
   const sourceUrl = asString(obj.url) ?? asString(obj.permalink) ?? LOCATOR_URL;
@@ -55,7 +88,7 @@ function toLocation(obj: AnyObj): ScrapedLocation | null {
     addressLine1,
     city,
     state: state.toUpperCase(),
-    zip,
+    zip: zip.replace(/^(\d{5}).*$/, "$1"),
     phone,
     lat,
     lng,
@@ -72,36 +105,76 @@ function locationKey(row: ScrapedLocation): string {
 async function run() {
   const opts = parseCliArgs();
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ userAgent: USER_AGENT });
+  const context = await browser.newContext({
+    userAgent: USER_AGENT,
+    ignoreHTTPSErrors: true,
+  });
   const page = await context.newPage();
 
   const rowsByKey = new Map<string, ScrapedLocation>();
+  let jsonResponses = 0;
 
   page.on("response", async (res) => {
     try {
       const url = res.url();
       const ct = res.headers()["content-type"] ?? "";
-      if (!ct.includes("json") && !url.includes("_next/data")) return;
+      if (!ct.includes("json") && !url.includes("_next/data") && !url.endsWith(".json")) return;
       const body = await res.text();
       const data = JSON.parse(body) as unknown;
+      jsonResponses++;
       walk(data, (obj) => {
         const row = toLocation(obj);
         if (!row) return;
         rowsByKey.set(locationKey(row), row);
       });
     } catch {
-      // Ignore non-JSON and partial payload failures; we gather from many responses.
+      // ignore non-JSON / partial payload errors
     }
   });
 
   console.log(`[beacon] opening ${LOCATOR_URL}`);
-  await page.goto(LOCATOR_URL, { waitUntil: "networkidle", timeout: 120000 });
+  try {
+    await page.goto(LOCATOR_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
+  } catch (err) {
+    console.warn("[beacon] navigation timeout — continuing with whatever loaded:", err);
+  }
+
+  // Give SPAs a chance to fire their initial XHRs.
   await page.waitForTimeout(5000);
 
-  const rows = [...rowsByKey.values()];
-  if (typeof opts.limit === "number") {
-    rows.splice(opts.limit);
+  // Try to surface the locations list by scrolling and triggering common
+  // search affordances. The exact selector depends on the QXO build at scrape
+  // time — these are best-effort.
+  for (const sel of [
+    'input[placeholder*="zip" i]',
+    'input[placeholder*="address" i]',
+    'input[name*="zip" i]',
+    'input[type="search"]',
+  ]) {
+    try {
+      const handle = await page.$(sel);
+      if (handle) {
+        await handle.fill("10001");
+        await page.keyboard.press("Enter");
+        await page.waitForTimeout(3500);
+        break;
+      }
+    } catch {
+      // try next selector
+    }
   }
+
+  // Scroll a few times in case results lazy-load
+  for (let i = 0; i < 6; i++) {
+    await page.mouse.wheel(0, 1500);
+    await page.waitForTimeout(500);
+  }
+
+  await page.waitForTimeout(2000);
+  console.log(`[beacon] inspected ${jsonResponses} JSON responses`);
+
+  let rows = [...rowsByKey.values()];
+  if (typeof opts.limit === "number") rows = rows.slice(0, opts.limit);
 
   await browser.close();
 

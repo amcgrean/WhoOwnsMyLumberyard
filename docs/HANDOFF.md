@@ -70,28 +70,43 @@ goes on `claude/build-lumberyard-database-qMI1I` and merges via PRs.
 - Geocoder backfills missing lat/lng.
 - 7 scrapers cover BFS, Carter family, US LBM, 84 Lumber, ABC, SRS, GMS, Boise Cascade.
 
+### Independent-yards phase — ready to run
+
+New scrapers to harvest the long tail of independent yards (run on PC; see
+`docs/INDEPENDENT_YARDS.md` for the full run book):
+
+- **LMC** (`pnpm scrape:lmc`) — ~1,715 LMC member dealers, no coords
+- **Do it Best** (`pnpm scrape:dib`) — ~1,392 Lumber + Home Center DiB
+  members with full coords/phone
+
+Both auto-create yard companies with `member_of` ownership edges (not
+`subsidiary_of`) — co-op membership doesn't transfer ownership.
+
 ### What's broken / deferred
 
 These are kept on a "later passes" list rather than the active todo:
 
-1. **Beacon Building Products** — post-QXO acquisition (April 2025) the
-   `becn.com` locator redirects to `qxo.com/find-a-store`, which is a Next.js
-   SPA whose data lives behind dynamic JS chunks rather than a stable static
-   API. Needs Playwright + XHR sniff or `/_next/data` introspection.
+1. **Beacon Building Products** — `scripts/scrapers/beacon.ts` runs end-to-end
+   without crashing but returns 0 rows from a headless browser. The
+   `qxo.com/find-a-store` SPA needs an interactive trigger (zip-search
+   submission) to surface location XHR. Debug headful on PC; once the right
+   XHR is identified, hand-craft the request. ~30-60 min of work.
 2. **L&W Supply / ABC Supply Interiors** — locator markers don't expose ZIP.
    Either fetch each of the 276 detail pages or change `locations.zip` to
    nullable in the schema.
 3. **Remaining consolidators** — Foundation BM, Kodiak BP, Foxworth-Galbraith
    standalone, Parr Lumber, Russin, Reeb, Holmes Lumber standalone. Locator
    URLs catalogued in `scripts/scrapers/TODO.md`.
-4. **Google Places enrichment** for independent yards. Script is in
-   `scripts/import-google-places.ts`, env var is wired (`MAPS_API`), but no
-   sweep has been run yet.
-5. **Verifying ownership edges.** Every edge currently has `verified: false`.
+4. **Other co-ops** — ENAP (DNS unreachable from sandbox; investigate from
+   PC), LBM Advantage (Elementor widget gates the locator), NLBMDA
+   (members-only). Notes in `docs/INDEPENDENT_YARDS.md`.
+5. **Google Places enrichment** for true independents not in any co-op.
+   Script ready (`scripts/import-google-places.ts`); haven't run a sweep yet.
+6. **Verifying ownership edges.** Every edge currently has `verified: false`.
    Operator should re-read each linked source and flip individually.
-6. **Roll-up by ultimate owner** on state pages (so US LBM legacy banners count
-   toward "US LBM" in state leaderboards rather than fragmenting).
-7. **Comparison pages** ("BFS vs US LBM"), newsletter, advanced map filters
+7. **Roll-up by ultimate owner** on state pages (so US LBM legacy banners
+   count toward "US LBM" in state leaderboards rather than fragmenting).
+8. **Comparison pages** ("BFS vs US LBM"), newsletter, advanced map filters
    (year acquired, deal size).
 
 ---

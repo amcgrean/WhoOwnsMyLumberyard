@@ -30,7 +30,9 @@
     "scrape:srs": "tsx --env-file=.env.local scripts/scrapers/srs-distribution.ts",
     "scrape:gms": "tsx --env-file=.env.local scripts/scrapers/gms.ts",
     "scrape:boise": "tsx --env-file=.env.local scripts/scrapers/boise-cascade.ts",
-    "scrape:beacon": "tsx --env-file=.env.local scripts/scrapers/beacon.ts"
+    "scrape:beacon": "tsx --env-file=.env.local scripts/scrapers/beacon.ts",
+    "scrape:lmc": "tsx --env-file=.env.local scripts/scrapers/lmc.ts",
+    "scrape:dib": "tsx --env-file=.env.local scripts/scrapers/do-it-best.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

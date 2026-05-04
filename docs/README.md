@@ -15,6 +15,10 @@ Reference docs for **Who Owns My Lumberyard**. Read them in this order:
    seed/scrape/import/geocode/deploy.
 6. **[MAP_AND_SEARCH.md](./MAP_AND_SEARCH.md)** — deep dives on the two
    features that have had the most production-bug iterations.
+7. **[INDEPENDENT_YARDS.md](./INDEPENDENT_YARDS.md)** — strategy + run book
+   for the next phase: filling in independent yards via co-op directories
+   (LMC, Do it Best) and Google Places. Read before running the new
+   `scrape:lmc` / `scrape:dib` scripts.
 
 Source of truth for code is the code itself. These docs explain the **why**
 behind the parts that aren't self-evident.
