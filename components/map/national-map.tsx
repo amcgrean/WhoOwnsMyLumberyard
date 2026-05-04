@@ -13,27 +13,34 @@ type FlyoutFeature = {
   companyName: string;
 };
 
-// Default basemap is an *inline* OSM raster style — no external style.json
-// fetch, no API key, no third-party CDN dependency. This is the most reliable
-// possible map: just PNG tiles from the OpenStreetMap public servers.
+// Default basemap is an *inline* raster style — no external style.json fetch,
+// no API key, no third-party sprite/glyph dependency. We use Carto's basemap
+// raster CDN (basemaps.cartocdn.com/light_all) rather than OSM directly:
+// Carto explicitly serves raster tiles to anyone with no referrer block,
+// while OSM's tile usage policy can return 403 from production deployments.
 // Operators can override with a richer vector style by setting
-// NEXT_PUBLIC_MAPLIBRE_TILES_URL on Vercel (e.g. MapTiler, Protomaps,
-// Stadia, OpenFreeMap, Carto positron, or a self-hosted style.json).
+// NEXT_PUBLIC_MAPLIBRE_TILES_URL on Vercel (MapTiler / Protomaps / Stadia /
+// OpenFreeMap / Carto positron / a self-hosted style.json).
 const OSM_RASTER_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
-    osm: {
+    base: {
       type: "raster",
       tiles: [
-        "https://a.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        "https://b.tile.openstreetmap.org/{z}/{x}/{y}.png",
-        "https://c.tile.openstreetmap.org/{z}/{x}/{y}.png",
+        "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
       ],
       tileSize: 256,
-      attribution: "© OpenStreetMap contributors",
+      attribution:
+        '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
     },
   },
-  layers: [{ id: "osm-base", type: "raster", source: "osm" }],
+  layers: [
+    { id: "bg", type: "background", paint: { "background-color": "#f0efe9" } },
+    { id: "base", type: "raster", source: "base" },
+  ],
 };
 
 const STYLE_OVERRIDE = process.env.NEXT_PUBLIC_MAPLIBRE_TILES_URL;
@@ -124,30 +131,29 @@ export function NationalMap() {
           clusterRadius: 50,
         });
 
+        // Cluster bubbles. Bigger cluster → bigger / darker circle, communicating
+        // count without requiring a symbol layer (which would need a `glyphs`
+        // URL in the style). Click expands the cluster.
         map.addLayer({
           id: "clusters",
           type: "circle",
           source: "yards",
           filter: ["has", "point_count"],
           paint: {
-            "circle-color": "#2d4a3a",
-            "circle-radius": ["step", ["get", "point_count"], 14, 25, 18, 100, 24],
-            "circle-opacity": 0.85,
-            "circle-stroke-width": 1,
+            "circle-color": [
+              "step",
+              ["get", "point_count"],
+              "#3b6b51", // 1-9   small
+              10,
+              "#2d4a3a", // 10-49 mid
+              50,
+              "#1f3527", // 50+   large
+            ],
+            "circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24, 200, 30],
+            "circle-opacity": 0.9,
+            "circle-stroke-width": 2,
             "circle-stroke-color": "#fff",
           },
-        });
-
-        map.addLayer({
-          id: "cluster-count",
-          type: "symbol",
-          source: "yards",
-          filter: ["has", "point_count"],
-          layout: {
-            "text-field": "{point_count_abbreviated}",
-            "text-size": 11,
-          },
-          paint: { "text-color": "#fff" },
         });
 
         map.addLayer({
