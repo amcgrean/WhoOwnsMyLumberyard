@@ -13,17 +13,13 @@ type FlyoutFeature = {
   companyName: string;
 };
 
-// Carto's positron basemap — free, OSM-derived, no API key, served from a CDN
-// battle-tested by analytics dashboards. Override via
-// NEXT_PUBLIC_MAPLIBRE_TILES_URL on Vercel to swap in MapTiler / Protomaps /
-// OpenFreeMap / a self-hosted style.
-const STYLE_URL =
-  process.env.NEXT_PUBLIC_MAPLIBRE_TILES_URL ??
-  "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
-
-// Inline raster fallback — used only if the primary style.json fails to load.
-// OSM tile usage policy permits low-traffic / editorial use.
-const FALLBACK_STYLE: maplibregl.StyleSpecification = {
+// Default basemap is an *inline* OSM raster style — no external style.json
+// fetch, no API key, no third-party CDN dependency. This is the most reliable
+// possible map: just PNG tiles from the OpenStreetMap public servers.
+// Operators can override with a richer vector style by setting
+// NEXT_PUBLIC_MAPLIBRE_TILES_URL on Vercel (e.g. MapTiler, Protomaps,
+// Stadia, OpenFreeMap, Carto positron, or a self-hosted style.json).
+const OSM_RASTER_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
     osm: {
@@ -37,8 +33,10 @@ const FALLBACK_STYLE: maplibregl.StyleSpecification = {
       attribution: "© OpenStreetMap contributors",
     },
   },
-  layers: [{ id: "osm", type: "raster", source: "osm" }],
+  layers: [{ id: "osm-base", type: "raster", source: "osm" }],
 };
+
+const STYLE_OVERRIDE = process.env.NEXT_PUBLIC_MAPLIBRE_TILES_URL;
 
 export function NationalMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -56,34 +54,37 @@ export function NationalMap() {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
+    const initialStyle: string | maplibregl.StyleSpecification =
+      STYLE_OVERRIDE ?? OSM_RASTER_STYLE;
+
     const map = new maplibregl.Map({
       container: containerRef.current,
-      style: STYLE_URL,
+      style: initialStyle,
       center: [-96.5, 39.5],
       zoom: 3.5,
       minZoom: 2,
       maxZoom: 14,
-      attributionControl: { compact: true },
     });
     mapRef.current = map;
 
-    // If the primary style fails to load (network block, CORS, 404), swap in
-    // the inline OSM raster fallback once. Tile-by-tile errors are logged but
-    // don't trigger a fallback — only a style-document failure does.
+    // If a custom override style.json fails to load, fall back to the inline
+    // OSM raster style. The default path doesn't need this because it's
+    // already inline.
     let fallbackTriggered = false;
     map.on("error", (e) => {
       const err = e?.error as { message?: string; status?: number } | undefined;
-      const msg = err?.message ?? "Tile load failed";
+      const msg = err?.message ?? "(unknown)";
       console.warn("[map] non-fatal error", msg, err);
+      if (!STYLE_OVERRIDE) return; // already on the inline OSM style
       const styleHasFailed =
         !fallbackTriggered &&
         ((typeof err?.status === "number" && (err.status === 0 || err.status >= 400)) ||
           /style\.json|sprite|glyphs/i.test(msg));
       if (styleHasFailed && !map.isStyleLoaded()) {
         fallbackTriggered = true;
-        console.warn("[map] primary style failed; switching to OSM raster fallback");
+        console.warn("[map] override style failed; switching to OSM raster fallback");
         try {
-          map.setStyle(FALLBACK_STYLE);
+          map.setStyle(OSM_RASTER_STYLE);
           setUsingFallback(true);
         } catch (swapErr) {
           console.error("[map] fallback swap failed", swapErr);
@@ -91,20 +92,21 @@ export function NationalMap() {
       }
     });
 
-    // Belt-and-suspenders: if neither `load` nor `error` fires within 8s, the
-    // primary style is presumably stuck. Switch to the fallback proactively.
+    // Watchdog: if the style hasn't loaded after 6s, swap to the inline style.
+    // Only meaningful when an override URL is set.
     const loadTimeout = window.setTimeout(() => {
+      if (!STYLE_OVERRIDE) return;
       if (!fallbackTriggered && !map.isStyleLoaded()) {
         fallbackTriggered = true;
         console.warn("[map] style load timed out; switching to OSM raster fallback");
         try {
-          map.setStyle(FALLBACK_STYLE);
+          map.setStyle(OSM_RASTER_STYLE);
           setUsingFallback(true);
         } catch (swapErr) {
           console.error("[map] fallback swap failed", swapErr);
         }
       }
-    }, 8000);
+    }, 6000);
     map.once("load", () => window.clearTimeout(loadTimeout));
 
     map.on("load", async () => {
@@ -201,7 +203,15 @@ export function NationalMap() {
 
     map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "top-right");
 
+    // Ensure the canvas re-measures once it's actually laid out — Tailwind's
+    // calc() height sometimes resolves a tick after the Map() constructor runs.
+    const resizeRaf = window.requestAnimationFrame(() => map.resize());
+    const onWinResize = () => map.resize();
+    window.addEventListener("resize", onWinResize);
+
     return () => {
+      window.cancelAnimationFrame(resizeRaf);
+      window.removeEventListener("resize", onWinResize);
       map.remove();
       mapRef.current = null;
     };
@@ -218,7 +228,7 @@ export function NationalMap() {
   }, [filter]);
 
   return (
-    <div className="relative h-[calc(100vh-9rem)] w-full bg-[var(--color-muted-bg)]">
+    <div className="relative h-[calc(100dvh-8rem)] min-h-[480px] w-full bg-[var(--color-muted-bg)]">
       <div ref={containerRef} className="absolute inset-0" />
 
       {loading ? (
