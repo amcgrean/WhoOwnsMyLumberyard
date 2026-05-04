@@ -22,7 +22,7 @@ import { locationSlug } from "@/lib/slug";
  * keywords ("lumber yard", "building materials", "lumberyard supplier", etc.).
  */
 
-const PLACES_KEY = process.env.GOOGLE_PLACES_API_KEY;
+const PLACES_KEY = process.env.MAPS_API ?? process.env.GOOGLE_PLACES_API_KEY;
 const ENDPOINT = "https://places.googleapis.com/v1/places:searchText";
 
 type Place = {
@@ -74,7 +74,7 @@ async function ensureUnverifiedIndependent() {
 }
 
 async function searchPage(query: string, pageToken?: string): Promise<{ places: Place[]; nextPageToken?: string }> {
-  if (!PLACES_KEY) throw new Error("GOOGLE_PLACES_API_KEY is not set");
+  if (!PLACES_KEY) throw new Error("MAPS_API (or GOOGLE_PLACES_API_KEY) is not set");
   const res = await fetch(ENDPOINT, {
     method: "POST",
     headers: {

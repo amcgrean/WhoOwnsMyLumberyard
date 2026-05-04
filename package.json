@@ -26,7 +26,10 @@
     "import:scraped": "tsx --env-file=.env.local scripts/import-scraped.ts",
     "import:places": "tsx --env-file=.env.local scripts/import-google-places.ts",
     "scrape:abc": "tsx --env-file=.env.local scripts/scrapers/abc-supply.ts",
-    "geocode:missing": "tsx --env-file=.env.local scripts/geocode-missing.ts"
+    "geocode:missing": "tsx --env-file=.env.local scripts/geocode-missing.ts",
+    "scrape:srs": "tsx --env-file=.env.local scripts/scrapers/srs-distribution.ts",
+    "scrape:gms": "tsx --env-file=.env.local scripts/scrapers/gms.ts",
+    "scrape:boise": "tsx --env-file=.env.local scripts/scrapers/boise-cascade.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

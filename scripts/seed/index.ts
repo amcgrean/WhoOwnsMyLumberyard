@@ -9,6 +9,8 @@ import { seedBeacon } from "./beacon";
 import { seedSrs } from "./srs-distribution";
 import { seedCarterLumber } from "./carter";
 import { seed84Lumber } from "./eighty-four-lumber";
+import { seedGms } from "./gms";
+import { seedBoiseCascade } from "./boise-cascade";
 import { seedCoops } from "./coops";
 
 /**
@@ -31,6 +33,10 @@ async function main() {
   console.log("  ✓ Carter Lumber + Holmes/Kight/Kempsville/Townsend");
   await seed84Lumber();
   console.log("  ✓ 84 Lumber + Hardy Family");
+  await seedGms();
+  console.log("  ✓ GMS Inc.");
+  await seedBoiseCascade();
+  console.log("  ✓ Boise Cascade");
   await seedCoops();
   console.log("  ✓ Co-ops (LMC, Do it Best, Ace, True Value, ENAP, LBM Advantage)");
   console.log("\nDone. All ownership edges seeded with verified=false; review and verify in Drizzle Studio.");
