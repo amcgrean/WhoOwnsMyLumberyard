@@ -51,6 +51,7 @@ export function NationalMap() {
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -154,7 +155,7 @@ export function NationalMap() {
           filter: ["!", ["has", "point_count"]],
           paint: {
             "circle-radius": 5,
-            "circle-color": ["case", ["get", "consolidated"], "#a23a2a", "#3b6b51"],
+            "circle-color": ["case", ["get", "x"], "#a23a2a", "#3b6b51"],
             "circle-stroke-color": "#fff",
             "circle-stroke-width": 1,
           },
@@ -177,12 +178,13 @@ export function NationalMap() {
           const f = e.features?.[0];
           if (!f) return;
           const p = f.properties as Record<string, unknown>;
+          // Short property keys come from /api/map; expand them on click only.
           setFlyout({
-            slug: String(p.slug),
-            name: String(p.name),
-            city: String(p.city),
-            state: String(p.state),
-            companyName: String(p.companyName),
+            slug: String(p.s),
+            name: String(p.n),
+            city: String(p.c),
+            state: String(p.t),
+            companyName: String(p.b),
           });
         });
 
@@ -210,7 +212,7 @@ export function NationalMap() {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
     const yardFilter: maplibregl.FilterSpecification = filter.consolidatedOnly
-      ? ["all", ["!", ["has", "point_count"]], ["==", ["get", "consolidated"], true]]
+      ? ["all", ["!", ["has", "point_count"]], ["==", ["get", "x"], true]]
       : ["!", ["has", "point_count"]];
     if (map.getLayer("yard")) map.setFilter("yard", yardFilter);
   }, [filter]);
@@ -227,7 +229,30 @@ export function NationalMap() {
         </div>
       ) : null}
 
-      <aside className="absolute top-4 left-4 z-10 w-64 max-w-[80vw] rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] p-3 shadow-sm text-sm">
+      {/* Mobile: a single button at top-left toggles a centered sheet.
+          Desktop: the panel is always visible at top-left. */}
+      <button
+        type="button"
+        onClick={() => setFiltersOpen((v) => !v)}
+        className="absolute top-4 left-4 z-10 sm:hidden rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] px-3 py-1.5 text-xs font-medium shadow-sm"
+        aria-expanded={filtersOpen}
+        aria-controls="map-filters"
+      >
+        {filtersOpen ? "Hide filters" : "Filters"}
+      </button>
+
+      <aside
+        id="map-filters"
+        className={
+          "absolute z-10 rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] p-3 shadow-sm text-sm " +
+          // Desktop: pinned top-left
+          "sm:top-4 sm:left-4 sm:w-64 sm:max-w-[80vw] sm:block " +
+          // Mobile: pinned below the toggle button, full-ish width
+          (filtersOpen
+            ? "top-14 left-4 right-4 sm:right-auto"
+            : "hidden sm:block")
+        }
+      >
         <p className="font-serif text-base mb-2">Filters</p>
         <label className="flex items-center gap-2">
           <input
@@ -238,7 +263,7 @@ export function NationalMap() {
           <span>Consolidator-owned only</span>
         </label>
         <p className="mt-3 text-xs text-[var(--color-muted)]">
-          Red dots = under consolidator ownership · Green = independent or unverified
+          Red = under consolidator ownership · Green = independent or unverified
         </p>
         {count != null ? (
           <p className="mt-2 text-xs text-[var(--color-muted)]">

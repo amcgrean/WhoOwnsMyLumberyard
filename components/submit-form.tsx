@@ -127,7 +127,7 @@ export function SubmitForm() {
           border: 1px solid var(--color-rule);
           border-radius: 6px;
           padding: 0.55rem 0.75rem;
-          font-size: 0.9rem;
+          font-size: 1rem;
           background: var(--color-paper);
           color: var(--color-ink);
         }

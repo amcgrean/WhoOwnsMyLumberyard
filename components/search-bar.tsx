@@ -27,9 +27,11 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder={compact ? "Zip, business, or city" : "Enter a zip code, business name, or city"}
+        // text-base (16px) on the input keeps iOS Safari from auto-zooming on
+        // focus. text-sm tightens the visible typography on >=sm.
         className={
           "w-full rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] " +
-          "pl-9 pr-3 py-2 text-sm placeholder:text-[var(--color-muted)] " +
+          "pl-9 pr-3 py-2 text-base sm:text-sm placeholder:text-[var(--color-muted)] " +
           "focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent " +
           (compact ? "" : "py-3 text-base")
         }
