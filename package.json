@@ -29,7 +29,8 @@
     "geocode:missing": "tsx --env-file=.env.local scripts/geocode-missing.ts",
     "scrape:srs": "tsx --env-file=.env.local scripts/scrapers/srs-distribution.ts",
     "scrape:gms": "tsx --env-file=.env.local scripts/scrapers/gms.ts",
-    "scrape:boise": "tsx --env-file=.env.local scripts/scrapers/boise-cascade.ts"
+    "scrape:boise": "tsx --env-file=.env.local scripts/scrapers/boise-cascade.ts",
+    "scrape:beacon": "tsx --env-file=.env.local scripts/scrapers/beacon.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
