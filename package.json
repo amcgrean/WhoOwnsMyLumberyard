@@ -24,7 +24,9 @@
     "scrape:uslbm": "tsx --env-file=.env.local scripts/scrapers/us-lbm.ts",
     "scrape:84": "tsx --env-file=.env.local scripts/scrapers/eighty-four-lumber.ts",
     "import:scraped": "tsx --env-file=.env.local scripts/import-scraped.ts",
-    "import:places": "tsx --env-file=.env.local scripts/import-google-places.ts"
+    "import:places": "tsx --env-file=.env.local scripts/import-google-places.ts",
+    "scrape:abc": "tsx --env-file=.env.local scripts/scrapers/abc-supply.ts",
+    "geocode:missing": "tsx --env-file=.env.local scripts/geocode-missing.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
