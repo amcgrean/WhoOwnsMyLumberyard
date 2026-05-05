@@ -16,19 +16,59 @@ co-op, family office, or independent operator). Every ownership claim links
 to a public source URL. The site does not editorialize.
 
 The site lives at **`who-owns-my-lumberyard.vercel.app`** and the repo is
-**`amcgrean/WhoOwnsMyLumberyard`**. Default branch is `main`; feature work
-goes on `claude/build-lumberyard-database-qMI1I` and merges via PRs.
+**`amcgrean/WhoOwnsMyLumberyard`**. Default branch is `main`.
+
+The current active feature branch is **`claude/independent-yards-scrapers`**
+(PR #15, open, ready for the operator to run on PC). Past feature work has
+shipped on **`claude/build-lumberyard-database-qMI1I`**. Future agents
+should use a new descriptive branch name per task and open PRs against
+`main`.
 
 ---
 
-## Where the project is right now
+## What just happened (most recent session, May 4 2026)
+
+**Open PR #15 — independent-yards scrapers** ready for operator to run on PC:
+
+- `scripts/scrapers/lmc.ts` — POSTs `dealer_locator.php` with a wide-radius
+  zip query, returns ~1,715 LMC member dealers in one call (no coords —
+  geocode after).
+- `scripts/scrapers/do-it-best.ts` — public GraphQL `storeLocator`, returns
+  3,274 stores; we filter `member_status` to Lumber + Home Center for ~1,392
+  members with full coords/phone. Skips pure-hardware unless
+  `--include-hardware` passed.
+- Importer extension: `ScrapeOutput.autoCreateRelationship` (default
+  `subsidiary_of`); co-op scrapers set it to `member_of` because membership
+  doesn't transfer ownership. `ensureParentEdge()` is idempotent on
+  `(parent, child, relationship)` so a yard that's a member of multiple
+  co-ops gets one edge per co-op without duplicates.
+- `scripts/scrapers/beacon.ts` (Codex's stub from PR #14) hardened with
+  `ignoreHTTPSErrors`, scroll triggers, and search-input probes. Runs
+  end-to-end without crashing but returns 0 rows from a headless browser —
+  needs interactive headful debug on PC to surface the location XHR.
+
+**Recently merged (already in `main`):**
+
+- PR #13 — comprehensive map + search + nearby-yards bug fixes, mobile
+  responsive pass, slim `/api/map` payload, `docs/` reference set.
+- PR #14 (Codex) — yard table view below the national map (first 500
+  geocoded yards, A-Z by state/city/name), Beacon scraper stub.
+
+**Operator's next action:** run the LMC + DiB sequence in
+`docs/INDEPENDENT_YARDS.md` on PC after merging PR #15. Expected outcome:
+DB roughly doubles to ~5,500 locations with ~3,000 new `member_of` edges.
+
+---
+
+## Where the project is right now (pre-LMC/DiB import)
 
 ### Database state (Neon Postgres, `neondb`)
 
 - **2,945 locations** across 49 states, **100% geocoded**
-- **157 companies** — 5 large consolidators (BFS, US LBM, Carter, ABC, 84 Lumber),
-  3 public companies (BFS, GMS, Boise, Beacon-shell), 60+ auto-created legacy
-  US LBM banners, 10 SRS sub-brands, 56 GMS sub-brands, 5 Carter family brands
+- **157 companies** — 5 large consolidators (BFS, US LBM, Carter, ABC,
+  84 Lumber), 4 public companies (BFS, GMS, Boise, Beacon-shell, +Home
+  Depot), 60+ auto-created legacy US LBM banners, 10 SRS sub-brands,
+  56 GMS sub-brands, 5 Carter family brands, 6 co-ops
 - **141 ownership edges**, all with `verified: false` pending operator review
 - See `docs/DATA_MODEL.md` for schema details
 
@@ -43,6 +83,8 @@ goes on `claude/build-lumberyard-database-qMI1I` and merges via PRs.
 - **Resend** for correction-submission emails
 - **Vercel Analytics + Speed Insights**
 - **pnpm 10**, **Node 24** (`.nvmrc`), running on Vercel
+- **Playwright** (Chromium) for the Beacon scraper only — install once with
+  `pnpm exec playwright install chromium`
 - See `docs/ARCHITECTURE.md` for why each piece was chosen and how they fit
 
 ### Pages live
@@ -54,7 +96,7 @@ goes on `claude/build-lumberyard-database-qMI1I` and merges via PRs.
 | `/company/[slug]` | Operating-brand / consolidator detail |
 | `/owner/[slug]` | PE / public / family-office detail with aggregate stats |
 | `/state/[state]` | State landing page; SEO play |
-| `/map` | National MapLibre map with cluster + filter |
+| `/map` | National MapLibre map + sortable yard table view |
 | `/search?q=…` | Combined search results |
 | `/about`, `/methodology`, `/submit` | Editorial pages |
 | `/api/map`, `/api/search`, `/api/submit`, `/api/og/[type]/[slug]` | API + OG |
@@ -64,23 +106,12 @@ goes on `claude/build-lumberyard-database-qMI1I` and merges via PRs.
 
 - Whole site builds, deploys, renders.
 - Search (FTS + ILIKE fallback + zip prefix fallback).
-- Map with clustered markers, all 2,945 yards visible.
+- Map with clustered markers (Carto raster default) + sortable table view.
 - Ownership chain renders with citation superscripts.
 - Submission form posts via Resend.
-- Geocoder backfills missing lat/lng.
-- 7 scrapers cover BFS, Carter family, US LBM, 84 Lumber, ABC, SRS, GMS, Boise Cascade.
-
-### Independent-yards phase — ready to run
-
-New scrapers to harvest the long tail of independent yards (run on PC; see
-`docs/INDEPENDENT_YARDS.md` for the full run book):
-
-- **LMC** (`pnpm scrape:lmc`) — ~1,715 LMC member dealers, no coords
-- **Do it Best** (`pnpm scrape:dib`) — ~1,392 Lumber + Home Center DiB
-  members with full coords/phone
-
-Both auto-create yard companies with `member_of` ownership edges (not
-`subsidiary_of`) — co-op membership doesn't transfer ownership.
+- Geocoder backfills missing lat/lng (Google Geocoding API, env var `MAPS_API`).
+- 8 scrapers cover BFS, Carter family, US LBM, 84 Lumber, ABC, SRS, GMS,
+  Boise Cascade. Two more (LMC, Do it Best) ready to run on PR #15.
 
 ### What's broken / deferred
 
@@ -89,8 +120,9 @@ These are kept on a "later passes" list rather than the active todo:
 1. **Beacon Building Products** — `scripts/scrapers/beacon.ts` runs end-to-end
    without crashing but returns 0 rows from a headless browser. The
    `qxo.com/find-a-store` SPA needs an interactive trigger (zip-search
-   submission) to surface location XHR. Debug headful on PC; once the right
-   XHR is identified, hand-craft the request. ~30-60 min of work.
+   submission) to surface the location XHR. Debug headful on PC
+   (`headless: false` in chromium.launch + open DevTools Network); once the
+   right XHR is identified, hand-craft the request. ~30-60 min of work.
 2. **L&W Supply / ABC Supply Interiors** — locator markers don't expose ZIP.
    Either fetch each of the 276 detail pages or change `locations.zip` to
    nullable in the schema.
@@ -123,6 +155,10 @@ These are kept on a "later passes" list rather than the active todo:
   semantics keyed on slug. The `_helpers.ts` upsert functions take care of this.
 - **Sources are first-class.** Pass URLs into `upsertEdge`, `upsertAcquisition`,
   and `linkSource`. Don't just put them in code comments.
+- **`member_of` ≠ `subsidiary_of`.** Co-op membership doesn't transfer
+  ownership. Co-op scrapers must use `autoCreateRelationship: "member_of"`.
+  `classifyOwnership()` already renders these as the purple "Co-op Member"
+  badge.
 
 ---
 
@@ -130,8 +166,8 @@ These are kept on a "later passes" list rather than the active todo:
 
 - **The operator works in the LBM industry at an independent yard.** This is
   disclosed on `/about`. Stay neutral in code comments and copy.
-- **Push to `claude/build-lumberyard-database-qMI1I`, open a PR against `main`.**
-  Don't push to `main` directly.
+- **Open a feature branch and PR against `main`.** Don't push to `main`
+  directly. Branch names: `claude/<short-task-slug>` is the convention.
 - **Vercel auto-deploys** on PR merge. Production URL is auth-walled —
   external testing is limited to the operator's browser session.
 - **Use `MAPS_API` (not `GOOGLE_PLACES_API_KEY`) for the env var name.** Both
@@ -139,6 +175,7 @@ These are kept on a "later passes" list rather than the active todo:
 - **Stay under the 10K free monthly Geocoding API quota.** The `geocode:missing`
   script caps with `--max`. Roughly: do not run more than ~9K addresses per
   calendar month without checking with the operator.
+- **Smoke-test scrapers with `--dry-run --limit 5`** before any full run.
 
 ---
 
@@ -146,17 +183,18 @@ These are kept on a "later passes" list rather than the active todo:
 
 ### A typical session looks like this
 
-1. `git checkout claude/build-lumberyard-database-qMI1I && git pull`
-2. `pnpm install` if you haven't recently
-3. Make changes
-4. `pnpm typecheck` and `pnpm lint` — both must pass
-5. If touching the schema: `pnpm db:generate` to create a new migration; do
+1. `git checkout main && git pull`
+2. `git checkout -B claude/<short-task-slug>`
+3. `pnpm install` if you haven't recently
+4. Make changes
+5. `pnpm typecheck` and `pnpm lint` — both must pass
+6. If touching the schema: `pnpm db:generate` to create a new migration; do
    NOT hand-edit the generated SQL. Apply with `pnpm db:migrate` against the
    production Neon URL.
-6. If touching scraping or imports: smoke-test with `--dry-run --limit 5`
+7. If touching scraping or imports: smoke-test with `--dry-run --limit 5`
    before a full run.
-7. `git commit -m "…"` and `git push`
-8. Open a PR via the GitHub MCP — don't draft, set ready for review.
+8. `git commit -m "…"` and `git push -u origin <branch>`
+9. Open a PR via the GitHub MCP — don't draft, set ready for review.
 
 ### Common scripts
 
@@ -164,7 +202,22 @@ These are kept on a "later passes" list rather than the active todo:
 pnpm dev                                 # local dev
 pnpm typecheck && pnpm lint              # pre-commit checks
 pnpm seed                                # idempotent re-seed of consolidators
-pnpm scrape:<consolidator>               # one of bfs / carter / uslbm / 84 / abc / srs / gms / boise
+
+# Scrapers (consolidators):
+pnpm scrape:bfs         # Builders FirstSource
+pnpm scrape:carter      # Carter Lumber + family of brands
+pnpm scrape:uslbm       # US LBM (auto-creates 60+ legacy banners)
+pnpm scrape:84          # 84 Lumber
+pnpm scrape:abc         # ABC Supply
+pnpm scrape:srs         # SRS Distribution + sub-brands
+pnpm scrape:gms         # GMS Inc. + 56 sub-brands
+pnpm scrape:boise       # Boise Cascade
+pnpm scrape:beacon      # Beacon (Playwright; needs interactive debug)
+
+# Scrapers (co-ops, member_of edges):
+pnpm scrape:lmc         # LMC member dealers
+pnpm scrape:dib         # Do it Best (lumber + home-center, default)
+
 pnpm import:scraped <path-to-json>       # import a scrape file
 pnpm geocode:missing --max 100 --dry-run # sample, then drop --dry-run
 pnpm db:studio                           # browse the DB
@@ -174,10 +227,14 @@ pnpm db:studio                           # browse the DB
 
 ## Pointers
 
+- `docs/README.md` — index of these docs in recommended read order
 - `docs/ARCHITECTURE.md` — why the stack is what it is, how files fit
 - `docs/DATA_MODEL.md` — schema, ownership graph, citation flow
 - `docs/SCRAPERS.md` — patterns each scraper uses, gotchas
 - `docs/OPERATIONS.md` — run-books for seed, scrape, geocode, deploy
+- `docs/MAP_AND_SEARCH.md` — the two features with the most production-bug
+  iterations; details the recurring pitfalls
+- `docs/INDEPENDENT_YARDS.md` — strategy + run book for the LMC/DiB phase
 - `scripts/scrapers/TODO.md` — locator URLs for the deferred consolidators
 - `data/sources.json` — curated set of canonical primary-source URLs
 
@@ -206,11 +263,16 @@ when something breaks:
 
 ## Operator's stated next priorities (last conversation)
 
-1. Verify the map renders cleanly in production after the latest fixes.
-2. Continue chipping away at deferred consolidators — Beacon would be the
-   biggest win (~580 branches).
-3. Geocoded budget remaining: ~9.5K calls for the month.
-4. Mobile + desktop UX continues to matter; operator visits on both.
+1. **Run the LMC + DiB sequence on PC** once PR #15 merges. Sequence in
+   `docs/INDEPENDENT_YARDS.md`. Expected: ~3,000 new `member_of` ownership
+   edges, ~2,500–2,800 new yard companies, ~5,500 total locations.
+2. **Debug Beacon headful** to surface the location XHR (~30-60 min) — would
+   add ~580 more locations.
+3. **Investigate ENAP / LBM Advantage / NLBMDA on PC** for further co-op
+   coverage where the sandbox couldn't reach them.
+4. After all co-op coverage is exhausted, **run a Google Places sweep** for
+   true-independent yards in target states. Stay under the 10K free monthly
+   Geocoding/Places quota.
 
 If unsure about a direction, ask the operator before doing anything that
 spends Geocoding API budget or creates new top-level abstractions.
