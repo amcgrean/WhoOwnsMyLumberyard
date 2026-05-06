@@ -107,7 +107,23 @@ export function classifyOwnership(chain: OwnershipNode[]): OwnershipBadgeKind {
   return "unknown";
 }
 
+/**
+ * Returns the ultimate *ownership* parent — i.e. the top of the chain
+ * reached only via subsidiary_of / acquired_by edges. Returns null when
+ * the only parent relationship is member_of (co-op / buying-group
+ * membership does not transfer ownership).
+ */
 export function ultimateOwner(chain: OwnershipNode[]): Company | null {
   if (chain.length === 0) return null;
-  return chain[chain.length - 1].company;
+  // Find the highest node reachable without crossing a member_of edge.
+  let best: Company | null = null;
+  for (const node of chain) {
+    if (node.edge === null || node.edge.relationship !== "member_of") {
+      best = node.company;
+    }
+  }
+  // If the starting node (the yard itself) is the only non-member_of node,
+  // there is no ownership parent — return null.
+  if (best?.id === chain[0].company.id) return null;
+  return best;
 }
