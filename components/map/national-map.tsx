@@ -14,27 +14,30 @@ type FlyoutFeature = {
 };
 
 // Default basemap is an *inline* raster style — no external style.json fetch,
-// no API key, no third-party sprite/glyph dependency. We use Carto's basemap
-// raster CDN (basemaps.cartocdn.com/light_all) rather than OSM directly:
-// Carto explicitly serves raster tiles to anyone with no referrer block,
-// while OSM's tile usage policy can return 403 from production deployments.
+// no API key, no third-party sprite/glyph dependency.
+//
+// We use Esri's World Light Gray Canvas tiles (server.arcgisonline.com).
+// These are free, require no API key, and are served from Esri's global CDN
+// which does not block cloud/hosting IPs. Previous attempts using Carto
+// (basemaps.cartocdn.com) or OSM (tile.openstreetmap.org) returned 403 from
+// Vercel's AWS-backed infrastructure in the browser.
+//
+// Attribution requirement: must include "Tiles © Esri" in the map.
+//
 // Operators can override with a richer vector style by setting
 // NEXT_PUBLIC_MAPLIBRE_TILES_URL on Vercel (MapTiler / Protomaps / Stadia /
-// OpenFreeMap / Carto positron / a self-hosted style.json).
-const OSM_RASTER_STYLE: maplibregl.StyleSpecification = {
+// OpenFreeMap tiles.openfreemap.org/styles/liberty / a self-hosted style.json).
+const RASTER_STYLE: maplibregl.StyleSpecification = {
   version: 8,
   sources: {
     base: {
       type: "raster",
       tiles: [
-        "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
+        "https://server.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Canvas/MapServer/tile/{z}/{y}/{x}",
       ],
       tileSize: 256,
       attribution:
-        '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors © <a href="https://carto.com/attributions">CARTO</a>',
+        'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, DeLorme, NAVTEQ',
     },
   },
   layers: [
@@ -62,7 +65,7 @@ export function NationalMap() {
     if (!containerRef.current || mapRef.current) return;
 
     const initialStyle: string | maplibregl.StyleSpecification =
-      STYLE_OVERRIDE ?? OSM_RASTER_STYLE;
+      STYLE_OVERRIDE ?? RASTER_STYLE;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -75,23 +78,22 @@ export function NationalMap() {
     mapRef.current = map;
 
     // If a custom override style.json fails to load, fall back to the inline
-    // OSM raster style. The default path doesn't need this because it's
-    // already inline.
+    // Esri raster style.
     let fallbackTriggered = false;
     map.on("error", (e) => {
       const err = e?.error as { message?: string; status?: number } | undefined;
       const msg = err?.message ?? "(unknown)";
       console.warn("[map] non-fatal error", msg, err);
-      if (!STYLE_OVERRIDE) return; // already on the inline OSM style
+      if (!STYLE_OVERRIDE) return; // already on the inline raster style
       const styleHasFailed =
         !fallbackTriggered &&
         ((typeof err?.status === "number" && (err.status === 0 || err.status >= 400)) ||
           /style\.json|sprite|glyphs/i.test(msg));
       if (styleHasFailed && !map.isStyleLoaded()) {
         fallbackTriggered = true;
-        console.warn("[map] override style failed; switching to OSM raster fallback");
+        console.warn("[map] override style failed; switching to Esri raster fallback");
         try {
-          map.setStyle(OSM_RASTER_STYLE);
+          map.setStyle(RASTER_STYLE);
           setUsingFallback(true);
         } catch (swapErr) {
           console.error("[map] fallback swap failed", swapErr);
@@ -99,21 +101,27 @@ export function NationalMap() {
       }
     });
 
-    // Watchdog: if the style hasn't loaded after 6s, swap to the inline style.
-    // Only meaningful when an override URL is set.
+    // Watchdog: if the style hasn't loaded after 8s, either swap to the inline
+    // style (if an override was set) or surface an error so the spinner doesn't
+    // hang forever.
     const loadTimeout = window.setTimeout(() => {
-      if (!STYLE_OVERRIDE) return;
-      if (!fallbackTriggered && !map.isStyleLoaded()) {
+      if (map.isStyleLoaded()) return;
+      if (STYLE_OVERRIDE && !fallbackTriggered) {
         fallbackTriggered = true;
-        console.warn("[map] style load timed out; switching to OSM raster fallback");
+        console.warn("[map] style load timed out; switching to Esri raster fallback");
         try {
-          map.setStyle(OSM_RASTER_STYLE);
+          map.setStyle(RASTER_STYLE);
           setUsingFallback(true);
         } catch (swapErr) {
           console.error("[map] fallback swap failed", swapErr);
         }
+      } else if (!STYLE_OVERRIDE) {
+        // Inline style timed out — likely a WebGL or environment issue.
+        console.error("[map] inline style load timed out after 8s");
+        setError("Map failed to initialize. Try refreshing the page.");
+        setLoading(false);
       }
-    }, 6000);
+    }, 8000);
     map.once("load", () => window.clearTimeout(loadTimeout));
 
     map.on("load", async () => {
@@ -288,7 +296,7 @@ export function NationalMap() {
         ) : null}
         {usingFallback ? (
           <p className="mt-2 text-xs text-[var(--color-muted)]">
-            Using OSM raster fallback (primary tile provider unreachable).
+            Using Esri raster fallback (primary tile provider unreachable).
           </p>
         ) : null}
       </aside>
