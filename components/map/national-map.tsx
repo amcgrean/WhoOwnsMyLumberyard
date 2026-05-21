@@ -69,57 +69,19 @@ export function NationalMap() {
     });
     mapRef.current = map;
 
-    // If the style URL fails to load (bad HTTP status, bad JSON, missing
-    // glyphs/sprites, or a 6-second timeout) fall back to the solid-background
-    // inline style so the map at least renders and yard dots are visible.
-    let fallbackTriggered = false;
-    const applyFallback = (reason: string) => {
-      if (fallbackTriggered) return;
-      fallbackTriggered = true;
-      console.warn(`[map] ${reason} — switching to inline fallback style`);
-      try {
-        map.setStyle(FALLBACK_STYLE);
-        setUsingFallback(true);
-      } catch (swapErr) {
-        console.error("[map] fallback swap failed", swapErr);
-      }
-    };
-
-    map.on("error", (e) => {
-      const err = e?.error as { message?: string; status?: number } | undefined;
-      const msg = err?.message ?? "(unknown)";
-      // Tile-level 404s / network hiccups after the style has loaded are
-      // non-fatal — log them but don't trigger the fallback.
-      if (map.isStyleLoaded()) {
-        console.warn("[map] non-fatal tile/resource error", msg);
-        return;
-      }
-      // Style-level failure (bad HTTP, missing sprite/glyph, etc.)
-      const styleHasFailed =
-        (typeof err?.status === "number" && (err.status === 0 || err.status >= 400)) ||
-        /style\.json|sprite|glyphs/i.test(msg);
-      if (styleHasFailed) applyFallback(`style error: ${msg}`);
-    });
-
-    // Watchdog: if the style hasn't loaded within 8 s, apply the fallback.
-    const loadTimeout = window.setTimeout(() => {
-      if (!map.isStyleLoaded()) applyFallback("style load timed out after 8 s");
-    }, 8000);
-    map.once("load", () => window.clearTimeout(loadTimeout));
-
-    // Cache fetched data so a style-swap re-load doesn't trigger a second fetch.
+    // Cache fetched GeoJSON so fallback style re-loads don't re-fetch.
     let cachedData: GeoJSON.FeatureCollection | null = null;
-    // Track whether click/hover handlers have been registered (once is enough).
+    // Click/hover handlers only need to be attached once per map instance.
     let handlersAttached = false;
 
-    // Remove existing yard layers/source before (re-)adding them.  Safe to call
-    // even on first load — removeLayer/removeSource throw if not found, so we
-    // swallow those errors.
+    // Re-add yard layers on top of whatever style is currently loaded.
+    // Uses getLayer/getSource guards so no MapLibre error events are fired
+    // when the layers/source don't yet exist.
     const addDataLayers = () => {
       if (!cachedData) return;
-      try { map.removeLayer("yard"); } catch { /* not yet added */ }
-      try { map.removeLayer("clusters"); } catch { /* not yet added */ }
-      try { map.removeSource("yards"); } catch { /* not yet added */ }
+      if (map.getLayer("yard")) map.removeLayer("yard");
+      if (map.getLayer("clusters")) map.removeLayer("clusters");
+      if (map.getSource("yards")) map.removeSource("yards");
 
       map.addSource("yards", {
         type: "geojson",
@@ -129,9 +91,8 @@ export function NationalMap() {
         clusterRadius: 50,
       });
 
-      // Cluster bubbles. Bigger cluster → bigger / darker circle, communicating
-      // count without requiring a symbol layer (which would need a `glyphs`
-      // URL in the style). Click expands the cluster.
+      // Cluster bubbles — bigger cluster → bigger / darker circle.
+      // Circle-only layers need no glyphs URL in the style.
       map.addLayer({
         id: "clusters",
         type: "circle",
@@ -166,57 +127,91 @@ export function NationalMap() {
           "circle-stroke-width": 1,
         },
       });
+
+      if (!handlersAttached) {
+        handlersAttached = true;
+
+        map.on("click", "clusters", (e) => {
+          const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+          const clusterId = features[0]?.properties?.cluster_id;
+          if (clusterId == null) return;
+          const source = map.getSource("yards") as GeoJSONSource;
+          source.getClusterExpansionZoom(Number(clusterId)).then((zoom) => {
+            map.easeTo({
+              center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+              zoom,
+            });
+          });
+        });
+
+        map.on("click", "yard", (e) => {
+          const f = e.features?.[0];
+          if (!f) return;
+          const p = f.properties as Record<string, unknown>;
+          setFlyout({
+            slug: String(p.s),
+            name: String(p.n),
+            city: String(p.c),
+            state: String(p.t),
+            companyName: String(p.b),
+          });
+        });
+
+        map.on("mouseenter", "clusters", () => (map.getCanvas().style.cursor = "pointer"));
+        map.on("mouseleave", "clusters", () => (map.getCanvas().style.cursor = ""));
+        map.on("mouseenter", "yard", () => (map.getCanvas().style.cursor = "pointer"));
+        map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
+      }
     };
 
-    map.on("load", async () => {
+    // If the style URL fails to load fall back to the solid-background inline
+    // style.  Use map.once("load") so the fallback style's load event re-adds
+    // the data layers cleanly without a persistent listener in the mix.
+    let fallbackTriggered = false;
+    const applyFallback = (reason: string) => {
+      if (fallbackTriggered) return;
+      fallbackTriggered = true;
+      console.warn(`[map] ${reason} — switching to inline fallback style`);
       try {
-        // Fetch only once; on style-swap re-loads just re-add the layers.
-        if (!cachedData) {
-          const res = await fetch("/api/map");
-          if (!res.ok) throw new Error(`/api/map returned ${res.status}`);
-          cachedData = (await res.json()) as GeoJSON.FeatureCollection;
-          setCount(cachedData.features?.length ?? 0);
-        }
+        map.once("load", () => addDataLayers());
+        map.setStyle(FALLBACK_STYLE);
+        setUsingFallback(true);
+      } catch (swapErr) {
+        console.error("[map] fallback swap failed", swapErr);
+      }
+    };
 
+    map.on("error", (e) => {
+      const err = e?.error as { message?: string; status?: number } | undefined;
+      const msg = err?.message ?? "(unknown)";
+      // Tile-level 404s / network hiccups after the style has loaded are
+      // non-fatal — log them but don't trigger the fallback.
+      if (map.isStyleLoaded()) {
+        console.warn("[map] non-fatal tile/resource error", msg);
+        return;
+      }
+      // Style-level failure (bad HTTP, missing sprite/glyph, etc.)
+      const styleHasFailed =
+        (typeof err?.status === "number" && (err.status === 0 || err.status >= 400)) ||
+        /style\.json|sprite|glyphs/i.test(msg);
+      if (styleHasFailed) applyFallback(`style error: ${msg}`);
+    });
+
+    // Watchdog: if the style hasn't loaded within 8 s, apply the fallback.
+    const loadTimeout = window.setTimeout(() => {
+      if (!map.isStyleLoaded()) applyFallback("style load timed out after 8 s");
+    }, 8000);
+
+    // Use once() — the initial style load fires this exactly once.
+    // The fallback path registers its own once("load") before calling setStyle.
+    map.once("load", async () => {
+      window.clearTimeout(loadTimeout);
+      try {
+        const res = await fetch("/api/map");
+        if (!res.ok) throw new Error(`/api/map returned ${res.status}`);
+        cachedData = (await res.json()) as GeoJSON.FeatureCollection;
+        setCount(cachedData.features?.length ?? 0);
         addDataLayers();
-
-        // Register click/hover listeners only once — they survive style swaps
-        // because they are bound to the map instance, not to any specific style.
-        if (!handlersAttached) {
-          handlersAttached = true;
-
-          map.on("click", "clusters", (e) => {
-            const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-            const clusterId = features[0]?.properties?.cluster_id;
-            if (clusterId == null) return;
-            const source = map.getSource("yards") as GeoJSONSource;
-            source.getClusterExpansionZoom(Number(clusterId)).then((zoom) => {
-              map.easeTo({
-                center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
-                zoom,
-              });
-            });
-          });
-
-          map.on("click", "yard", (e) => {
-            const f = e.features?.[0];
-            if (!f) return;
-            const p = f.properties as Record<string, unknown>;
-            // Short property keys come from /api/map; expand them on click only.
-            setFlyout({
-              slug: String(p.s),
-              name: String(p.n),
-              city: String(p.c),
-              state: String(p.t),
-              companyName: String(p.b),
-            });
-          });
-
-          map.on("mouseenter", "clusters", () => (map.getCanvas().style.cursor = "pointer"));
-          map.on("mouseleave", "clusters", () => (map.getCanvas().style.cursor = ""));
-          map.on("mouseenter", "yard", () => (map.getCanvas().style.cursor = "pointer"));
-          map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
-        }
       } catch (e) {
         setError(`Failed to load map data: ${e instanceof Error ? e.message : "unknown error"}`);
       } finally {
