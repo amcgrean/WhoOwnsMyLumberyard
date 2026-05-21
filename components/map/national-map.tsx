@@ -13,36 +13,28 @@ type FlyoutFeature = {
   companyName: string;
 };
 
-// Default basemap is an *inline* raster style — no external style.json fetch,
-// no API key, no third-party sprite/glyph dependency.
+// Default basemap: OpenFreeMap "liberty" vector style.
+//   - 100 % free, no API key, served via Cloudflare CDN (no IP blocking)
+//   - Complete style JSON including tiles, glyphs and sprites
+//   - Our data layers are circle-only so we don't add any extra symbol layers
 //
-// We use Esri's World Light Gray Canvas tiles (server.arcgisonline.com).
-// These are free, require no API key, and are served from Esri's global CDN
-// which does not block cloud/hosting IPs. Previous attempts using Carto
-// (basemaps.cartocdn.com) or OSM (tile.openstreetmap.org) returned 403 from
-// Vercel's AWS-backed infrastructure in the browser.
+// Emergency fallback: a plain inline style with only a background-colour layer.
+// Tiles are not needed; the fallback guarantees the map can always initialise
+// and yard-dot layers still render on top of the solid background.
 //
-// Attribution requirement: must include "Tiles © Esri" in the map.
-//
-// Operators can override with a richer vector style by setting
-// NEXT_PUBLIC_MAPLIBRE_TILES_URL on Vercel (MapTiler / Protomaps / Stadia /
-// OpenFreeMap tiles.openfreemap.org/styles/liberty / a self-hosted style.json).
-const RASTER_STYLE: maplibregl.StyleSpecification = {
+// Operators can set NEXT_PUBLIC_MAPLIBRE_TILES_URL to any MapLibre-compatible
+// style.json URL (MapTiler, Protomaps, Stadia, a self-hosted style, etc.).
+// That URL is tried first; on failure the code falls back through:
+//   operator override → OpenFreeMap → solid-background inline style
+const OPENFREEMAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
+
+// Minimal inline style — no external tile dependency.  Used as the last-resort
+// fallback so the map can always render and show yard-dot data.
+const FALLBACK_STYLE: maplibregl.StyleSpecification = {
   version: 8,
-  sources: {
-    base: {
-      type: "raster",
-      tiles: [
-        "https://server.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Canvas/MapServer/tile/{z}/{y}/{x}",
-      ],
-      tileSize: 256,
-      attribution:
-        'Tiles &copy; <a href="https://www.esri.com">Esri</a> &mdash; Esri, DeLorme, NAVTEQ',
-    },
-  },
+  sources: {},
   layers: [
-    { id: "bg", type: "background", paint: { "background-color": "#f0efe9" } },
-    { id: "base", type: "raster", source: "base" },
+    { id: "bg", type: "background", paint: { "background-color": "#e8e6df" } },
   ],
 };
 
@@ -64,8 +56,8 @@ export function NationalMap() {
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
 
-    const initialStyle: string | maplibregl.StyleSpecification =
-      STYLE_OVERRIDE ?? RASTER_STYLE;
+    // Priority: operator override → OpenFreeMap → (watchdog falls back to FALLBACK_STYLE)
+    const initialStyle: string = STYLE_OVERRIDE ?? OPENFREEMAP_STYLE_URL;
 
     const map = new maplibregl.Map({
       container: containerRef.current,
@@ -77,50 +69,41 @@ export function NationalMap() {
     });
     mapRef.current = map;
 
-    // If a custom override style.json fails to load, fall back to the inline
-    // Esri raster style.
+    // If the style URL fails to load (bad HTTP status, bad JSON, missing
+    // glyphs/sprites, or a 6-second timeout) fall back to the solid-background
+    // inline style so the map at least renders and yard dots are visible.
     let fallbackTriggered = false;
+    const applyFallback = (reason: string) => {
+      if (fallbackTriggered) return;
+      fallbackTriggered = true;
+      console.warn(`[map] ${reason} — switching to inline fallback style`);
+      try {
+        map.setStyle(FALLBACK_STYLE);
+        setUsingFallback(true);
+      } catch (swapErr) {
+        console.error("[map] fallback swap failed", swapErr);
+      }
+    };
+
     map.on("error", (e) => {
       const err = e?.error as { message?: string; status?: number } | undefined;
       const msg = err?.message ?? "(unknown)";
-      console.warn("[map] non-fatal error", msg, err);
-      if (!STYLE_OVERRIDE) return; // already on the inline raster style
-      const styleHasFailed =
-        !fallbackTriggered &&
-        ((typeof err?.status === "number" && (err.status === 0 || err.status >= 400)) ||
-          /style\.json|sprite|glyphs/i.test(msg));
-      if (styleHasFailed && !map.isStyleLoaded()) {
-        fallbackTriggered = true;
-        console.warn("[map] override style failed; switching to Esri raster fallback");
-        try {
-          map.setStyle(RASTER_STYLE);
-          setUsingFallback(true);
-        } catch (swapErr) {
-          console.error("[map] fallback swap failed", swapErr);
-        }
+      // Tile-level 404s / network hiccups after the style has loaded are
+      // non-fatal — log them but don't trigger the fallback.
+      if (map.isStyleLoaded()) {
+        console.warn("[map] non-fatal tile/resource error", msg);
+        return;
       }
+      // Style-level failure (bad HTTP, missing sprite/glyph, etc.)
+      const styleHasFailed =
+        (typeof err?.status === "number" && (err.status === 0 || err.status >= 400)) ||
+        /style\.json|sprite|glyphs/i.test(msg);
+      if (styleHasFailed) applyFallback(`style error: ${msg}`);
     });
 
-    // Watchdog: if the style hasn't loaded after 8s, either swap to the inline
-    // style (if an override was set) or surface an error so the spinner doesn't
-    // hang forever.
+    // Watchdog: if the style hasn't loaded within 8 s, apply the fallback.
     const loadTimeout = window.setTimeout(() => {
-      if (map.isStyleLoaded()) return;
-      if (STYLE_OVERRIDE && !fallbackTriggered) {
-        fallbackTriggered = true;
-        console.warn("[map] style load timed out; switching to Esri raster fallback");
-        try {
-          map.setStyle(RASTER_STYLE);
-          setUsingFallback(true);
-        } catch (swapErr) {
-          console.error("[map] fallback swap failed", swapErr);
-        }
-      } else if (!STYLE_OVERRIDE) {
-        // Inline style timed out — likely a WebGL or environment issue.
-        console.error("[map] inline style load timed out after 8s");
-        setError("Map failed to initialize. Try refreshing the page.");
-        setLoading(false);
-      }
+      if (!map.isStyleLoaded()) applyFallback("style load timed out after 8 s");
     }, 8000);
     map.once("load", () => window.clearTimeout(loadTimeout));
 
@@ -296,7 +279,7 @@ export function NationalMap() {
         ) : null}
         {usingFallback ? (
           <p className="mt-2 text-xs text-[var(--color-muted)]">
-            Using Esri raster fallback (primary tile provider unreachable).
+            Basemap unavailable — showing yard data on plain background.
           </p>
         ) : null}
       </aside>
