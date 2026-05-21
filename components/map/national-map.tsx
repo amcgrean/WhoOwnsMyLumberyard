@@ -59,6 +59,8 @@ export function NationalMap() {
     // Priority: operator override → OpenFreeMap → (watchdog falls back to FALLBACK_STYLE)
     const initialStyle: string = STYLE_OVERRIDE ?? OPENFREEMAP_STYLE_URL;
 
+    console.log("[map] initialising, style =", initialStyle);
+
     const map = new maplibregl.Map({
       container: containerRef.current,
       style: initialStyle,
@@ -78,10 +80,12 @@ export function NationalMap() {
     // Uses getLayer/getSource guards so no MapLibre error events are fired
     // when the layers/source don't yet exist.
     const addDataLayers = () => {
+      console.log("[map] addDataLayers — cachedData features:", cachedData?.features?.length ?? "null");
       if (!cachedData) return;
       if (map.getLayer("yard")) map.removeLayer("yard");
       if (map.getLayer("clusters")) map.removeLayer("clusters");
       if (map.getSource("yards")) map.removeSource("yards");
+      console.log("[map] adding source + layers");
 
       map.addSource("yards", {
         type: "geojson",
@@ -162,6 +166,7 @@ export function NationalMap() {
         map.on("mouseenter", "yard", () => (map.getCanvas().style.cursor = "pointer"));
         map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
       }
+      console.log("[map] addDataLayers done — layers in style:", map.getStyle()?.layers?.map((l) => l.id));
     };
 
     // If the style URL fails to load fall back to the solid-background inline
@@ -173,7 +178,10 @@ export function NationalMap() {
       fallbackTriggered = true;
       console.warn(`[map] ${reason} — switching to inline fallback style`);
       try {
-        map.once("load", () => addDataLayers());
+        map.once("load", () => {
+          console.log("[map] fallback style loaded — re-adding data layers");
+          addDataLayers();
+        });
         map.setStyle(FALLBACK_STYLE);
         setUsingFallback(true);
       } catch (swapErr) {
@@ -184,21 +192,22 @@ export function NationalMap() {
     map.on("error", (e) => {
       const err = e?.error as { message?: string; status?: number } | undefined;
       const msg = err?.message ?? "(unknown)";
+      const loaded = map.isStyleLoaded();
+      console.warn("[map] error event — isStyleLoaded:", loaded, "| msg:", msg, "| status:", err?.status);
       // Tile-level 404s / network hiccups after the style has loaded are
       // non-fatal — log them but don't trigger the fallback.
-      if (map.isStyleLoaded()) {
-        console.warn("[map] non-fatal tile/resource error", msg);
-        return;
-      }
+      if (loaded) return;
       // Style-level failure (bad HTTP, missing sprite/glyph, etc.)
       const styleHasFailed =
         (typeof err?.status === "number" && (err.status === 0 || err.status >= 400)) ||
         /style\.json|sprite|glyphs/i.test(msg);
+      console.warn("[map] styleHasFailed:", styleHasFailed);
       if (styleHasFailed) applyFallback(`style error: ${msg}`);
     });
 
     // Watchdog: if the style hasn't loaded within 8 s, apply the fallback.
     const loadTimeout = window.setTimeout(() => {
+      console.warn("[map] watchdog fired — isStyleLoaded:", map.isStyleLoaded());
       if (!map.isStyleLoaded()) applyFallback("style load timed out after 8 s");
     }, 8000);
 
@@ -206,13 +215,18 @@ export function NationalMap() {
     // The fallback path registers its own once("load") before calling setStyle.
     map.once("load", async () => {
       window.clearTimeout(loadTimeout);
+      console.log("[map] initial load event fired");
       try {
+        console.log("[map] fetching /api/map");
         const res = await fetch("/api/map");
+        console.log("[map] /api/map status:", res.status);
         if (!res.ok) throw new Error(`/api/map returned ${res.status}`);
         cachedData = (await res.json()) as GeoJSON.FeatureCollection;
+        console.log("[map] data received — features:", cachedData.features?.length);
         setCount(cachedData.features?.length ?? 0);
         addDataLayers();
       } catch (e) {
+        console.error("[map] load error:", e);
         setError(`Failed to load map data: ${e instanceof Error ? e.message : "unknown error"}`);
       } finally {
         setLoading(false);
