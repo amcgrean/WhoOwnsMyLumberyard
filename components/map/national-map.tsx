@@ -69,15 +69,111 @@ export function NationalMap() {
     });
     mapRef.current = map;
 
-    // If the style URL fails to load (bad HTTP status, bad JSON, missing
-    // glyphs/sprites, or a 6-second timeout) fall back to the solid-background
-    // inline style so the map at least renders and yard dots are visible.
+    // Cache fetched GeoJSON so fallback style re-loads don't re-fetch.
+    let cachedData: GeoJSON.FeatureCollection | null = null;
+    // Click/hover handlers only need to be attached once per map instance.
+    let handlersAttached = false;
+
+    // Re-add yard layers on top of whatever style is currently loaded.
+    // Uses getLayer/getSource guards so no MapLibre error events are fired
+    // when the layers/source don't yet exist.
+    const addDataLayers = () => {
+      if (!cachedData) return;
+      if (map.getLayer("yard")) map.removeLayer("yard");
+      if (map.getLayer("clusters")) map.removeLayer("clusters");
+      if (map.getSource("yards")) map.removeSource("yards");
+
+      map.addSource("yards", {
+        type: "geojson",
+        data: cachedData,
+        cluster: true,
+        clusterMaxZoom: 12,
+        clusterRadius: 50,
+      });
+
+      // Cluster bubbles — bigger cluster → bigger / darker circle.
+      // Circle-only layers need no glyphs URL in the style.
+      map.addLayer({
+        id: "clusters",
+        type: "circle",
+        source: "yards",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": [
+            "step",
+            ["get", "point_count"],
+            "#3b6b51", // 1-9   small
+            10,
+            "#2d4a3a", // 10-49 mid
+            50,
+            "#1f3527", // 50+   large
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24, 200, 30],
+          "circle-opacity": 0.9,
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#fff",
+        },
+      });
+
+      map.addLayer({
+        id: "yard",
+        type: "circle",
+        source: "yards",
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-radius": 5,
+          "circle-color": ["case", ["get", "x"], "#a23a2a", "#3b6b51"],
+          "circle-stroke-color": "#fff",
+          "circle-stroke-width": 1,
+        },
+      });
+
+      if (!handlersAttached) {
+        handlersAttached = true;
+
+        map.on("click", "clusters", (e) => {
+          const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+          const clusterId = features[0]?.properties?.cluster_id;
+          if (clusterId == null) return;
+          const source = map.getSource("yards") as GeoJSONSource;
+          source.getClusterExpansionZoom(Number(clusterId)).then((zoom) => {
+            map.easeTo({
+              center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+              zoom,
+            });
+          });
+        });
+
+        map.on("click", "yard", (e) => {
+          const f = e.features?.[0];
+          if (!f) return;
+          const p = f.properties as Record<string, unknown>;
+          setFlyout({
+            slug: String(p.s),
+            name: String(p.n),
+            city: String(p.c),
+            state: String(p.t),
+            companyName: String(p.b),
+          });
+        });
+
+        map.on("mouseenter", "clusters", () => (map.getCanvas().style.cursor = "pointer"));
+        map.on("mouseleave", "clusters", () => (map.getCanvas().style.cursor = ""));
+        map.on("mouseenter", "yard", () => (map.getCanvas().style.cursor = "pointer"));
+        map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
+      }
+    };
+
+    // If the style URL fails to load fall back to the solid-background inline
+    // style.  Use map.once("load") so the fallback style's load event re-adds
+    // the data layers cleanly without a persistent listener in the mix.
     let fallbackTriggered = false;
     const applyFallback = (reason: string) => {
       if (fallbackTriggered) return;
       fallbackTriggered = true;
       console.warn(`[map] ${reason} — switching to inline fallback style`);
       try {
+        map.once("load", () => addDataLayers());
         map.setStyle(FALLBACK_STYLE);
         setUsingFallback(true);
       } catch (swapErr) {
@@ -105,92 +201,17 @@ export function NationalMap() {
     const loadTimeout = window.setTimeout(() => {
       if (!map.isStyleLoaded()) applyFallback("style load timed out after 8 s");
     }, 8000);
-    map.once("load", () => window.clearTimeout(loadTimeout));
 
-    map.on("load", async () => {
+    // Use once() — the initial style load fires this exactly once.
+    // The fallback path registers its own once("load") before calling setStyle.
+    map.once("load", async () => {
+      window.clearTimeout(loadTimeout);
       try {
         const res = await fetch("/api/map");
         if (!res.ok) throw new Error(`/api/map returned ${res.status}`);
-        const data = (await res.json()) as GeoJSON.FeatureCollection;
-        setCount(data.features?.length ?? 0);
-
-        map.addSource("yards", {
-          type: "geojson",
-          data,
-          cluster: true,
-          clusterMaxZoom: 12,
-          clusterRadius: 50,
-        });
-
-        // Cluster bubbles. Bigger cluster → bigger / darker circle, communicating
-        // count without requiring a symbol layer (which would need a `glyphs`
-        // URL in the style). Click expands the cluster.
-        map.addLayer({
-          id: "clusters",
-          type: "circle",
-          source: "yards",
-          filter: ["has", "point_count"],
-          paint: {
-            "circle-color": [
-              "step",
-              ["get", "point_count"],
-              "#3b6b51", // 1-9   small
-              10,
-              "#2d4a3a", // 10-49 mid
-              50,
-              "#1f3527", // 50+   large
-            ],
-            "circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24, 200, 30],
-            "circle-opacity": 0.9,
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#fff",
-          },
-        });
-
-        map.addLayer({
-          id: "yard",
-          type: "circle",
-          source: "yards",
-          filter: ["!", ["has", "point_count"]],
-          paint: {
-            "circle-radius": 5,
-            "circle-color": ["case", ["get", "x"], "#a23a2a", "#3b6b51"],
-            "circle-stroke-color": "#fff",
-            "circle-stroke-width": 1,
-          },
-        });
-
-        map.on("click", "clusters", (e) => {
-          const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-          const clusterId = features[0]?.properties?.cluster_id;
-          if (clusterId == null) return;
-          const source = map.getSource("yards") as GeoJSONSource;
-          source.getClusterExpansionZoom(Number(clusterId)).then((zoom) => {
-            map.easeTo({
-              center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
-              zoom,
-            });
-          });
-        });
-
-        map.on("click", "yard", (e) => {
-          const f = e.features?.[0];
-          if (!f) return;
-          const p = f.properties as Record<string, unknown>;
-          // Short property keys come from /api/map; expand them on click only.
-          setFlyout({
-            slug: String(p.s),
-            name: String(p.n),
-            city: String(p.c),
-            state: String(p.t),
-            companyName: String(p.b),
-          });
-        });
-
-        map.on("mouseenter", "clusters", () => (map.getCanvas().style.cursor = "pointer"));
-        map.on("mouseleave", "clusters", () => (map.getCanvas().style.cursor = ""));
-        map.on("mouseenter", "yard", () => (map.getCanvas().style.cursor = "pointer"));
-        map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
+        cachedData = (await res.json()) as GeoJSON.FeatureCollection;
+        setCount(cachedData.features?.length ?? 0);
+        addDataLayers();
       } catch (e) {
         setError(`Failed to load map data: ${e instanceof Error ? e.message : "unknown error"}`);
       } finally {
