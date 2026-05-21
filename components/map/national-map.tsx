@@ -107,90 +107,116 @@ export function NationalMap() {
     }, 8000);
     map.once("load", () => window.clearTimeout(loadTimeout));
 
+    // Cache fetched data so a style-swap re-load doesn't trigger a second fetch.
+    let cachedData: GeoJSON.FeatureCollection | null = null;
+    // Track whether click/hover handlers have been registered (once is enough).
+    let handlersAttached = false;
+
+    // Remove existing yard layers/source before (re-)adding them.  Safe to call
+    // even on first load — removeLayer/removeSource throw if not found, so we
+    // swallow those errors.
+    const addDataLayers = () => {
+      if (!cachedData) return;
+      try { map.removeLayer("yard"); } catch { /* not yet added */ }
+      try { map.removeLayer("clusters"); } catch { /* not yet added */ }
+      try { map.removeSource("yards"); } catch { /* not yet added */ }
+
+      map.addSource("yards", {
+        type: "geojson",
+        data: cachedData,
+        cluster: true,
+        clusterMaxZoom: 12,
+        clusterRadius: 50,
+      });
+
+      // Cluster bubbles. Bigger cluster → bigger / darker circle, communicating
+      // count without requiring a symbol layer (which would need a `glyphs`
+      // URL in the style). Click expands the cluster.
+      map.addLayer({
+        id: "clusters",
+        type: "circle",
+        source: "yards",
+        filter: ["has", "point_count"],
+        paint: {
+          "circle-color": [
+            "step",
+            ["get", "point_count"],
+            "#3b6b51", // 1-9   small
+            10,
+            "#2d4a3a", // 10-49 mid
+            50,
+            "#1f3527", // 50+   large
+          ],
+          "circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24, 200, 30],
+          "circle-opacity": 0.9,
+          "circle-stroke-width": 2,
+          "circle-stroke-color": "#fff",
+        },
+      });
+
+      map.addLayer({
+        id: "yard",
+        type: "circle",
+        source: "yards",
+        filter: ["!", ["has", "point_count"]],
+        paint: {
+          "circle-radius": 5,
+          "circle-color": ["case", ["get", "x"], "#a23a2a", "#3b6b51"],
+          "circle-stroke-color": "#fff",
+          "circle-stroke-width": 1,
+        },
+      });
+    };
+
     map.on("load", async () => {
       try {
-        const res = await fetch("/api/map");
-        if (!res.ok) throw new Error(`/api/map returned ${res.status}`);
-        const data = (await res.json()) as GeoJSON.FeatureCollection;
-        setCount(data.features?.length ?? 0);
+        // Fetch only once; on style-swap re-loads just re-add the layers.
+        if (!cachedData) {
+          const res = await fetch("/api/map");
+          if (!res.ok) throw new Error(`/api/map returned ${res.status}`);
+          cachedData = (await res.json()) as GeoJSON.FeatureCollection;
+          setCount(cachedData.features?.length ?? 0);
+        }
 
-        map.addSource("yards", {
-          type: "geojson",
-          data,
-          cluster: true,
-          clusterMaxZoom: 12,
-          clusterRadius: 50,
-        });
+        addDataLayers();
 
-        // Cluster bubbles. Bigger cluster → bigger / darker circle, communicating
-        // count without requiring a symbol layer (which would need a `glyphs`
-        // URL in the style). Click expands the cluster.
-        map.addLayer({
-          id: "clusters",
-          type: "circle",
-          source: "yards",
-          filter: ["has", "point_count"],
-          paint: {
-            "circle-color": [
-              "step",
-              ["get", "point_count"],
-              "#3b6b51", // 1-9   small
-              10,
-              "#2d4a3a", // 10-49 mid
-              50,
-              "#1f3527", // 50+   large
-            ],
-            "circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24, 200, 30],
-            "circle-opacity": 0.9,
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#fff",
-          },
-        });
+        // Register click/hover listeners only once — they survive style swaps
+        // because they are bound to the map instance, not to any specific style.
+        if (!handlersAttached) {
+          handlersAttached = true;
 
-        map.addLayer({
-          id: "yard",
-          type: "circle",
-          source: "yards",
-          filter: ["!", ["has", "point_count"]],
-          paint: {
-            "circle-radius": 5,
-            "circle-color": ["case", ["get", "x"], "#a23a2a", "#3b6b51"],
-            "circle-stroke-color": "#fff",
-            "circle-stroke-width": 1,
-          },
-        });
-
-        map.on("click", "clusters", (e) => {
-          const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
-          const clusterId = features[0]?.properties?.cluster_id;
-          if (clusterId == null) return;
-          const source = map.getSource("yards") as GeoJSONSource;
-          source.getClusterExpansionZoom(Number(clusterId)).then((zoom) => {
-            map.easeTo({
-              center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
-              zoom,
+          map.on("click", "clusters", (e) => {
+            const features = map.queryRenderedFeatures(e.point, { layers: ["clusters"] });
+            const clusterId = features[0]?.properties?.cluster_id;
+            if (clusterId == null) return;
+            const source = map.getSource("yards") as GeoJSONSource;
+            source.getClusterExpansionZoom(Number(clusterId)).then((zoom) => {
+              map.easeTo({
+                center: (features[0].geometry as GeoJSON.Point).coordinates as [number, number],
+                zoom,
+              });
             });
           });
-        });
 
-        map.on("click", "yard", (e) => {
-          const f = e.features?.[0];
-          if (!f) return;
-          const p = f.properties as Record<string, unknown>;
-          // Short property keys come from /api/map; expand them on click only.
-          setFlyout({
-            slug: String(p.s),
-            name: String(p.n),
-            city: String(p.c),
-            state: String(p.t),
-            companyName: String(p.b),
+          map.on("click", "yard", (e) => {
+            const f = e.features?.[0];
+            if (!f) return;
+            const p = f.properties as Record<string, unknown>;
+            // Short property keys come from /api/map; expand them on click only.
+            setFlyout({
+              slug: String(p.s),
+              name: String(p.n),
+              city: String(p.c),
+              state: String(p.t),
+              companyName: String(p.b),
+            });
           });
-        });
 
-        map.on("mouseenter", "clusters", () => (map.getCanvas().style.cursor = "pointer"));
-        map.on("mouseleave", "clusters", () => (map.getCanvas().style.cursor = ""));
-        map.on("mouseenter", "yard", () => (map.getCanvas().style.cursor = "pointer"));
-        map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
+          map.on("mouseenter", "clusters", () => (map.getCanvas().style.cursor = "pointer"));
+          map.on("mouseleave", "clusters", () => (map.getCanvas().style.cursor = ""));
+          map.on("mouseenter", "yard", () => (map.getCanvas().style.cursor = "pointer"));
+          map.on("mouseleave", "yard", () => (map.getCanvas().style.cursor = ""));
+        }
       } catch (e) {
         setError(`Failed to load map data: ${e instanceof Error ? e.message : "unknown error"}`);
       } finally {
