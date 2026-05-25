@@ -168,7 +168,7 @@ serves both reads and migrations.
 
 ## Vercel deploys
 
-- Pushing to `claude/build-lumberyard-database-qMI1I` → preview deployment
+- Pushing to any `claude/…` branch → preview deployment via Vercel PR check
 - Merging a PR to `main` → production deployment
 - Vercel reads env vars from project settings. To change them, use the Vercel
   dashboard or `vercel env`.
@@ -184,7 +184,7 @@ serves both reads and migrations.
 | --- | --- | --- |
 | `column "<alias>" does not exist` | Drizzle alias quoted, ORDER BY unquoted | Inline expression in ORDER BY |
 | `invalid input syntax for type integer: "3.14"` | JS float passed as int4 param | Cast to `::float8` or inline literal |
-| Map renders but gray | Style/tile fetch failing | Check console; default uses inline OSM raster — should work |
+| Map canvas blank | Style/tile fetch failing | Check `[map]` console logs (verbose logging added in PR #21); default is OpenFreeMap vector style |
 | `Vulnerable version of Next.js detected` on Vercel | Next < 16.x | Bump `next` and `eslint-config-next` |
 | Search 500 | Likely the alias bug above; check runtime logs |
 | Seed fails on a fresh DB | Migration not applied | `pnpm db:migrate` first |

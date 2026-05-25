@@ -18,58 +18,53 @@ to a public source URL. The site does not editorialize.
 The site lives at **`who-owns-my-lumberyard.vercel.app`** and the repo is
 **`amcgrean/WhoOwnsMyLumberyard`**. Default branch is `main`.
 
-The current active feature branch is **`claude/independent-yards-scrapers`**
-(PR #15, open, ready for the operator to run on PC). Past feature work has
-shipped on **`claude/build-lumberyard-database-qMI1I`**. Future agents
-should use a new descriptive branch name per task and open PRs against
-`main`.
+All recent feature branches have been merged. Future agents should use a new
+descriptive branch name per task (`claude/<short-task-slug>`) and open PRs
+against `main`.
 
 ---
 
-## What just happened (most recent session, May 4 2026)
+## What just happened (most recent sessions, May 2026)
 
-**Open PR #15 — independent-yards scrapers** ready for operator to run on PC:
+**PRs #17–21 — map fixes + Beacon scraper rewrite (all merged to `main`):**
 
-- `scripts/scrapers/lmc.ts` — POSTs `dealer_locator.php` with a wide-radius
-  zip query, returns ~1,715 LMC member dealers in one call (no coords —
-  geocode after).
-- `scripts/scrapers/do-it-best.ts` — public GraphQL `storeLocator`, returns
-  3,274 stores; we filter `member_status` to Lumber + Home Center for ~1,392
-  members with full coords/phone. Skips pure-hardware unless
-  `--include-hardware` passed.
-- Importer extension: `ScrapeOutput.autoCreateRelationship` (default
-  `subsidiary_of`); co-op scrapers set it to `member_of` because membership
-  doesn't transfer ownership. `ensureParentEdge()` is idempotent on
-  `(parent, child, relationship)` so a yard that's a member of multiple
-  co-ops gets one edge per co-op without duplicates.
-- `scripts/scrapers/beacon.ts` (Codex's stub from PR #14) hardened with
-  `ignoreHTTPSErrors`, scroll triggers, and search-input probes. Runs
-  end-to-end without crashing but returns 0 rows from a headless browser —
-  needs interactive headful debug on PC to surface the location XHR.
+- **PR #17** — fixed `ultimateOwner` skipping `member_of` edges (co-op
+  members were showing wrong ownership badge).
+- **PR #18** — rewrote `scripts/scrapers/beacon.ts` from a Playwright stub
+  (0 rows headlessly) to a direct REST grid sweep against Beacon's internal
+  API (`beacon-ng.becn.com/v1/store-location`). ~539 unique US locations.
+  Also attempted Esri basemap for the map (retired service, also blank).
+- **PR #19** — switched map basemap to OpenFreeMap "liberty" vector style
+  (free, no API key, Cloudflare CDN — no IP blocking from Vercel).
+- **PRs #20–21** — fixed the blank map canvas. Root cause: `map.on("load")`
+  is a persistent listener that fires again after `setStyle()`. When the
+  fallback style swapped in, a second `load` fired, `addSource("yards")`
+  threw (source already existed), error was caught silently, canvas stayed
+  blank. Fix: `map.once("load")` for initial load; `applyFallback` registers
+  its own `map.once("load", addDataLayers)` before calling `setStyle()`;
+  `addDataLayers` uses `getLayer`/`getSource` guards instead of try/catch.
+  Added verbose `[map]` console logging for future diagnosis.
 
-**Recently merged (already in `main`):**
+**LMC + Do it Best co-op import (already done, in `main`):**
 
-- PR #13 — comprehensive map + search + nearby-yards bug fixes, mobile
-  responsive pass, slim `/api/map` payload, `docs/` reference set.
-- PR #14 (Codex) — yard table view below the national map (first 500
-  geocoded yards, A-Z by state/city/name), Beacon scraper stub.
-
-**Operator's next action:** run the LMC + DiB sequence in
-`docs/INDEPENDENT_YARDS.md` on PC after merging PR #15. Expected outcome:
-DB roughly doubles to ~5,500 locations with ~3,000 new `member_of` edges.
+- ~1,715 LMC member dealers + ~1,392 Do it Best lumber members imported.
+- DB now at ~**5,972 locations** (up from 2,945 before).
+- `member_of` edges (not `subsidiary_of`) — co-op membership ≠ ownership.
 
 ---
 
-## Where the project is right now (pre-LMC/DiB import)
+## Where the project is right now
 
 ### Database state (Neon Postgres, `neondb`)
 
-- **2,945 locations** across 49 states, **100% geocoded**
-- **157 companies** — 5 large consolidators (BFS, US LBM, Carter, ABC,
-  84 Lumber), 4 public companies (BFS, GMS, Boise, Beacon-shell, +Home
-  Depot), 60+ auto-created legacy US LBM banners, 10 SRS sub-brands,
-  56 GMS sub-brands, 5 Carter family brands, 6 co-ops
-- **141 ownership edges**, all with `verified: false` pending operator review
+- **~5,972 locations** across all 50 states; majority geocoded
+- **Companies** — 5 large consolidators (BFS, US LBM, Carter, ABC, 84 Lumber),
+  Beacon Building Products (QXO), GMS Inc., Boise Cascade, 60+ US LBM legacy
+  banners, 10 SRS sub-brands, 56 GMS sub-brands, 5 Carter family brands,
+  Beacon sub-brands (Heartland etc.), LMC + Do it Best co-ops + ~3,000+
+  co-op member companies
+- **Ownership edges** — `subsidiary_of` for consolidator-owned; `member_of`
+  for co-op members. All with `verified: false` pending operator review.
 - See `docs/DATA_MODEL.md` for schema details
 
 ### Tech stack
@@ -77,14 +72,13 @@ DB roughly doubles to ~5,500 locations with ~3,000 new `member_of` edges.
 - **Next.js 16.2.4** (App Router, RSC by default), React 19, TypeScript strict
 - **Drizzle ORM 0.38** + **Neon serverless HTTP driver** — runs on edge or node
 - **Tailwind CSS v4** + shadcn/ui primitives + lucide-react icons
-- **MapLibre GL JS 4.7** with inline-style raster tiles from Carto's CDN
+- **MapLibre GL JS 4.7** — default basemap is **OpenFreeMap "liberty"** (free
+  vector tiles, no API key, Cloudflare CDN)
 - **Postgres FTS** + ILIKE fallback for search
 - **React Hook Form + Zod** for forms
 - **Resend** for correction-submission emails
 - **Vercel Analytics + Speed Insights**
 - **pnpm 10**, **Node 24** (`.nvmrc`), running on Vercel
-- **Playwright** (Chromium) for the Beacon scraper only — install once with
-  `pnpm exec playwright install chromium`
 - See `docs/ARCHITECTURE.md` for why each piece was chosen and how they fit
 
 ### Pages live
@@ -106,35 +100,31 @@ DB roughly doubles to ~5,500 locations with ~3,000 new `member_of` edges.
 
 - Whole site builds, deploys, renders.
 - Search (FTS + ILIKE fallback + zip prefix fallback).
-- Map with clustered markers (Carto raster default) + sortable table view.
+- Map with clustered markers (OpenFreeMap vector default) + sortable table view.
 - Ownership chain renders with citation superscripts.
 - Submission form posts via Resend.
 - Geocoder backfills missing lat/lng (Google Geocoding API, env var `MAPS_API`).
-- 8 scrapers cover BFS, Carter family, US LBM, 84 Lumber, ABC, SRS, GMS,
-  Boise Cascade. Two more (LMC, Do it Best) ready to run on PR #15.
+- 11 scrapers: BFS, Carter family, US LBM, 84 Lumber, ABC, SRS, GMS,
+  Boise Cascade, Beacon, LMC (co-op), Do it Best (co-op).
 
 ### What's broken / deferred
 
 These are kept on a "later passes" list rather than the active todo:
 
-1. **Beacon Building Products** — `scripts/scrapers/beacon.ts` runs end-to-end
-   without crashing but returns 0 rows from a headless browser. The
-   `qxo.com/find-a-store` SPA needs an interactive trigger (zip-search
-   submission) to surface the location XHR. Debug headful on PC
-   (`headless: false` in chromium.launch + open DevTools Network); once the
-   right XHR is identified, hand-craft the request. ~30-60 min of work.
+1. **Map blank canvas (under investigation)** — PR #21 added verbose `[map]`
+   console logging. The map shows "Showing 5,972 yards" but the canvas stays
+   blank. Need a screenshot of DevTools console from the preview to diagnose
+   further.
 2. **L&W Supply / ABC Supply Interiors** — locator markers don't expose ZIP.
    Either fetch each of the 276 detail pages or change `locations.zip` to
    nullable in the schema.
-3. **Remaining consolidators** — Foundation BM, Kodiak BP, Foxworth-Galbraith
-   standalone, Parr Lumber, Russin, Reeb, Holmes Lumber standalone. Locator
-   URLs catalogued in `scripts/scrapers/TODO.md`.
-4. **Other co-ops** — ENAP (DNS unreachable from sandbox; investigate from
-   PC), LBM Advantage (Elementor widget gates the locator), NLBMDA
-   (members-only). Notes in `docs/INDEPENDENT_YARDS.md`.
+3. **Remaining consolidators** — Foundation BM, Kodiak BP, Foxworth-Galbraith,
+   Parr Lumber, Russin, Reeb, Holmes standalone. URLs in `scripts/scrapers/TODO.md`.
+4. **Other co-ops** — ENAP (DNS unreachable from sandbox), LBM Advantage
+   (Elementor widget), NLBMDA (members-only). Notes in `docs/INDEPENDENT_YARDS.md`.
 5. **Google Places enrichment** for true independents not in any co-op.
-   Script ready (`scripts/import-google-places.ts`); haven't run a sweep yet.
-6. **Verifying ownership edges.** Every edge currently has `verified: false`.
+   Script ready (`scripts/import-google-places.ts`); no sweep run yet.
+6. **Verifying ownership edges.** Every edge has `verified: false`.
    Operator should re-read each linked source and flip individually.
 7. **Roll-up by ultimate owner** on state pages (so US LBM legacy banners
    count toward "US LBM" in state leaderboards rather than fragmenting).
@@ -212,7 +202,7 @@ pnpm scrape:abc         # ABC Supply
 pnpm scrape:srs         # SRS Distribution + sub-brands
 pnpm scrape:gms         # GMS Inc. + 56 sub-brands
 pnpm scrape:boise       # Boise Cascade
-pnpm scrape:beacon      # Beacon (Playwright; needs interactive debug)
+pnpm scrape:beacon      # Beacon Building Products (~539 locations, REST grid sweep)
 
 # Scrapers (co-ops, member_of edges):
 pnpm scrape:lmc         # LMC member dealers
@@ -261,18 +251,22 @@ when something breaks:
 
 ---
 
-## Operator's stated next priorities (last conversation)
+## Operator's stated next priorities
 
-1. **Run the LMC + DiB sequence on PC** once PR #15 merges. Sequence in
-   `docs/INDEPENDENT_YARDS.md`. Expected: ~3,000 new `member_of` ownership
-   edges, ~2,500–2,800 new yard companies, ~5,500 total locations.
-2. **Debug Beacon headful** to surface the location XHR (~30-60 min) — would
-   add ~580 more locations.
+1. **Diagnose blank map canvas.** PR #21 merged with verbose `[map]` console
+   logging. Load the preview (or production), open DevTools Console, share the
+   `[map]` log output. The logging covers: style URL, `load` event firing,
+   fetch status, feature count, `addDataLayers` call, and final layer list.
+2. **Run Beacon full scrape + import** once the map is confirmed working:
+   ```bash
+   pnpm scrape:beacon
+   pnpm import:scraped data/scraped/beacon-<date>.json
+   pnpm geocode:missing --max 500
+   ```
 3. **Investigate ENAP / LBM Advantage / NLBMDA on PC** for further co-op
    coverage where the sandbox couldn't reach them.
-4. After all co-op coverage is exhausted, **run a Google Places sweep** for
-   true-independent yards in target states. Stay under the 10K free monthly
-   Geocoding/Places quota.
+4. After co-op coverage is exhausted, **run a Google Places sweep** for
+   true-independent yards in target states. Stay under 10K free monthly quota.
 
-If unsure about a direction, ask the operator before doing anything that
+If unsure about a direction, ask the operator before anything that
 spends Geocoding API budget or creates new top-level abstractions.

@@ -13,43 +13,31 @@ Client island mounted by `app/(data)/map/page.tsx`.
 
 ### Tile source
 
-Default is an **inline `StyleSpecification`** that pulls raster tiles from
-Carto's basemap CDN:
+Default is **OpenFreeMap "liberty"** — a free, no-API-key vector style served
+via Cloudflare CDN:
 
 ```ts
-{
-  version: 8,
-  sources: {
-    base: {
-      type: "raster",
-      tiles: [
-        "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-        "https://d.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png",
-      ],
-      tileSize: 256,
-      attribution: "© OpenStreetMap contributors © CARTO",
-    },
-  },
-  layers: [
-    { id: "bg", type: "background", paint: { "background-color": "#f0efe9" } },
-    { id: "base", type: "raster", source: "base" },
-  ],
-}
+const OPENFREEMAP_STYLE_URL = "https://tiles.openfreemap.org/styles/liberty";
 ```
 
-**Why inline raster + Carto:**
+**Why OpenFreeMap:**
 
-- No external `style.json` round-trip, no third-party glyph/sprite fetch.
-- `tile.openstreetmap.org` directly returns 403 to some production
-  `*.vercel.app` referrers; Carto's basemap CDN explicitly serves any caller
-  with no referrer block.
-- Carto's CDN is the most-used tile CDN in analytics dashboards globally — it
-  rarely fails.
-- Operators can still opt into a richer **vector** style via
-  `NEXT_PUBLIC_MAPLIBRE_TILES_URL`. The component watches for load failures on
-  the override and falls back to the inline raster style after 6 seconds.
+- Free, no API key, served via Cloudflare — no IP blocking from Vercel's AWS.
+- Complete `style.json` including tiles, glyphs and sprites.
+- Our data layers are circle-only so no extra symbol layers are needed.
+
+**Emergency fallback** — a minimal inline `StyleSpecification` with only a
+`background` layer (`#e8e6df`). No external tile dependency. Used when the
+primary style fails to load or times out after 8 s.
+
+**Override** — operators can set `NEXT_PUBLIC_MAPLIBRE_TILES_URL` to any
+MapLibre-compatible style.json URL. That URL is tried first; on failure the
+code falls back through: operator override → OpenFreeMap → inline background.
+
+**History:** The map went through three tile providers before settling on
+OpenFreeMap. Carto raster was the original default but their CDN blocks
+requests from Vercel's AWS IP ranges. Esri World_Light_Gray_Canvas was tried
+next but the service was retired (404). OpenFreeMap has worked reliably.
 
 ### Layers
 
@@ -78,26 +66,45 @@ view via `map.setFilter("yard", …)`.
 
 ```ts
 useEffect(() => {
-  const map = new maplibregl.Map({ container, style: OSM_RASTER_STYLE, … });
-  // Watchdog: swap to fallback if a custom override style fails to load
+  const map = new maplibregl.Map({ container, style: OPENFREEMAP_STYLE_URL, … });
+  // Watchdog: if style hasn't loaded in 8 s, swap to inline fallback style
   // Resize on next animation frame (Tailwind calc() can resolve a tick late)
 
-  map.on("load", async () => {
+  // map.once("load") — fires exactly once for the initial style.
+  // applyFallback registers its own map.once("load", addDataLayers) before
+  // calling setStyle(FALLBACK_STYLE) so fallback loads re-attach layers cleanly.
+  map.once("load", async () => {
     const data = await fetch("/api/map").then(r => r.json());
-    map.addSource("yards", { type: "geojson", data, cluster: true, … });
-    map.addLayer({ id: "clusters", type: "circle", … });
-    map.addLayer({ id: "yard",     type: "circle", … });
+    addDataLayers(); // idempotent: getLayer/getSource guards before add
     setLoading(false);
   });
 }, []);
 ```
 
+### Critical pitfall: `map.on("load")` vs `map.once("load")`
+
+**`map.on("load")` fires again after every `setStyle()` call.** If you use the
+persistent form and your fallback logic calls `setStyle()`, a second `load`
+fires. Any `addSource`/`addLayer` calls in that second invocation throw because
+the source/layers already exist. MapLibre catches these as error events, not JS
+exceptions — so try/catch doesn't help. The result: the canvas stays blank
+with no visible error.
+
+**Always use `map.once("load")` for the initial data-layer setup.** For
+fallback style reloads, register a second `map.once("load", addDataLayers)`
+*before* calling `setStyle()` so it runs once when the fallback is ready.
+
+**Use `map.getLayer` / `map.getSource` guards** instead of try/catch when
+cleaning up layers before re-adding. MapLibre fires error events for
+removeLayer/removeSource on non-existing items — those events hit `map.on("error")`
+and can confuse the style-loaded state checks.
+
 ### Ten reasons the map can fail (and how it currently handles each)
 
 | Symptom | Cause | What now happens |
 | --- | --- | --- |
-| Empty gray map | Style.json fetch hung | 6s watchdog → swap to inline OSM style |
-| Empty gray map | Tile URL blocked by network | Carto rarely blocked; if it is, manual override via env var |
+| Empty gray map | Style.json fetch hung | 8 s watchdog → swap to inline background fallback |
+| Empty gray map | Tile URL blocked by network | OpenFreeMap (Cloudflare CDN) not blocked from Vercel; if needed, set override env var |
 | Empty gray map | WebGL disabled in browser | Loading overlay stays; user sees no map. Acceptable. |
 | Map area is 0px tall | Tailwind calc() resolved late | `requestAnimationFrame(() => map.resize())` after init |
 | `addLayer` throws on cluster-count | Symbol layer needs `glyphs` | Layer removed; size encoded by circle radius |
@@ -109,16 +116,16 @@ useEffect(() => {
 
 ### Adding a different basemap
 
-Set `NEXT_PUBLIC_MAPLIBRE_TILES_URL` on Vercel to any of:
+Set `NEXT_PUBLIC_MAPLIBRE_TILES_URL` on Vercel to any MapLibre-compatible
+style.json URL:
 
 - MapTiler: `https://api.maptiler.com/maps/streets-v2/style.json?key=YOUR_KEY`
 - Protomaps: a self-hosted PMTiles style URL
 - Stadia: their style URL with your key
-- OpenFreeMap: `https://tiles.openfreemap.org/styles/positron`
-- Carto positron (vector): `https://basemaps.cartocdn.com/gl/positron-gl-style/style.json`
+- OpenFreeMap (alternate style): `https://tiles.openfreemap.org/styles/positron`
 
-If the override fails to load, the inline raster fallback kicks in
-automatically.
+If the override fails to load within 8 s, the inline background fallback kicks
+in automatically and yard dots still render.
 
 ---
 

@@ -29,9 +29,11 @@ Each scraper writes a JSON file into `data/scraped/` that is then consumed by
    props in a `<script id="__NEXT_DATA__">` tag in the HTML.
    - Examples: **GMS Inc.** (`/find-a-yard` with Contentful entries).
 
-5. **Dynamic JS chunks (deferred).** A modern Next.js / React SPA fetches data
-   via XHR and stores it in JS chunks rather than embedding it.
-   - **Beacon** (post-QXO redesign). Requires Playwright XHR sniff. See TODO.
+5. **Plain REST endpoint hidden in page JS.** A modern SPA's locator widget
+   calls an internal API that isn't documented but is visible in page source
+   or DevTools Network tab.
+   - **Beacon** (post-QXO redesign): `GET beacon-ng.becn.com/v1/store-location?lat=&long=&range=`.
+     Hard-capped at 30 results per call → grid sweep required.
 
 ---
 
@@ -168,6 +170,26 @@ members), skipping pure Hardware. Pass `--include-hardware` to override.
 
 Members carry full lat/lng/phone in the API response. Auto-creates yard
 companies with `member_of` edges to Do it Best.
+
+### `beacon.ts`
+
+REST grid sweep against Beacon's (QXO) internal store-locator API:
+
+```
+GET https://beacon-ng.becn.com/v1/store-location
+    ?lat=<lat>&long=<lng>&range=150
+```
+
+The endpoint hard-caps at 30 results per call, so the scraper sweeps the
+continental US, Alaska, and Hawaii with a grid of 208 centre points
+(2.5° lat × 3.0° lng spacing, 150-mile radius — complete coverage). Results
+are de-duped by Beacon's internal `key` field (branch number).
+
+Sub-brands (e.g. `"HEARTLAND A QXO COMPANY"`) get their own operating-company
+row auto-created as a Beacon subsidiary. Plain `"QXO"`-branded branches fall
+directly under the `beacon` consolidator company.
+
+~539 unique US locations. Runtime ~2 min at 500 ms/call.
 
 ### `boise-cascade.ts`
 
