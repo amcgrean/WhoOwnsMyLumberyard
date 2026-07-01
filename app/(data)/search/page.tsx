@@ -1,19 +1,27 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { searchAll, type SearchResult } from "@/lib/search";
-import { COMPANY_TYPE_LABELS } from "@/lib/constants";
+import { COMPANY_TYPE_LABELS, TRADE_SHORT_LABELS } from "@/lib/constants";
+import { TradeChip } from "@/components/trade-chip";
+import type { Trade } from "@/lib/db/schema";
 
 export const metadata: Metadata = {
   title: "Search",
   description: "Search businesses, companies, and owners.",
 };
 
-type SearchParams = Promise<{ q?: string }>;
+type SearchParams = Promise<{ q?: string; trade?: string }>;
+
+const TRADES = Object.keys(TRADE_SHORT_LABELS) as Trade[];
 
 export default async function SearchPage({ searchParams }: { searchParams: SearchParams }) {
-  const { q } = await searchParams;
+  const { q, trade } = await searchParams;
+  const activeTrade = TRADES.includes(trade as Trade) ? (trade as Trade) : null;
   const results = q ? await searchAll(q, 50) : [];
   const grouped = groupByKind(results);
+  const locations = activeTrade
+    ? grouped.location.filter((r) => r.trade === activeTrade)
+    : grouped.location;
 
   return (
     <div className="mx-auto max-w-3xl px-4 py-10">
@@ -29,16 +37,23 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       ) : (
         <div className="space-y-8">
           {grouped.location.length > 0 ? (
+            <TradeFilter q={q} active={activeTrade} />
+          ) : null}
+
+          {locations.length > 0 ? (
             <section>
               <h2 className="font-serif text-xl mb-3">Businesses</h2>
               <ul className="space-y-2">
-                {grouped.location.map((r) => (
+                {locations.map((r) => (
                   <li key={`l-${r.id}`}>
                     <Link
                       href={`/yard/${r.slug}`}
                       className="block rounded-md border border-[var(--color-rule)] p-3 hover:border-[var(--color-accent)]"
                     >
-                      <div className="font-serif">{r.displayName}</div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="font-serif">{r.displayName}</div>
+                        <TradeChip trade={r.trade} className="mt-0.5 shrink-0" />
+                      </div>
                       <div className="text-xs text-[var(--color-muted)]">
                         {r.city}, {r.state} {r.zip}
                       </div>
@@ -47,6 +62,10 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                 ))}
               </ul>
             </section>
+          ) : activeTrade ? (
+            <p className="text-sm text-[var(--color-muted)]">
+              No {TRADE_SHORT_LABELS[activeTrade]} businesses in these results.
+            </p>
           ) : null}
 
           {grouped.company.length > 0 ? (
@@ -78,6 +97,40 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
           ) : null}
         </div>
       )}
+    </div>
+  );
+}
+
+function TradeFilter({ q, active }: { q: string; active: Trade | null }) {
+  const base = "rounded-full px-3 py-1 text-xs ring-1 transition-colors";
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs text-[var(--color-muted)]">Filter:</span>
+      <Link
+        href={`/search?q=${encodeURIComponent(q)}`}
+        className={
+          base +
+          (active === null
+            ? " bg-[var(--color-ink)] text-[var(--color-paper)] ring-transparent"
+            : " ring-[var(--color-rule)] hover:border-[var(--color-accent)]")
+        }
+      >
+        All trades
+      </Link>
+      {TRADES.map((t) => (
+        <Link
+          key={t}
+          href={`/search?q=${encodeURIComponent(q)}&trade=${t}`}
+          className={
+            base +
+            (active === t
+              ? " bg-[var(--color-ink)] text-[var(--color-paper)] ring-transparent"
+              : " ring-[var(--color-rule)] hover:border-[var(--color-accent)]")
+          }
+        >
+          {TRADE_SHORT_LABELS[t]}
+        </Link>
+      ))}
     </div>
   );
 }

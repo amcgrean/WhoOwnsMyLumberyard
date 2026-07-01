@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { NationalMap } from "@/components/map/national-map";
+import { TradeChip } from "@/components/trade-chip";
 import { getMapTableRows } from "@/lib/queries/map-table";
 
 export const metadata: Metadata = {
@@ -10,7 +11,14 @@ export const metadata: Metadata = {
 };
 
 export default async function MapPage() {
-  const rows = await getMapTableRows(500);
+  // Tolerant of a build that runs before a new migration (e.g. the `trade`
+  // column) has been applied — degrade to an empty table rather than failing.
+  let rows: Awaited<ReturnType<typeof getMapTableRows>> = [];
+  try {
+    rows = await getMapTableRows(500);
+  } catch (err) {
+    console.warn("[map] table read failed (likely no migrations yet)", err);
+  }
 
   return (
     <div>
@@ -35,6 +43,7 @@ export default async function MapPage() {
             <thead className="bg-[var(--color-muted-bg)] text-xs uppercase tracking-wide text-[var(--color-muted)]">
               <tr>
                 <th className="px-3 py-2">Business</th>
+                <th className="px-3 py-2">Trade</th>
                 <th className="px-3 py-2">Operating company</th>
                 <th className="px-3 py-2">City</th>
                 <th className="px-3 py-2">State</th>
@@ -48,6 +57,7 @@ export default async function MapPage() {
                       {row.displayName}
                     </Link>
                   </td>
+                  <td className="px-3 py-2"><TradeChip trade={row.trade} /></td>
                   <td className="px-3 py-2">{row.companyName}</td>
                   <td className="px-3 py-2">{row.city}</td>
                   <td className="px-3 py-2">{row.state}</td>

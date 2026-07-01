@@ -18,6 +18,7 @@ export const revalidate = 600;
  *   st    t  – two-letter state code for the flyout subhead
  *   brand b  – operating-brand name for the flyout subhead
  *   cons  x  – boolean: true if currently under a consolidator parent edge
+ *   trade r  – trade (lumber/plumbing/electrical/hvac) or null, for filtering
  */
 export async function GET() {
   let rows: Array<{
@@ -27,6 +28,7 @@ export async function GET() {
     state: string;
     lat: string | null;
     lng: string | null;
+    trade: string | null;
     companyId: string;
     companyName: string;
   }> = [];
@@ -40,6 +42,7 @@ export async function GET() {
         state: locations.state,
         lat: locations.lat,
         lng: locations.lng,
+        trade: locations.trade,
         companyId: companies.id,
         companyName: companies.name,
       })
@@ -71,6 +74,7 @@ export async function GET() {
       t: r.state,
       b: r.companyName,
       x: consolidatedSet.has(r.companyId),
+      r: r.trade,
     },
   }));
 

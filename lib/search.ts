@@ -1,6 +1,6 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, locations } from "@/lib/db/schema";
+import { companies, locations, type Trade } from "@/lib/db/schema";
 
 export type SearchResultLocation = {
   kind: "location";
@@ -10,6 +10,7 @@ export type SearchResultLocation = {
   city: string;
   state: string;
   zip: string;
+  trade: Trade | null;
 };
 
 export type SearchResultCompany = {
@@ -39,6 +40,7 @@ async function searchLocationsByZip(zip: string, limit: number): Promise<SearchR
       city: locations.city,
       state: locations.state,
       zip: locations.zip,
+      trade: locations.trade,
     })
     .from(locations)
     .where(sql`${locations.zip} = ${zip}`)
@@ -58,6 +60,7 @@ async function searchLocationsByZipPrefix(
       city: locations.city,
       state: locations.state,
       zip: locations.zip,
+      trade: locations.trade,
     })
     .from(locations)
     .where(sql`${locations.zip} LIKE ${prefix + "%"}`)
@@ -97,6 +100,7 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
       city: locations.city,
       state: locations.state,
       zip: locations.zip,
+      trade: locations.trade,
     })
     .from(locations)
     .where(sql`${locDoc} @@ ${tsq}`)
@@ -135,6 +139,7 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
           city: locations.city,
           state: locations.state,
           zip: locations.zip,
+          trade: locations.trade,
         })
         .from(locations)
         .where(

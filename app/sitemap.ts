@@ -9,12 +9,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Tolerant of a not-yet-migrated database so the first deploy succeeds.
   let locRows: { slug: string; updatedAt: Date }[] = [];
   let compRows: { slug: string; type: string; updatedAt: Date }[] = [];
+  let stateTradeRows: { state: string; trade: string | null }[] = [];
   try {
-    [locRows, compRows] = await Promise.all([
+    [locRows, compRows, stateTradeRows] = await Promise.all([
       db.select({ slug: locations.slug, updatedAt: locations.updatedAt }).from(locations),
       db
         .select({ slug: companies.slug, type: companies.type, updatedAt: companies.updatedAt })
         .from(companies),
+      db.selectDistinct({ state: locations.state, trade: locations.trade }).from(locations),
     ]);
   } catch (err) {
     console.warn("[sitemap] DB read failed (likely no migrations yet)", err);
@@ -28,11 +30,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/submit`, changeFrequency: "yearly", priority: 0.4 },
   ];
 
+  const stateSlug = (code: string) =>
+    (STATE_NAME_BY_CODE[code] ?? code).toLowerCase().replace(/\s+/g, "-");
+
   const stateUrls: MetadataRoute.Sitemap = US_STATES.map((s) => ({
-    url: `${SITE_URL}/state/${(STATE_NAME_BY_CODE[s.code] ?? s.code).toLowerCase().replace(/\s+/g, "-")}`,
+    url: `${SITE_URL}/state/${stateSlug(s.code)}`,
     changeFrequency: "weekly" as const,
     priority: 0.7,
   }));
+
+  // Per-trade landing pages, only for state/trade combinations that have data.
+  const stateTradeUrls: MetadataRoute.Sitemap = stateTradeRows
+    .filter((r) => r.trade)
+    .map((r) => ({
+      url: `${SITE_URL}/state/${stateSlug(r.state)}/${r.trade}`,
+      changeFrequency: "weekly" as const,
+      priority: 0.65,
+    }));
 
   const yardUrls: MetadataRoute.Sitemap = locRows.map((r) => ({
     url: `${SITE_URL}/yard/${r.slug}`,
@@ -54,5 +68,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     };
   });
 
-  return [...staticPaths, ...stateUrls, ...yardUrls, ...companyUrls];
+  return [...staticPaths, ...stateUrls, ...stateTradeUrls, ...yardUrls, ...companyUrls];
 }
