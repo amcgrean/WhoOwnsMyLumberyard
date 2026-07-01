@@ -381,6 +381,60 @@ export async function seedIowaIndependents() {
       services: ["electrical_repair", "panel_wiring"],
       sources: ["https://www.blazekelectric.com/"],
     },
+    // ── Des Moines metro (additional independents) ──────────────────────
+    {
+      name: "Holt Plumbing, Heating & Cooling",
+      trade: "plumbing" as const,
+      city: "Des Moines",
+      zip: "50315",
+      address: "1202 Thomas Beck Rd, Suite 101",
+      website: "https://holtplumbingandheating.com",
+      foundedYear: 1947,
+      description:
+        "Family-owned Des Moines plumbing, heating, cooling, and electrical company founded by John F. and Edith Holt in 1947.",
+      services: ["plumbing_repair", "hvac_service", "electrical_repair", "drain_sewer"],
+      sources: ["https://holtplumbingandheating.com/"],
+    },
+    {
+      name: "H & H Plumbing",
+      legalName: "H & H Plumbing Inc.",
+      trade: "plumbing" as const,
+      city: "Granger",
+      zip: "50109",
+      address: "32411 170th St",
+      website: "https://www.handhplumbing.net",
+      description:
+        "Locally-owned, family-operated plumbing company serving the Des Moines metro (Granger, West Des Moines, Ankeny, Urbandale) with over two decades in the trade.",
+      services: ["plumbing_repair", "water_heater", "drain_sewer"],
+      sources: ["https://www.handhplumbing.net/"],
+    },
+    // ── Cedar Rapids / Eastern Iowa corridor ────────────────────────────
+    {
+      name: "Oehl Plumbing, Heating, Electric & AC",
+      trade: "plumbing" as const,
+      city: "Amana",
+      zip: "52203",
+      address: "4407 F St",
+      website: "https://www.oehlplumbing.com",
+      foundedYear: 1950,
+      description:
+        "Family-owned Eastern Iowa plumbing, heating, cooling, and electrical company serving the Cedar Rapids area for about 75 years (since ~1950).",
+      services: ["plumbing_repair", "hvac_service", "electrical_repair"],
+      sources: ["https://www.oehlplumbing.com/"],
+    },
+    {
+      name: "Rabe Hardware",
+      trade: "hvac" as const,
+      city: "Blairstown",
+      zip: "52209",
+      address: "317 Locust St NW",
+      website: "https://rabehardware.com",
+      foundedYear: 1979,
+      description:
+        "Family-owned and locally-operated Eastern Iowa mechanical contractor (HVAC, plumbing, electrical, geothermal, and solar) serving the Cedar Rapids area since 1979.",
+      services: ["hvac_install", "hvac_service", "plumbing_repair", "electrical_repair", "geothermal"],
+      sources: ["https://rabehardware.com/"],
+    },
   ];
 
   for (const c of more) {
