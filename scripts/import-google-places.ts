@@ -2,7 +2,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 config({ path: ".env" });
 
-import { eq, and } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { companies, locations, tradeEnum } from "@/lib/db/schema";
 import { locationSlug } from "@/lib/slug";
@@ -149,9 +149,13 @@ async function main() {
       continue;
     }
 
+    // Global slug dedup: locations.slug is globally unique, so skip any place
+    // that collides with an already-tracked location (including the curated,
+    // source-verified entries and correctly-attributed PE brands). This both
+    // avoids duplicates and prevents a unique-constraint crash mid-run.
     const slug = locationSlug({ name, city, state: stateCode });
     const existingSlug = await db.query.locations.findFirst({
-      where: and(eq(locations.companyId, company.id), eq(locations.slug, slug)),
+      where: eq(locations.slug, slug),
     });
     if (existingSlug) {
       skipped++;
