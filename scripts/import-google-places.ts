@@ -10,6 +10,8 @@ import { locationSlug } from "@/lib/slug";
 /**
  * Google Places Text Search-based importer.
  *
+ * ⚠️ PAID GOOGLE API — do not run without explicit, per-run approval. See CLAUDE.md.
+ *
  * Usage:
  *   pnpm import:places --state IA --query "lumber yard"
  *   pnpm import:places --state IA --query "hvac company" --trade hvac

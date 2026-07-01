@@ -25,6 +25,7 @@
     "scrape:84": "tsx --env-file=.env.local scripts/scrapers/eighty-four-lumber.ts",
     "import:scraped": "tsx --env-file=.env.local scripts/import-scraped.ts",
     "import:places": "tsx --env-file=.env.local scripts/import-google-places.ts",
+    "import:osm": "tsx --env-file=.env.local scripts/import-overpass.ts",
     "scrape:abc": "tsx --env-file=.env.local scripts/scrapers/abc-supply.ts",
     "geocode:missing": "tsx --env-file=.env.local scripts/geocode-missing.ts",
     "scrape:srs": "tsx --env-file=.env.local scripts/scrapers/srs-distribution.ts",
