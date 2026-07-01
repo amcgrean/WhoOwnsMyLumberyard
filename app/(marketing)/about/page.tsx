@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About",
   description:
-    "Who runs Who Owns My Lumberyard, why the site exists, and how the data is gathered.",
+    "Who runs Who Owns My Trades, why the site exists, and how the data is gathered.",
 };
 
 export default function AboutPage() {
@@ -11,20 +11,28 @@ export default function AboutPage() {
     <article className="mx-auto px-4 py-12 prose-editorial">
       <h1>About this site</h1>
       <p>
-        <strong>Who Owns My Lumberyard</strong> is a public, sourced reference that maps the
-        ownership of consolidated lumberyards and building-materials dealers in the United
-        States. For each yard listed, the site traces the chain from the brand on the sign
-        up to the ultimate owner — a public company, a private-equity firm, a family office,
-        a co-op, or in some cases a still-independent operator.
+        <strong>Who Owns My Trades</strong> is a public, sourced reference that maps who owns
+        the local trade and building-materials businesses people rely on — plumbers,
+        electricians, HVAC companies, and lumberyards. For each business listed, the site
+        traces the chain from the brand on the sign up to the ultimate owner — a public
+        company, a private-equity firm, a family office, a co-op, or in many cases a
+        still-independent, locally-owned operator.
+      </p>
+      <p>
+        The site began by mapping lumberyards and building-materials dealers nationwide.
+        It is now expanding into the residential trades — plumbing, electrical, and HVAC —
+        starting with the state of <strong>Iowa</strong>, where a wave of private-equity
+        acquisitions has been quietly consolidating locally-owned home-services companies.
       </p>
 
       <h2>Why this exists</h2>
       <p>
         Over the last fifteen years, large public consolidators and private-equity-backed
-        platforms have acquired thousands of legacy yards while keeping the original brand
-        names on the buildings. A contractor or homeowner driving into the same yard their
-        grandfather drove into often has no way to know who actually owns it now. This site
-        publishes that information in a single, citable place.
+        platforms have acquired thousands of legacy yards and home-services companies while
+        keeping the original brand names on the trucks and buildings. A homeowner calling
+        the same plumber or heating company their family always used often has no way to know
+        who actually owns it now. This site publishes that information in a single, citable
+        place — so you can choose a locally-owned business on purpose.
       </p>
 
       <h2>Who runs it</h2>
@@ -39,8 +47,8 @@ export default function AboutPage() {
 
       <h2>What you can do here</h2>
       <ul>
-        <li>Search any yard by zip code, business name, or city.</li>
-        <li>Browse the national map to see where each consolidator operates.</li>
+        <li>Search any business by zip code, name, or city.</li>
+        <li>Browse the map to see where each consolidator operates.</li>
         <li>Read the methodology to understand how each ownership claim is verified.</li>
         <li>
           <a href="/submit">Submit a correction or a tip</a> if you have a source-backed

@@ -35,7 +35,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           "focus:outline-none focus:ring-2 focus:ring-[var(--color-accent)] focus:border-transparent " +
           (compact ? "" : "py-3 text-base")
         }
-        aria-label="Search yards, companies, and owners"
+        aria-label="Search businesses, companies, and owners"
       />
     </form>
   );

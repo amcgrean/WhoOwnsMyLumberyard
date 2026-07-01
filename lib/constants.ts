@@ -1,18 +1,34 @@
-import type { CompanyType } from "@/lib/db/schema";
+import type { CompanyType, Trade } from "@/lib/db/schema";
 
-export const SITE_NAME = "Who Owns My Lumberyard";
-export const SITE_TAGLINE = "Public ownership records for U.S. building-materials dealers.";
+export const SITE_NAME = "Who Owns My Trades";
+export const SITE_TAGLINE =
+  "Public ownership records for local trade & building-materials businesses.";
 export const SITE_DESCRIPTION =
-  "A public, sourced database that maps the ownership chain behind every consolidated lumberyard and building-materials dealer in the United States — from the brand on the sign to the ultimate owner.";
+  "A public, sourced database that maps who owns the plumbers, electricians, HVAC companies, and lumberyards behind the brand on the sign — so you can tell a locally-owned business from one rolled up by private equity.";
 
 export const COMPANY_TYPE_LABELS: Record<CompanyType, string> = {
-  yard: "Yard",
+  yard: "Local Business",
   consolidator: "Consolidator",
   pe_firm: "Private Equity",
   public_company: "Public Company",
   coop: "Co-op / Buying Group",
   holding_company: "Holding Company",
   family_office: "Family Office",
+};
+
+export const TRADE_LABELS: Record<Trade, string> = {
+  lumber: "Lumber & Building Materials",
+  plumbing: "Plumbing",
+  electrical: "Electrical",
+  hvac: "HVAC",
+};
+
+// Short label for chips / badges.
+export const TRADE_SHORT_LABELS: Record<Trade, string> = {
+  lumber: "Lumber",
+  plumbing: "Plumbing",
+  electrical: "Electrical",
+  hvac: "HVAC",
 };
 
 export type OwnershipBadgeKind =
@@ -100,6 +116,7 @@ export function stateSlug(code: string): string {
 }
 
 export const SERVICE_OPTIONS: ReadonlyArray<{ value: string; label: string }> = [
+  // Lumber & building materials
   { value: "lumber", label: "Lumber" },
   { value: "millwork", label: "Millwork" },
   { value: "truss", label: "Truss / Components" },
@@ -112,4 +129,19 @@ export const SERVICE_OPTIONS: ReadonlyArray<{ value: string; label: string }> = 
   { value: "siding", label: "Siding" },
   { value: "decking", label: "Decking" },
   { value: "concrete_masonry", label: "Concrete & Masonry" },
+  // Plumbing
+  { value: "plumbing_repair", label: "Plumbing Repair" },
+  { value: "drain_sewer", label: "Drain & Sewer" },
+  { value: "water_heater", label: "Water Heaters" },
+  { value: "well_septic", label: "Well & Septic" },
+  // Electrical
+  { value: "electrical_repair", label: "Electrical Repair" },
+  { value: "panel_wiring", label: "Panels & Wiring" },
+  { value: "generator", label: "Generators" },
+  { value: "ev_charger", label: "EV Chargers" },
+  // HVAC
+  { value: "hvac_install", label: "Heating & Cooling Install" },
+  { value: "hvac_service", label: "HVAC Service & Repair" },
+  { value: "geothermal", label: "Geothermal" },
+  { value: "indoor_air", label: "Indoor Air Quality" },
 ];

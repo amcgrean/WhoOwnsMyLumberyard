@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   const resolved = resolveState(state);
   if (!resolved) return { title: "State not found" };
   return {
-    title: `Lumberyards in ${resolved.name}`,
-    description: `Every tracked lumberyard in ${resolved.name}, with ownership for each.`,
+    title: `Tracked businesses in ${resolved.name}`,
+    description: `Every tracked lumberyard, plumber, electrician, and HVAC company in ${resolved.name}, with ownership for each.`,
     alternates: { canonical: `/state/${state}` },
   };
 }
@@ -73,9 +73,9 @@ export default async function StatePage({ params }: { params: Params }) {
   return (
     <div className="mx-auto max-w-5xl px-4 py-10">
       <header className="mb-6">
-        <h1 className="font-serif text-3xl sm:text-4xl">Lumberyards in {resolved.name}</h1>
+        <h1 className="font-serif text-3xl sm:text-4xl">Tracked businesses in {resolved.name}</h1>
         <p className="mt-2 text-[var(--color-muted)]">
-          {total.toLocaleString()} yards tracked · {pctConsolidated}% under consolidator ownership
+          {total.toLocaleString()} tracked · {pctConsolidated}% under consolidator ownership
         </p>
       </header>
 
@@ -99,10 +99,10 @@ export default async function StatePage({ params }: { params: Params }) {
       ) : null}
 
       <section>
-        <h2 className="font-serif text-xl mb-3">All yards</h2>
+        <h2 className="font-serif text-xl mb-3">All businesses</h2>
         {total === 0 ? (
           <p className="text-[var(--color-muted)]">
-            No yards tracked here yet. If you operate or know one,{" "}
+            No businesses tracked here yet. If you operate or know one,{" "}
             <Link href="/submit" className="underline">
               submit a tip
             </Link>
@@ -121,7 +121,7 @@ export default async function StatePage({ params }: { params: Params }) {
       </section>
 
       <p className="mt-8 text-xs text-[var(--color-muted)]">
-        Counts reflect yards currently in the database — the dataset is incomplete by
+        Counts reflect businesses currently in the database — the dataset is incomplete by
         design, expanding as scrapers and submissions land. See the{" "}
         <Link href="/methodology" className="underline">
           methodology

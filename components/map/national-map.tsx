@@ -309,12 +309,12 @@ export function NationalMap() {
         </p>
         {count != null ? (
           <p className="mt-2 text-xs text-[var(--color-muted)]">
-            Showing {count.toLocaleString()} yards
+            Showing {count.toLocaleString()} businesses
           </p>
         ) : null}
         {usingFallback ? (
           <p className="mt-2 text-xs text-[var(--color-muted)]">
-            Basemap unavailable — showing yard data on plain background.
+            Basemap unavailable — showing business data on plain background.
           </p>
         ) : null}
       </aside>

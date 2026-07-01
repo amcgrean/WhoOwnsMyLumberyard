@@ -38,8 +38,9 @@ export default function MethodologyPage() {
       <h2>Ownership type definitions</h2>
       <ul>
         <li>
-          <strong>Yard.</strong> A physical location selling lumber and / or other building
-          materials to professional builders, remodelers, or homeowners.
+          <strong>Local business.</strong> A physical operating location under the brand on
+          the sign — a lumberyard or building-materials dealer, or a plumbing, electrical, or
+          HVAC company serving builders, remodelers, and homeowners.
         </li>
         <li>
           <strong>Consolidator.</strong> A multi-location operator built primarily through
@@ -72,9 +73,15 @@ export default function MethodologyPage() {
       <h2>Known limitations</h2>
       <ul>
         <li>
-          The independent-yard universe is not fully enumerated. The first pass focuses on
-          consolidator-owned yards and on independents already in commercial business
-          databases; many small independent yards are missing and will be added over time.
+          The independent universe is not fully enumerated. The first pass focuses on
+          consolidator-owned businesses and on independents already in commercial business
+          databases; many small independent yards and trade shops are missing and will be
+          added over time.
+        </li>
+        <li>
+          Trade coverage is geographically staged. Lumber and building-materials dealers are
+          tracked nationally; the plumbing, electrical, and HVAC expansion starts in Iowa and
+          will widen to other states over time.
         </li>
         <li>
           Co-op member rosters are partial. Full member lists are typically not public; the
@@ -87,9 +94,9 @@ export default function MethodologyPage() {
           present owner.
         </li>
         <li>
-          The site does not cover non-LBM building-products distribution (e.g., HVAC, pure
-          plumbing, electrical) except where a tracked consolidator also operates in those
-          adjacent verticals.
+          Outside Iowa, coverage of the residential trades (plumbing, electrical, HVAC) is
+          still limited to cases where a nationally-tracked consolidator operates in those
+          verticals. Full per-state trade coverage is being built out over time.
         </li>
       </ul>
 

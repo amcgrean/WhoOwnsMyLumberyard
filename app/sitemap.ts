@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { companies, locations } from "@/lib/db/schema";
 import { STATE_NAME_BY_CODE, US_STATES } from "@/lib/constants";
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://whoownsmylumberyard.com";
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://whoownsmytrades.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Tolerant of a not-yet-migrated database so the first deploy succeeds.

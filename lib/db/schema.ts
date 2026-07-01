@@ -36,6 +36,17 @@ export const companyStatusEnum = pgEnum("company_status", [
   "defunct",
 ]);
 
+// The trade / sector a company or physical location operates in. Applies to
+// operating brands and their locations; ownership entities (PE firms, holding
+// companies, co-ops) leave this null. `lumber` covers the original
+// building-materials scope; the rest are the skilled-trade expansion.
+export const tradeEnum = pgEnum("trade", [
+  "lumber",
+  "plumbing",
+  "electrical",
+  "hvac",
+]);
+
 export const locationStatusEnum = pgEnum("location_status", [
   "open",
   "closed",
@@ -76,6 +87,9 @@ export const companies = pgTable(
     name: text("name").notNull(),
     legalName: text("legal_name"),
     type: companyTypeEnum("type").notNull(),
+    // Primary trade for operating brands (null for PE firms, holding
+    // companies, co-ops, and other pure ownership entities).
+    trade: tradeEnum("trade"),
     foundedYear: integer("founded_year"),
     headquartersCity: text("headquarters_city"),
     headquartersState: text("headquarters_state"),
@@ -93,6 +107,7 @@ export const companies = pgTable(
   (t) => [
     uniqueIndex("companies_slug_idx").on(t.slug),
     index("companies_type_idx").on(t.type),
+    index("companies_trade_idx").on(t.trade),
     index("companies_state_idx").on(t.headquartersState),
     index("companies_search_vector_idx").using("gin", sql`(to_tsvector('english', coalesce(${t.name}, '') || ' ' || coalesce(${t.legalName}, '') || ' ' || coalesce(${t.description}, '')))`),
   ]
@@ -111,6 +126,9 @@ export const locations = pgTable(
       .notNull()
       .references(() => companies.id, { onDelete: "restrict" }),
     displayName: text("display_name").notNull(),
+    // Trade this physical location operates in. Denormalized from the owning
+    // company for fast per-trade map/search filtering.
+    trade: tradeEnum("trade"),
     addressLine1: text("address_line_1").notNull(),
     addressLine2: text("address_line_2"),
     city: text("city").notNull(),
@@ -131,6 +149,7 @@ export const locations = pgTable(
     uniqueIndex("locations_slug_idx").on(t.slug),
     uniqueIndex("locations_google_place_id_idx").on(t.googlePlaceId),
     index("locations_company_idx").on(t.companyId),
+    index("locations_trade_idx").on(t.trade),
     index("locations_state_city_idx").on(t.state, t.city),
     index("locations_zip_idx").on(t.zip),
     index("locations_search_vector_idx").using("gin", sql`(to_tsvector('english', coalesce(${t.displayName}, '') || ' ' || coalesce(${t.city}, '') || ' ' || coalesce(${t.state}, '') || ' ' || coalesce(${t.zip}, '')))`),
@@ -292,5 +311,6 @@ export type ClaimSource = typeof claimSources.$inferSelect;
 export type Submission = typeof submissions.$inferSelect;
 export type NewSubmission = typeof submissions.$inferInsert;
 export type CompanyType = (typeof companyTypeEnum.enumValues)[number];
+export type Trade = (typeof tradeEnum.enumValues)[number];
 export type LocationStatus = (typeof locationStatusEnum.enumValues)[number];
 export type Relationship = (typeof relationshipEnum.enumValues)[number];
