@@ -4,6 +4,11 @@ import { useEffect, useRef, useState } from "react";
 import maplibregl, { type Map as MapLibreMap, type GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import Link from "next/link";
+import { TRADE_SHORT_LABELS } from "@/lib/constants";
+import { TradeChip } from "@/components/trade-chip";
+import type { Trade } from "@/lib/db/schema";
+
+const TRADES = Object.keys(TRADE_SHORT_LABELS) as Trade[];
 
 type FlyoutFeature = {
   slug: string;
@@ -11,6 +16,7 @@ type FlyoutFeature = {
   city: string;
   state: string;
   companyName: string;
+  trade: Trade | null;
 };
 
 // Default basemap: OpenFreeMap "liberty" vector style.
@@ -44,8 +50,9 @@ export function NationalMap() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const [flyout, setFlyout] = useState<FlyoutFeature | null>(null);
-  const [filter, setFilter] = useState<{ consolidatedOnly: boolean }>({
+  const [filter, setFilter] = useState<{ consolidatedOnly: boolean; trade: Trade | null }>({
     consolidatedOnly: false,
+    trade: null,
   });
   const [error, setError] = useState<string | null>(null);
   const [count, setCount] = useState<number | null>(null);
@@ -158,6 +165,7 @@ export function NationalMap() {
             city: String(p.c),
             state: String(p.t),
             companyName: String(p.b),
+            trade: (p.r as Trade | null) ?? null,
           });
         });
 
@@ -253,9 +261,12 @@ export function NationalMap() {
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !map.isStyleLoaded()) return;
-    const yardFilter: maplibregl.FilterSpecification = filter.consolidatedOnly
-      ? ["all", ["!", ["has", "point_count"]], ["==", ["get", "x"], true]]
-      : ["!", ["has", "point_count"]];
+    const clauses: unknown[] = [["!", ["has", "point_count"]]];
+    if (filter.consolidatedOnly) clauses.push(["==", ["get", "x"], true]);
+    if (filter.trade) clauses.push(["==", ["get", "r"], filter.trade]);
+    const yardFilter = (
+      clauses.length === 1 ? clauses[0] : ["all", ...clauses]
+    ) as maplibregl.FilterSpecification;
     if (map.getLayer("yard")) map.setFilter("yard", yardFilter);
   }, [filter]);
 
@@ -304,6 +315,37 @@ export function NationalMap() {
           />
           <span>Consolidator-owned only</span>
         </label>
+
+        <p className="mt-3 mb-1.5 text-xs font-medium text-[var(--color-muted)]">Trade</p>
+        <div className="flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onClick={() => setFilter((f) => ({ ...f, trade: null }))}
+            className={
+              "rounded-full px-2.5 py-1 text-xs ring-1 " +
+              (filter.trade === null
+                ? "bg-[var(--color-ink)] text-[var(--color-paper)] ring-transparent"
+                : "ring-[var(--color-rule)]")
+            }
+          >
+            All
+          </button>
+          {TRADES.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setFilter((f) => ({ ...f, trade: f.trade === t ? null : t }))}
+              className={
+                "rounded-full px-2.5 py-1 text-xs ring-1 " +
+                (filter.trade === t
+                  ? "bg-[var(--color-ink)] text-[var(--color-paper)] ring-transparent"
+                  : "ring-[var(--color-rule)]")
+              }
+            >
+              {TRADE_SHORT_LABELS[t]}
+            </button>
+          ))}
+        </div>
         <p className="mt-3 text-xs text-[var(--color-muted)]">
           Red = under consolidator ownership · Green = independent or unverified
         </p>
@@ -336,7 +378,10 @@ export function NationalMap() {
           >
             ✕
           </button>
-          <div className="font-serif text-lg">{flyout.name}</div>
+          <div className="flex items-start justify-between gap-2">
+            <div className="font-serif text-lg">{flyout.name}</div>
+            <TradeChip trade={flyout.trade} className="mt-1 shrink-0" />
+          </div>
           <div className="text-xs text-[var(--color-muted)] mt-1">
             {flyout.city}, {flyout.state} · {flyout.companyName}
           </div>

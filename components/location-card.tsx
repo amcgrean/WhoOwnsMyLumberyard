@@ -1,12 +1,13 @@
 import Link from "next/link";
 import type { Location } from "@/lib/db/schema";
 import { STATE_NAME_BY_CODE } from "@/lib/constants";
+import { TradeChip } from "@/components/trade-chip";
 
 type Props = {
   location: Pick<
     Location,
     "slug" | "displayName" | "addressLine1" | "city" | "state" | "zip"
-  > & { distanceMi?: number; companyName?: string };
+  > & { trade?: Location["trade"]; distanceMi?: number; companyName?: string };
 };
 
 export function LocationCard({ location }: Props) {
@@ -15,7 +16,10 @@ export function LocationCard({ location }: Props) {
       href={`/yard/${location.slug}`}
       className="block rounded-md border border-[var(--color-rule)] p-4 hover:border-[var(--color-accent)] transition-colors"
     >
-      <div className="font-serif text-base">{location.displayName}</div>
+      <div className="flex items-start justify-between gap-2">
+        <div className="font-serif text-base">{location.displayName}</div>
+        <TradeChip trade={location.trade} className="mt-0.5 shrink-0" />
+      </div>
       <div className="mt-1 text-sm text-[var(--color-muted)]">
         {location.addressLine1}, {location.city}, {location.state} {location.zip}
       </div>

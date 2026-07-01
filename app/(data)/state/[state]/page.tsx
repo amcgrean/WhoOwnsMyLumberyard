@@ -3,9 +3,9 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { eq, inArray, and, isNull } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, locations, ownershipEdges } from "@/lib/db/schema";
+import { companies, locations, ownershipEdges, type Trade } from "@/lib/db/schema";
 import { LocationCard } from "@/components/location-card";
-import { STATE_CODE_BY_SLUG, STATE_NAME_BY_CODE } from "@/lib/constants";
+import { STATE_CODE_BY_SLUG, STATE_NAME_BY_CODE, TRADE_SHORT_LABELS } from "@/lib/constants";
 
 export const revalidate = 600;
 
@@ -54,6 +54,12 @@ export default async function StatePage({ params }: { params: Params }) {
 
   const total = yardRows.length;
 
+  // Trades present in this state, in canonical order — for the "by trade" nav.
+  const present = new Set(yardRows.map((r) => r.location.trade).filter(Boolean));
+  const tradesPresent = (Object.keys(TRADE_SHORT_LABELS) as Trade[]).filter((t) =>
+    present.has(t)
+  );
+
   // % consolidated: yards whose operating company has an active parent edge
   const operatingIds = [...new Set(yardRows.map((r) => r.company.id))];
   const consolidatedSet = new Set<string>();
@@ -86,6 +92,20 @@ export default async function StatePage({ params }: { params: Params }) {
         <p className="mt-2 text-[var(--color-muted)]">
           {total.toLocaleString()} tracked · {pctConsolidated}% under consolidator ownership
         </p>
+        {tradesPresent.length > 0 ? (
+          <nav className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+            <span className="text-xs text-[var(--color-muted)]">By trade:</span>
+            {tradesPresent.map((t) => (
+              <Link
+                key={t}
+                href={`/state/${state}/${t}`}
+                className="rounded-full px-3 py-1 ring-1 ring-[var(--color-rule)] hover:border-[var(--color-accent)] hover:text-[var(--color-accent)]"
+              >
+                {TRADE_SHORT_LABELS[t]}
+              </Link>
+            ))}
+          </nav>
+        ) : null}
       </header>
 
       {topOwners.length > 0 ? (

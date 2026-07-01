@@ -70,6 +70,46 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-4 mb-16">
+        <div className="rounded-lg border border-[var(--color-rule)] bg-[var(--color-accent-muted)]/40 p-6">
+          <p className="text-xs uppercase tracking-wide text-[var(--color-muted)]">
+            New · Iowa
+          </p>
+          <h2 className="font-serif text-2xl mt-1">Who owns your local trades in Iowa?</h2>
+          <p className="mt-2 text-sm text-[var(--color-muted)] max-w-2xl">
+            Private-equity-backed platforms have been quietly buying up Iowa plumbers,
+            electricians, and HVAC companies — and keeping the local name on the truck.
+            See which are still locally owned and which aren&rsquo;t.
+          </p>
+          <div className="mt-4 flex flex-wrap gap-2 text-sm">
+            <Link
+              href="/state/iowa/hvac"
+              className="rounded-full bg-[var(--color-ink)] px-4 py-1.5 text-[var(--color-paper)] hover:opacity-90"
+            >
+              HVAC in Iowa
+            </Link>
+            <Link
+              href="/state/iowa/plumbing"
+              className="rounded-full bg-[var(--color-ink)] px-4 py-1.5 text-[var(--color-paper)] hover:opacity-90"
+            >
+              Plumbers in Iowa
+            </Link>
+            <Link
+              href="/state/iowa/electrical"
+              className="rounded-full bg-[var(--color-ink)] px-4 py-1.5 text-[var(--color-paper)] hover:opacity-90"
+            >
+              Electricians in Iowa
+            </Link>
+            <Link
+              href="/state/iowa"
+              className="rounded-full px-4 py-1.5 ring-1 ring-[var(--color-rule)] hover:border-[var(--color-accent)]"
+            >
+              All Iowa businesses →
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-5xl px-4 mb-16">
         <h2 className="font-serif text-2xl mb-4">Featured</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <FeatureCard

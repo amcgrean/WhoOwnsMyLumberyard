@@ -1,6 +1,6 @@
 import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, locations } from "@/lib/db/schema";
+import { companies, locations, type Trade } from "@/lib/db/schema";
 
 export type MapTableRow = {
   slug: string;
@@ -8,6 +8,7 @@ export type MapTableRow = {
   city: string;
   state: string;
   companyName: string;
+  trade: Trade | null;
   lat: string | null;
   lng: string | null;
 };
@@ -20,6 +21,7 @@ export async function getMapTableRows(limit = 500): Promise<MapTableRow[]> {
       city: locations.city,
       state: locations.state,
       companyName: companies.name,
+      trade: locations.trade,
       lat: locations.lat,
       lng: locations.lng,
     })

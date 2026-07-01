@@ -14,6 +14,7 @@ import {
 import { getCitedSources } from "@/lib/queries/sources";
 import { OwnershipChain } from "@/components/ownership-chain";
 import { OwnershipBadge } from "@/components/ownership-badge";
+import { TradeChip } from "@/components/trade-chip";
 import { LocationCard } from "@/components/location-card";
 import { CitationRegistry, CitationMarker, SourcesList } from "@/components/citation";
 import { COMPANY_TYPE_LABELS, STATE_NAME_BY_CODE } from "@/lib/constants";
@@ -138,7 +139,7 @@ export default async function YardPage({ params }: { params: Params }) {
           {loc.addressLine2 ? `, ${loc.addressLine2}` : ""}, {loc.city}, {stateName} {loc.zip}
           {loc.phone ? ` · ${loc.phone}` : ""}
         </p>
-        <div className="mt-3">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <OwnershipBadge
             kind={badge}
             label={
@@ -149,6 +150,7 @@ export default async function YardPage({ params }: { params: Params }) {
                   : undefined
             }
           />
+          <TradeChip trade={loc.trade} />
         </div>
       </header>
 
