@@ -69,7 +69,8 @@ The residential-trades seeds are:
 
 - `scripts/seed/national-home-services.ts` — the major national PE-backed HVAC/plumbing/electrical roll-ups (Apex, Wrench, Sila, Champions/Blackstone, Authority Brands, etc.) and their PE sponsors, so ultimate owners resolve as trade locations are added state by state.
 - `scripts/seed/iowa-home-services.ts` — PE-owned Iowa brands and their chains (TurnPoint→Schaal/Bell Brothers/Green's, PremiStar→Mechanical Service Inc., ARS→Aksarben, Burton).
-- `scripts/seed/iowa-independents.ts` — notable locally-owned Iowa shops (Golden Rule, Dalton, Baker Group).
+- `scripts/seed/iowa-independents.ts` — locally-owned and employee-owned (ESOP) Iowa shops across the major metros (Des Moines, Sioux City, Quad Cities, Dubuque, Ames, Waterloo/Cedar Falls, Ottumwa, Mason City).
+- `scripts/seed/trade-coops.ts` — member-owned buying groups / co-ops (Nexstar Network, IMARK, Blue Hawk, AD): the "banded together but still independent" category. As with the LBM co-ops, member rosters aren't asserted as edges; sourced individual memberships are noted in the member's description.
 
 They follow the same source-cited pattern as the consolidator seeds above and set `trade` on every operating brand. Trade coverage is Iowa-first; add other states as new seed files over time. New trade locations are seeded without coordinates — run `pnpm geocode:missing` to place them on the map. Ownership can be cross-checked against the [Iowa Secretary of State business-entity search](https://sos.iowa.gov/search/business/search.aspx).
 

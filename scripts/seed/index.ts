@@ -15,6 +15,7 @@ import { seedCoops } from "./coops";
 import { seedNationalHomeServices } from "./national-home-services";
 import { seedIowaHomeServices } from "./iowa-home-services";
 import { seedIowaIndependents } from "./iowa-independents";
+import { seedTradeCoops } from "./trade-coops";
 
 /**
  * Idempotent seed entrypoint. Safe to re-run; every helper performs upserts
@@ -49,7 +50,9 @@ async function main() {
   await seedIowaHomeServices();
   console.log("  ✓ Iowa PE-owned home-services brands (TurnPoint, PremiStar, ARS)");
   await seedIowaIndependents();
-  console.log("  ✓ Iowa independents (Golden Rule, Dalton, Baker Group)");
+  console.log("  ✓ Iowa independents (Des Moines, Sioux City, Quad Cities, Dubuque, Ames, Waterloo, Ottumwa, Mason City)");
+  await seedTradeCoops();
+  console.log("  ✓ Member-owned trade buying groups (Nexstar, IMARK, Blue Hawk, AD)");
 
   console.log("\nDone. All ownership edges seeded with verified=false; review and verify in Drizzle Studio.");
   console.log("New trade locations have no coordinates yet — run `pnpm geocode:missing` to place them on the map.");
