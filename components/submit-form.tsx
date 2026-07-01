@@ -7,7 +7,7 @@ import { useState } from "react";
 
 const SubmissionSchema = z.object({
   email: z.string().email(),
-  subject: z.string().min(2, "Tell us which yard, company, or owner this is about."),
+  subject: z.string().min(2, "Tell us which business, company, or owner this is about."),
   claim: z.string().min(10, "Describe the claim in at least a sentence."),
   sourceUrl: z.string().url("A source URL is required."),
   notes: z.string().optional(),
@@ -77,14 +77,14 @@ export function SubmitForm() {
         />
       </Field>
       <Field
-        label="Which yard, company, or owner is this about?"
+        label="Which business, company, or owner is this about?"
         error={errors.subject?.message}
       >
         <input
           type="text"
           {...register("subject")}
           className="input"
-          placeholder='e.g. "Beisser Lumber, Grimes IA" or "US LBM"'
+          placeholder={`e.g. "Dean's Home Services, Urbandale IA" or "Apex Service Partners"`}
         />
       </Field>
       <Field

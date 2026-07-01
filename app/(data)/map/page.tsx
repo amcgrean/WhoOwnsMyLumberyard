@@ -6,7 +6,7 @@ import { getMapTableRows } from "@/lib/queries/map-table";
 export const metadata: Metadata = {
   title: "National map",
   description:
-    "Every tracked U.S. lumberyard, color-coded by ownership type. Click a marker to see the operating brand and ultimate owner.",
+    "Every tracked lumberyard, plumber, electrician, and HVAC company, color-coded by ownership type. Click a marker to see the operating brand and ultimate owner.",
 };
 
 export default async function MapPage() {
@@ -24,9 +24,9 @@ export default async function MapPage() {
 
       <section className="mx-auto max-w-6xl px-4 py-8">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="font-serif text-xl">Yards table view</h2>
+          <h2 className="font-serif text-xl">Businesses table view</h2>
           <p className="text-xs text-[var(--color-muted)]">
-            Showing first {rows.length.toLocaleString()} geocoded yards (A–Z by state/city/name).
+            Showing first {rows.length.toLocaleString()} geocoded businesses (A–Z by state/city/name).
           </p>
         </div>
 
@@ -34,7 +34,7 @@ export default async function MapPage() {
           <table className="min-w-full text-left text-sm">
             <thead className="bg-[var(--color-muted-bg)] text-xs uppercase tracking-wide text-[var(--color-muted)]">
               <tr>
-                <th className="px-3 py-2">Yard</th>
+                <th className="px-3 py-2">Business</th>
                 <th className="px-3 py-2">Operating company</th>
                 <th className="px-3 py-2">City</th>
                 <th className="px-3 py-2">State</th>

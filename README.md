@@ -1,6 +1,8 @@
-# Who Owns My Lumberyard
+# Who Owns My Trades
 
-A public, journalism-grade database that maps the ownership of consolidated U.S. lumberyards and building-materials dealers. Search any yard by zip code, business name, or city and see the full ownership chain — from the brand on the sign up to the ultimate owner (a public company, a private-equity firm, a co-op, or an independent operator).
+A public, journalism-grade database that maps who owns the local trade and building-materials businesses people rely on — lumberyards, plumbers, electricians, and HVAC companies. Search any business by zip code, name, or city and see the full ownership chain — from the brand on the sign up to the ultimate owner (a public company, a private-equity firm, a co-op, or an independent operator).
+
+Lumber and building-materials dealers are tracked nationally. The residential-trades expansion (plumbing, electrical, HVAC) starts in **Iowa** and widens to other states over time. The site began as "Who Owns My Lumberyard"; the GitHub repo and email-sending domain still carry the original name.
 
 The site is a public reference resource. Every ownership claim is linked to a public source.
 
@@ -59,6 +61,18 @@ Yards are **not** seeded by default — use the scraper or the Google Places imp
 4. Wire the new seed function into `scripts/seed/index.ts`.
 5. Mark new ownership edges with `verified: false` (the default). Flip individual edges to `verified: true` only after re-reading each source and confirming it supports the specific claim.
 
+## Trades (plumbing / electrical / HVAC)
+
+Companies and locations carry an optional `trade` (`lumber | plumbing | electrical | hvac`). Set it on operating brands and their locations; leave it null on pure ownership entities (PE firms, holding companies, co-ops). The pre-expansion dataset is backfilled to `lumber` by migration `0001`.
+
+The residential-trades seeds are:
+
+- `scripts/seed/national-home-services.ts` — the major national PE-backed HVAC/plumbing/electrical roll-ups (Apex, Wrench, Sila, Champions/Blackstone, Authority Brands, etc.) and their PE sponsors, so ultimate owners resolve as trade locations are added state by state.
+- `scripts/seed/iowa-home-services.ts` — PE-owned Iowa brands and their chains (TurnPoint→Schaal/Bell Brothers/Green's, PremiStar→Mechanical Service Inc., ARS→Aksarben, Burton).
+- `scripts/seed/iowa-independents.ts` — notable locally-owned Iowa shops (Golden Rule, Dalton, Baker Group).
+
+They follow the same source-cited pattern as the consolidator seeds above and set `trade` on every operating brand. Trade coverage is Iowa-first; add other states as new seed files over time. New trade locations are seeded without coordinates — run `pnpm geocode:missing` to place them on the map. Ownership can be cross-checked against the [Iowa Secretary of State business-entity search](https://sos.iowa.gov/search/business/search.aspx).
+
 ## Adding a source URL
 
 Sources live in the `sources` table, deduped by URL. The seed helpers (`upsertEdge`, `upsertAcquisition`, `linkSource`) call `upsertSource` automatically. If you discover a new authoritative URL outside the seed flow, add it via SQL:
@@ -108,7 +122,7 @@ The site operator works in the LBM industry at an independent yard. That is a re
 ## License
 
 - Source code: **MIT** — see `LICENSE`.
-- Compiled ownership data published on whoownsmylumberyard.com (excluding raw upstream sources): **CC&nbsp;BY-SA&nbsp;4.0**. Attribution: "Who Owns My Lumberyard, [URL]".
+- Compiled ownership data published on whoownsmytrades.com (excluding raw upstream sources): **CC&nbsp;BY-SA&nbsp;4.0**. Attribution: "Who Owns My Trades, [URL]".
 
 ## Status & deferred work
 

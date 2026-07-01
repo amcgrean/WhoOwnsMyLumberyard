@@ -9,7 +9,8 @@ export function SiteFooter() {
         <div>
           <p className="font-serif text-[var(--color-ink)]">{SITE_NAME}</p>
           <p className="mt-2">
-            A public, sourced reference on the ownership of U.S. building-materials dealers.
+            A public, sourced reference on who owns local trade &amp; building-materials
+            businesses — plumbing, electrical, HVAC, and lumber.
           </p>
         </div>
         <div>

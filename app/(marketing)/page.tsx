@@ -47,12 +47,13 @@ export default async function HomePage() {
     <div>
       <section className="mx-auto max-w-3xl px-4 pt-16 pb-10 text-center">
         <h1 className="font-serif text-4xl sm:text-5xl tracking-tight">
-          Who owns my lumberyard?
+          Who owns my trades?
         </h1>
         <p className="mt-4 text-[var(--color-muted)] text-lg">{SITE_TAGLINE}</p>
         <p className="mt-2 text-[var(--color-muted)] max-w-xl mx-auto text-sm">
-          Search any lumberyard or building-materials dealer in the United States and trace
-          the ownership chain — from the brand on the sign to the ultimate owner.
+          Look up a plumber, electrician, HVAC company, or lumberyard and trace the
+          ownership chain — from the brand on the sign to the ultimate owner. Tell a
+          locally-owned business from one rolled up by private equity.
         </p>
         <div className="mt-8">
           <SearchBar />
@@ -63,7 +64,7 @@ export default async function HomePage() {
       </section>
 
       <section className="mx-auto max-w-5xl px-4 grid gap-4 sm:grid-cols-3 mb-12">
-        <Stat label="Yards tracked" value={stats.totalYards.toLocaleString()} />
+        <Stat label="Businesses tracked" value={stats.totalYards.toLocaleString()} />
         <Stat label="Under consolidator ownership" value={`${stats.pctConsolidated}%`} />
         <Stat label="Distinct PE & family-office owners" value={stats.peFirms.toLocaleString()} />
       </section>

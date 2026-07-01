@@ -12,6 +12,9 @@ import { seed84Lumber } from "./eighty-four-lumber";
 import { seedGms } from "./gms";
 import { seedBoiseCascade } from "./boise-cascade";
 import { seedCoops } from "./coops";
+import { seedNationalHomeServices } from "./national-home-services";
+import { seedIowaHomeServices } from "./iowa-home-services";
+import { seedIowaIndependents } from "./iowa-independents";
 
 /**
  * Idempotent seed entrypoint. Safe to re-run; every helper performs upserts
@@ -39,7 +42,17 @@ async function main() {
   console.log("  ✓ Boise Cascade");
   await seedCoops();
   console.log("  ✓ Co-ops (LMC, Do it Best, Ace, True Value, ENAP, LBM Advantage)");
+
+  console.log("\nSeeding home-services trades…");
+  await seedNationalHomeServices();
+  console.log("  ✓ National PE-backed HVAC/plumbing/electrical roll-ups");
+  await seedIowaHomeServices();
+  console.log("  ✓ Iowa PE-owned home-services brands (TurnPoint, PremiStar, ARS)");
+  await seedIowaIndependents();
+  console.log("  ✓ Iowa independents (Golden Rule, Dalton, Baker Group)");
+
   console.log("\nDone. All ownership edges seeded with verified=false; review and verify in Drizzle Studio.");
+  console.log("New trade locations have no coordinates yet — run `pnpm geocode:missing` to place them on the map.");
 }
 
 main().catch((err) => {

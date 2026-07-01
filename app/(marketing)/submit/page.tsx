@@ -3,7 +3,7 @@ import { SubmitForm } from "@/components/submit-form";
 
 export const metadata: Metadata = {
   title: "Submit a correction",
-  description: "Submit a source-backed correction or tip about a yard, company, or owner.",
+  description: "Submit a source-backed correction or tip about a business, company, or owner.",
 };
 
 export default function SubmitPage() {

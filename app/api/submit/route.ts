@@ -39,7 +39,7 @@ export async function POST(req: Request) {
       const { Resend } = await import("resend");
       const resend = new Resend(resendKey);
       await resend.emails.send({
-        from: "Who Owns My Lumberyard <noreply@whoownsmylumberyard.com>",
+        from: "Who Owns My Trades <noreply@whoownsmylumberyard.com>",
         to: adminEmail,
         subject: `New tip: ${parsed.subject}`,
         text: [

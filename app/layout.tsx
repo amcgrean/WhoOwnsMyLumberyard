@@ -19,7 +19,7 @@ const sourceSerif = Source_Serif_4({
   display: "swap",
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://whoownsmylumberyard.com";
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://whoownsmytrades.com";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

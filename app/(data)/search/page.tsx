@@ -5,7 +5,7 @@ import { COMPANY_TYPE_LABELS } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: "Search",
-  description: "Search yards, companies, and owners.",
+  description: "Search businesses, companies, and owners.",
 };
 
 type SearchParams = Promise<{ q?: string }>;
@@ -30,7 +30,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
         <div className="space-y-8">
           {grouped.location.length > 0 ? (
             <section>
-              <h2 className="font-serif text-xl mb-3">Yards</h2>
+              <h2 className="font-serif text-xl mb-3">Businesses</h2>
               <ul className="space-y-2">
                 {grouped.location.map((r) => (
                   <li key={`l-${r.id}`}>

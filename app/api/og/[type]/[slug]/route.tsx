@@ -49,7 +49,7 @@ export async function GET(_req: Request, { params }: { params: Params }) {
           }}
         >
           <span>{data.kicker}</span>
-          <span>Who Owns My Lumberyard</span>
+          <span>Who Owns My Trades</span>
         </div>
         <div
           style={{
@@ -92,7 +92,7 @@ async function loadData(type: string, slug: string) {
     const badgeKind = classifyOwnership(chain);
     const stateName = STATE_NAME_BY_CODE[loc.state] ?? loc.state;
     return {
-      kicker: "Yard",
+      kicker: "Business",
       title: loc.displayName,
       subtitle: `${loc.city}, ${stateName}`,
       badge:

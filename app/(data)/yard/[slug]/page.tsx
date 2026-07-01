@@ -25,7 +25,7 @@ type Params = Promise<{ slug: string }>;
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { slug } = await params;
   const loc = await getLocationBySlug(slug);
-  if (!loc) return { title: "Yard not found" };
+  if (!loc) return { title: "Business not found" };
   const stateName = STATE_NAME_BY_CODE[loc.state] ?? loc.state;
   return {
     title: `${loc.displayName} — ${loc.city}, ${stateName}`,
@@ -174,7 +174,7 @@ export default async function YardPage({ params }: { params: Params }) {
       ) : null}
 
       <section className="mb-10">
-        <h2 className="font-serif text-xl mb-3">About this yard</h2>
+        <h2 className="font-serif text-xl mb-3">About this business</h2>
         <dl className="grid sm:grid-cols-2 gap-x-8 gap-y-2 text-sm">
           <div>
             <dt className="text-[var(--color-muted)]">Operating brand</dt>
@@ -201,7 +201,7 @@ export default async function YardPage({ params }: { params: Params }) {
 
       {nearby.length > 0 ? (
         <section className="mb-10">
-          <h2 className="font-serif text-xl mb-3">Nearby yards</h2>
+          <h2 className="font-serif text-xl mb-3">Nearby businesses</h2>
           <div className="grid gap-3 sm:grid-cols-2">
             {nearby.map((n) => (
               <LocationCard key={n.id} location={n} />

@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: { params: Params }): Promise<
   if (!c) return { title: "Owner not found" };
   return {
     title: c.name,
-    description: c.description ?? `Yards and brands controlled by ${c.name}.`,
+    description: c.description ?? `Businesses and brands controlled by ${c.name}.`,
     alternates: { canonical: `/owner/${c.slug}` },
   };
 }
