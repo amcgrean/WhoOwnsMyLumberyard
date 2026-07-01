@@ -63,12 +63,26 @@ export default async function StatePage({ params }: { params: Params }) {
   // % consolidated: yards whose operating company has an active parent edge
   const operatingIds = [...new Set(yardRows.map((r) => r.company.id))];
   const consolidatedSet = new Set<string>();
+  const ownerByChild = new Map<string, string>();
   if (operatingIds.length) {
     const edges = await db.query.ownershipEdges.findMany({
       where: and(inArray(ownershipEdges.childId, operatingIds), isNull(ownershipEdges.endDate)),
-      columns: { childId: true },
+      columns: { childId: true, parentId: true },
     });
-    for (const e of edges) consolidatedSet.add(e.childId);
+    const parentIds = [...new Set(edges.map((e) => e.parentId))];
+    const parents = parentIds.length
+      ? await db.query.companies.findMany({
+          where: (c, { inArray: ia }) => ia(c.id, parentIds),
+          columns: { id: true, name: true },
+        })
+      : [];
+    const parentName = new Map(parents.map((p) => [p.id, p.name]));
+    for (const e of edges) {
+      consolidatedSet.add(e.childId);
+      if (!ownerByChild.has(e.childId)) {
+        ownerByChild.set(e.childId, parentName.get(e.parentId) ?? "a larger company");
+      }
+    }
   }
   const consolidatedYards = yardRows.filter((r) => consolidatedSet.has(r.company.id)).length;
   const pctConsolidated = total > 0 ? Math.round((consolidatedYards / total) * 100) : 0;
@@ -143,6 +157,7 @@ export default async function StatePage({ params }: { params: Params }) {
               <LocationCard
                 key={location.id}
                 location={{ ...location, companyName: company.name }}
+                ownership={{ ownerName: ownerByChild.get(company.id) ?? null }}
               />
             ))}
           </div>

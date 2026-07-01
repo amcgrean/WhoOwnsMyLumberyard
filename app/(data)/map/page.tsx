@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { NationalMap } from "@/components/map/national-map";
 import { TradeChip } from "@/components/trade-chip";
+import { OwnershipTag } from "@/components/ownership-tag";
 import { getMapTableRows } from "@/lib/queries/map-table";
 
 export const metadata: Metadata = {
@@ -44,6 +45,7 @@ export default async function MapPage() {
               <tr>
                 <th className="px-3 py-2">Business</th>
                 <th className="px-3 py-2">Trade</th>
+                <th className="px-3 py-2">Ownership</th>
                 <th className="px-3 py-2">Operating company</th>
                 <th className="px-3 py-2">City</th>
                 <th className="px-3 py-2">State</th>
@@ -58,6 +60,7 @@ export default async function MapPage() {
                     </Link>
                   </td>
                   <td className="px-3 py-2"><TradeChip trade={row.trade} /></td>
+                  <td className="px-3 py-2"><OwnershipTag ownerName={row.ownerName} /></td>
                   <td className="px-3 py-2">{row.companyName}</td>
                   <td className="px-3 py-2">{row.city}</td>
                   <td className="px-3 py-2">{row.state}</td>

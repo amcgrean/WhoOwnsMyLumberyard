@@ -9,11 +9,14 @@ export type MapTableRow = {
   state: string;
   companyName: string;
   trade: Trade | null;
+  ownerName: string | null;
   lat: string | null;
   lng: string | null;
 };
 
 export async function getMapTableRows(limit = 500): Promise<MapTableRow[]> {
+  // ownerName: the operating company's current (active) parent, if any — the
+  // ownership indicator. Correlated subquery avoids row fan-out on co-control.
   return db
     .select({
       slug: locations.slug,
@@ -22,6 +25,13 @@ export async function getMapTableRows(limit = 500): Promise<MapTableRow[]> {
       state: locations.state,
       companyName: companies.name,
       trade: locations.trade,
+      ownerName: sql<string | null>`(
+        select p.name from ownership_edges e
+        join companies p on p.id = e.parent_id
+        where e.child_id = ${companies.id} and e.end_date is null
+        order by e.start_date desc nulls last
+        limit 1
+      )`,
       lat: locations.lat,
       lng: locations.lng,
     })

@@ -97,6 +97,18 @@ export default async function OwnerPage({ params }: { params: Params }) {
         <div className="mt-3">
           <OwnershipBadge kind={badge} />
         </div>
+        {company.website ? (
+          <p className="mt-3 text-sm">
+            <a
+              href={company.website}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[var(--color-accent)] underline"
+            >
+              Visit website ↗
+            </a>
+          </p>
+        ) : null}
       </header>
 
       <section className="grid gap-4 sm:grid-cols-3 mb-10">

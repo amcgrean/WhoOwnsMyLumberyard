@@ -64,12 +64,12 @@ const FRANCHISE_BRANDS = [
   "wind river",
   "any hour",
   "precision door",
-  // platform/operating brands already tracked elsewhere
-  "schaal",
-  "bell brothers",
+  // platform/operating brands already tracked elsewhere. Keep these specific —
+  // avoid generic words like "mechanical" or "environmental" that would snag
+  // independent firms (e.g. "Plains Mechanical", "Rasmussen Mechanical").
+  "schaal plumbing",
+  "bell brothers heating",
   "green's appliance",
-  "mechanical service",
-  "environmental control",
   "aksarben",
   "premistar",
 ];
