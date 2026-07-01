@@ -25,13 +25,16 @@ import { writeFile } from "node:fs/promises";
  */
 
 const SOCIAL_PATTERNS: Array<{ label: string; re: RegExp }> = [
-  { label: "facebook", re: /https?:\/\/(?:www\.)?facebook\.com\/[A-Za-z0-9_.\-/]+/i },
-  { label: "instagram", re: /https?:\/\/(?:www\.)?instagram\.com\/[A-Za-z0-9_.\-/]+/i },
-  { label: "x", re: /https?:\/\/(?:www\.)?(?:twitter|x)\.com\/[A-Za-z0-9_.\-/]+/i },
-  { label: "youtube", re: /https?:\/\/(?:www\.)?youtube\.com\/[A-Za-z0-9_.@\-/]+/i },
-  { label: "linkedin", re: /https?:\/\/(?:www\.)?linkedin\.com\/(?:company|in)\/[A-Za-z0-9_.\-/]+/i },
-  { label: "tiktok", re: /https?:\/\/(?:www\.)?tiktok\.com\/@[A-Za-z0-9_.\-/]+/i },
+  { label: "facebook", re: /https?:\/\/(?:www\.)?facebook\.com\/[A-Za-z0-9_.\-/?=]+/gi },
+  { label: "instagram", re: /https?:\/\/(?:www\.)?instagram\.com\/[A-Za-z0-9_.\-/]+/gi },
+  { label: "x", re: /https?:\/\/(?:www\.)?(?:twitter|x)\.com\/[A-Za-z0-9_.\-/]+/gi },
+  { label: "youtube", re: /https?:\/\/(?:www\.)?youtube\.com\/[A-Za-z0-9_.@\-/]+/gi },
+  { label: "linkedin", re: /https?:\/\/(?:www\.)?linkedin\.com\/(?:company|in)\/[A-Za-z0-9_.\-/]+/gi },
+  { label: "tiktok", re: /https?:\/\/(?:www\.)?tiktok\.com\/@[A-Za-z0-9_.\-/]+/gi },
 ];
+
+// Widget / share / tracking URLs that are not the business's own profile.
+const BAD_SOCIAL = /sharer|\/plugins\/|\/intent\/|\/share|dialog|\/tr\b|\/gtag|\/embed|profile\.php\?id=$/i;
 
 // PE roll-up platforms (from the TradeRunner platforms chart). Multi-word to
 // avoid matching common English / city names.
@@ -95,11 +98,14 @@ async function fetchHtml(url: string): Promise<string | null> {
 function extractSocials(html: string): string[] {
   const out: string[] = [];
   for (const { re } of SOCIAL_PATTERNS) {
-    const m = html.match(re);
-    if (m) {
+    for (const m of html.matchAll(re)) {
       // strip trailing quote/paren/space fragments the greedy class may grab
-      const url = m[0].replace(/["'){}<>].*$/, "").replace(/[/,.]+$/, "");
-      if (!out.includes(url)) out.push(url);
+      const url = m[0].replace(/["'){}<>\\].*$/, "").replace(/[/,.]+$/, "");
+      if (BAD_SOCIAL.test(url)) continue;
+      if (!out.includes(url)) {
+        out.push(url);
+        break; // first clean profile per platform
+      }
     }
   }
   return out;
