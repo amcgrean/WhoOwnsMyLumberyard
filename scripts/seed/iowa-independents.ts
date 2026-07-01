@@ -435,6 +435,48 @@ export async function seedIowaIndependents() {
       services: ["hvac_install", "hvac_service", "plumbing_repair", "electrical_repair", "geothermal"],
       sources: ["https://rabehardware.com/"],
     },
+    // ── Quad Cities — Nexstar member ────────────────────────────────────
+    {
+      name: "Northwest Plumbing, Heating & AC",
+      trade: "plumbing" as const,
+      city: "Davenport",
+      zip: "52807",
+      address: "5885 Tremont Ave",
+      website: "https://callnw.com",
+      foundedYear: 1923,
+      description:
+        "Locally-owned Davenport plumbing, heating, and cooling company serving the Quad Cities since 1923, and a member of the member-owned Nexstar Network.",
+      services: ["plumbing_repair", "hvac_service", "water_heater"],
+      sources: ["https://callnw.com/about-us/"],
+    },
+    // ── Iowa City / Coralville / North Liberty ──────────────────────────
+    {
+      name: "A2Z Heating & Plumbing",
+      trade: "hvac" as const,
+      city: "North Liberty",
+      zip: "52317",
+      address: "625 W 240th St NE",
+      website: "https://a2zheatingandplumbing.com",
+      foundedYear: 2003,
+      description:
+        "Family-owned and operated Iowa City-area heating, cooling, and plumbing company serving North Liberty, Coralville, and Iowa City since 2003.",
+      services: ["hvac_install", "hvac_service", "plumbing_repair"],
+      sources: ["https://a2zheatingandplumbing.com/"],
+    },
+    // ── Council Bluffs ──────────────────────────────────────────────────
+    {
+      name: "Norm's Heating & Air Conditioning",
+      trade: "hvac" as const,
+      city: "Council Bluffs",
+      zip: "51501",
+      address: "3406 2nd Ave",
+      website: "https://www.normsheatingandair.com",
+      foundedYear: 1982,
+      description:
+        "Family-owned and operated Council Bluffs heating and cooling company, in business since 1982.",
+      services: ["hvac_install", "hvac_service"],
+      sources: ["https://www.normsheatingandair.com/"],
+    },
   ];
 
   for (const c of more) {
