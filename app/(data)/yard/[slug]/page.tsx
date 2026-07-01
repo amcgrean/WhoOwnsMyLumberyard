@@ -186,6 +186,21 @@ export default async function YardPage({ params }: { params: Params }) {
               </Link>
             </dd>
           </div>
+          {operatingCompany.website ? (
+            <div>
+              <dt className="text-[var(--color-muted)]">Website</dt>
+              <dd>
+                <a
+                  href={operatingCompany.website}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-[var(--color-accent)] underline break-all"
+                >
+                  {operatingCompany.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                </a>
+              </dd>
+            </div>
+          ) : null}
           {operatingCompany.foundedYear ? (
             <div>
               <dt className="text-[var(--color-muted)]">Established</dt>

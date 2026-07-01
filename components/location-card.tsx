@@ -2,15 +2,19 @@ import Link from "next/link";
 import type { Location } from "@/lib/db/schema";
 import { STATE_NAME_BY_CODE } from "@/lib/constants";
 import { TradeChip } from "@/components/trade-chip";
+import { OwnershipTag } from "@/components/ownership-tag";
 
 type Props = {
   location: Pick<
     Location,
     "slug" | "displayName" | "addressLine1" | "city" | "state" | "zip"
   > & { trade?: Location["trade"]; distanceMi?: number; companyName?: string };
+  // Present only when ownership has been resolved by the caller; omit to hide
+  // the tag (so cards that don't compute ownership don't imply "Independent").
+  ownership?: { ownerName: string | null };
 };
 
-export function LocationCard({ location }: Props) {
+export function LocationCard({ location, ownership }: Props) {
   return (
     <Link
       href={`/yard/${location.slug}`}
@@ -31,6 +35,11 @@ export function LocationCard({ location }: Props) {
       {typeof location.distanceMi === "number" ? (
         <div className="mt-1 text-xs text-[var(--color-muted)]">
           {location.distanceMi.toFixed(1)} miles away · {STATE_NAME_BY_CODE[location.state] ?? location.state}
+        </div>
+      ) : null}
+      {ownership ? (
+        <div className="mt-2">
+          <OwnershipTag ownerName={ownership.ownerName} />
         </div>
       ) : null}
     </Link>

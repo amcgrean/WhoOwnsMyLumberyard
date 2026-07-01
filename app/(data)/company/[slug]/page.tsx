@@ -93,6 +93,18 @@ export default async function CompanyPage({ params }: { params: Params }) {
             }
           />
         </div>
+        {company.website ? (
+          <p className="mt-3 text-sm">
+            <a
+              href={company.website}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[var(--color-accent)] underline"
+            >
+              Visit website ↗
+            </a>
+          </p>
+        ) : null}
       </header>
 
       {chain.length > 1 ? (
