@@ -65,7 +65,13 @@ Yards are **not** seeded by default — use the scraper or the Google Places imp
 
 Companies and locations carry an optional `trade` (`lumber | plumbing | electrical | hvac`). Set it on operating brands and their locations; leave it null on pure ownership entities (PE firms, holding companies, co-ops). The pre-expansion dataset is backfilled to `lumber` by migration `0001`.
 
-The residential-trades seeds live in `scripts/seed/iowa-home-services.ts` (PE-backed rollups + their sponsors + acquired Iowa brands) and `scripts/seed/iowa-independents.ts` (notable locally-owned Iowa shops). They follow the same source-cited pattern as the consolidator seeds above and set `trade` on every operating brand. Trade coverage is Iowa-first; add other states as new seed files over time.
+The residential-trades seeds are:
+
+- `scripts/seed/national-home-services.ts` — the major national PE-backed HVAC/plumbing/electrical roll-ups (Apex, Wrench, Sila, Champions/Blackstone, Authority Brands, etc.) and their PE sponsors, so ultimate owners resolve as trade locations are added state by state.
+- `scripts/seed/iowa-home-services.ts` — PE-owned Iowa brands and their chains (TurnPoint→Schaal/Bell Brothers/Green's, PremiStar→Mechanical Service Inc., ARS→Aksarben, Burton).
+- `scripts/seed/iowa-independents.ts` — notable locally-owned Iowa shops (Golden Rule, Dalton, Baker Group).
+
+They follow the same source-cited pattern as the consolidator seeds above and set `trade` on every operating brand. Trade coverage is Iowa-first; add other states as new seed files over time. New trade locations are seeded without coordinates — run `pnpm geocode:missing` to place them on the map. Ownership can be cross-checked against the [Iowa Secretary of State business-entity search](https://sos.iowa.gov/search/business/search.aspx).
 
 ## Adding a source URL
 
