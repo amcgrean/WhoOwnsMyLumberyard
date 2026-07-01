@@ -15,6 +15,13 @@
       "when": 1782875186439,
       "tag": "0001_warm_barracuda",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782890509197,
+      "tag": "0002_polite_rafael_vega",
+      "breakpoints": true
     }
   ]
 }

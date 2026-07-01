@@ -1,0 +1,1 @@
+ALTER TABLE "companies" ADD COLUMN "socials" text[] DEFAULT ARRAY[]::text[] NOT NULL;
