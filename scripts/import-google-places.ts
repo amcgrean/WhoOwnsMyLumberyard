@@ -36,6 +36,11 @@ type Place = {
   formattedAddress?: string;
   shortFormattedAddress?: string;
   internationalPhoneNumber?: string;
+  websiteUri?: string;
+  googleMapsUri?: string;
+  rating?: number;
+  userRatingCount?: number;
+  regularOpeningHours?: { weekdayDescriptions?: string[] };
   location?: { latitude: number; longitude: number };
   addressComponents?: Array<{
     longText: string;
@@ -91,7 +96,7 @@ async function searchPage(query: string, pageToken?: string): Promise<{ places: 
       "content-type": "application/json",
       "x-goog-api-key": PLACES_KEY,
       "x-goog-fieldmask":
-        "places.id,places.displayName,places.formattedAddress,places.shortFormattedAddress,places.internationalPhoneNumber,places.location,places.addressComponents,nextPageToken",
+        "places.id,places.displayName,places.formattedAddress,places.shortFormattedAddress,places.internationalPhoneNumber,places.websiteUri,places.googleMapsUri,places.rating,places.userRatingCount,places.regularOpeningHours.weekdayDescriptions,places.location,places.addressComponents,nextPageToken",
     },
     body: JSON.stringify({
       textQuery: query,
@@ -172,10 +177,15 @@ async function main() {
       zip,
       trade: (trade ?? null) as typeof locations.$inferInsert.trade,
       phone: p.internationalPhoneNumber ?? null,
+      website: p.websiteUri ?? null,
       lat: p.location ? p.location.latitude.toFixed(6) : null,
       lng: p.location ? p.location.longitude.toFixed(6) : null,
       googlePlaceId: p.id,
-      sourceUrl: `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+      googleMapsUri: p.googleMapsUri ?? `https://www.google.com/maps/place/?q=place_id:${p.id}`,
+      rating: typeof p.rating === "number" ? p.rating.toFixed(1) : null,
+      reviewCount: p.userRatingCount ?? null,
+      hours: p.regularOpeningHours?.weekdayDescriptions ?? null,
+      sourceUrl: p.websiteUri ?? `https://www.google.com/maps/place/?q=place_id:${p.id}`,
       status: "open",
     });
     inserted++;

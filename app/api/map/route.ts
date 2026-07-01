@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sql, eq, and, isNull } from "drizzle-orm";
+import { sql, eq, and, isNull, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { companies, locations, ownershipEdges } from "@/lib/db/schema";
 
@@ -54,7 +54,8 @@ export async function GET() {
       const edges = await db
         .select({ childId: ownershipEdges.childId })
         .from(ownershipEdges)
-        .where(and(isNull(ownershipEdges.endDate)));
+        // Exclude co-op membership — it is not ownership.
+        .where(and(isNull(ownershipEdges.endDate), ne(ownershipEdges.relationship, "member_of")));
       for (const e of edges) consolidatedSet.add(e.childId);
     }
   } catch (err) {

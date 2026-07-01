@@ -20,7 +20,7 @@ async function getStats() {
     const [consolidatedRow] = await db
       .select({ count: sql<number>`cast(count(distinct ${locations.id}) as int)` })
       .from(locations)
-      .innerJoin(ownershipEdges, sql`${ownershipEdges.childId} = ${locations.companyId} AND ${ownershipEdges.endDate} IS NULL`);
+      .innerJoin(ownershipEdges, sql`${ownershipEdges.childId} = ${locations.companyId} AND ${ownershipEdges.endDate} IS NULL AND ${ownershipEdges.relationship} <> 'member_of'`);
     const consolidatedYards = consolidatedRow?.count ?? 0;
 
     const [peRow] = await db

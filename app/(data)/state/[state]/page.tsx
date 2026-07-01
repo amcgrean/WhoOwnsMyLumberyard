@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { eq, inArray, and, isNull } from "drizzle-orm";
+import { eq, inArray, and, isNull, ne } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { companies, locations, ownershipEdges, type Trade } from "@/lib/db/schema";
 import { LocationCard } from "@/components/location-card";
@@ -66,7 +66,13 @@ export default async function StatePage({ params }: { params: Params }) {
   const ownerByChild = new Map<string, string>();
   if (operatingIds.length) {
     const edges = await db.query.ownershipEdges.findMany({
-      where: and(inArray(ownershipEdges.childId, operatingIds), isNull(ownershipEdges.endDate)),
+      // Co-op membership (member_of) is not ownership — exclude it so co-op
+      // members read as independent, not "owned".
+      where: and(
+        inArray(ownershipEdges.childId, operatingIds),
+        isNull(ownershipEdges.endDate),
+        ne(ownershipEdges.relationship, "member_of")
+      ),
       columns: { childId: true, parentId: true },
     });
     const parentIds = [...new Set(edges.map((e) => e.parentId))];

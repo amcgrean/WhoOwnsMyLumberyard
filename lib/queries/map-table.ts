@@ -29,6 +29,7 @@ export async function getMapTableRows(limit = 500): Promise<MapTableRow[]> {
         select p.name from ownership_edges e
         join companies p on p.id = e.parent_id
         where e.child_id = ${companies.id} and e.end_date is null
+          and e.relationship <> 'member_of'
         order by e.start_date desc nulls last
         limit 1
       )`,
