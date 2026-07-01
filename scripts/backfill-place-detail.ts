@@ -7,6 +7,9 @@ import { db } from "@/lib/db";
 import { locations } from "@/lib/db/schema";
 
 /**
+ * ⚠️ PAID GOOGLE API (Place Details, one call per row) — do not run without
+ * explicit, per-run approval. See CLAUDE.md.
+ *
  * Backfill Google Places detail (website, rating, review count, hours, maps
  * link) for locations imported before those fields existed. Only touches rows
  * that have a google_place_id and no rating yet, so it's safe to re-run and

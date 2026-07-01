@@ -7,6 +7,9 @@ import { db } from "@/lib/db";
 import { locations } from "@/lib/db/schema";
 
 /**
+ * ⚠️ PAID GOOGLE API (Geocoding) — do not run without explicit, per-run
+ * approval. See CLAUDE.md.
+ *
  * Backfill lat/lng for any locations.row where one or both coords are null.
  *
  * Uses Google Maps Geocoding API (forward geocoding). Pricing as of 2025:

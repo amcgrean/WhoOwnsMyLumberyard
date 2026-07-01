@@ -10,6 +10,9 @@ import { upsertCompany, linkSource } from "./seed/_helpers";
 import { TRADE_LABELS } from "@/lib/constants";
 
 /**
+ * ⚠️ Falls back to PAID Google Place Details for rows without an import-captured
+ * website — do not run without explicit, per-run approval. See CLAUDE.md.
+ *
  * Enrich the bulk Google-Places imports: give each staged business its own
  * Independent company (its real name), cite its official website as the source
  * for that status, and cross-check every name against national franchise / PE
