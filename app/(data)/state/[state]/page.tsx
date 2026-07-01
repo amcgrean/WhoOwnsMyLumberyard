@@ -33,15 +33,24 @@ export default async function StatePage({ params }: { params: Params }) {
   const resolved = resolveState(state);
   if (!resolved) notFound();
 
-  const yardRows = await db
-    .select({
-      location: locations,
-      company: companies,
-    })
-    .from(locations)
-    .innerJoin(companies, eq(locations.companyId, companies.id))
-    .where(eq(locations.state, resolved.code))
-    .orderBy(locations.city, locations.displayName);
+  // Selects full location/company rows. During a build that runs before a
+  // new migration has been applied (e.g. the `trade` column), this query can
+  // reference a column that doesn't exist yet — degrade to empty rather than
+  // failing the whole build, matching the home page and sitemap.
+  let yardRows: { location: typeof locations.$inferSelect; company: typeof companies.$inferSelect }[] = [];
+  try {
+    yardRows = await db
+      .select({
+        location: locations,
+        company: companies,
+      })
+      .from(locations)
+      .innerJoin(companies, eq(locations.companyId, companies.id))
+      .where(eq(locations.state, resolved.code))
+      .orderBy(locations.city, locations.displayName);
+  } catch (err) {
+    console.warn("[state] location read failed (likely no migrations yet)", err);
+  }
 
   const total = yardRows.length;
 
