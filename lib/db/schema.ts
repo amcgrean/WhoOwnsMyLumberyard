@@ -140,7 +140,13 @@ export const locations = pgTable(
     lat: numeric("lat", { precision: 9, scale: 6 }),
     lng: numeric("lng", { precision: 9, scale: 6 }),
     phone: text("phone"),
+    website: text("website"),
     googlePlaceId: text("google_place_id"),
+    googleMapsUri: text("google_maps_uri"),
+    // Google Places detail captured at import time.
+    rating: numeric("rating", { precision: 2, scale: 1 }),
+    reviewCount: integer("review_count"),
+    hours: text("hours").array(),
     services: text("services").array().notNull().default(sql`ARRAY[]::text[]`),
     status: locationStatusEnum("status").notNull().default("open"),
     sourceUrl: text("source_url"),

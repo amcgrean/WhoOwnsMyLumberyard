@@ -140,6 +140,19 @@ export default async function YardPage({ params }: { params: Params }) {
           {loc.addressLine2 ? `, ${loc.addressLine2}` : ""}, {loc.city}, {stateName} {loc.zip}
           {loc.phone ? ` · ${loc.phone}` : ""}
         </p>
+        {loc.rating ? (
+          <p className="mt-1 text-sm text-[var(--color-muted)]">
+            <a
+              href={loc.googleMapsUri ?? undefined}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:text-[var(--color-accent)]"
+            >
+              ★ {loc.rating}
+              {loc.reviewCount ? ` · ${loc.reviewCount.toLocaleString()} Google reviews` : ""}
+            </a>
+          </p>
+        ) : null}
         <div className="mt-3 flex flex-wrap items-center gap-2">
           <OwnershipBadge
             kind={badge}
@@ -219,6 +232,16 @@ export default async function YardPage({ params }: { params: Params }) {
               <dt className="text-[var(--color-muted)]">Social</dt>
               <dd>
                 <Socials urls={operatingCompany.socials} />
+              </dd>
+            </div>
+          ) : null}
+          {loc.hours && loc.hours.length > 0 ? (
+            <div className="sm:col-span-2">
+              <dt className="text-[var(--color-muted)]">Hours</dt>
+              <dd className="text-xs leading-6 text-[var(--color-muted)]">
+                {loc.hours.map((h) => (
+                  <div key={h}>{h}</div>
+                ))}
               </dd>
             </div>
           ) : null}

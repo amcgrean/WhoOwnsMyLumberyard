@@ -134,7 +134,9 @@ async function main() {
       continue;
     }
 
-    const website = loc.googlePlaceId ? await fetchWebsite(loc.googlePlaceId) : null;
+    // Prefer the website captured at import time; only hit Place Details for
+    // older rows that predate that field.
+    const website = loc.website ?? (loc.googlePlaceId ? await fetchWebsite(loc.googlePlaceId) : null);
     if (!website) noWebsite++;
     const source = website ?? loc.sourceUrl ?? `https://www.google.com/maps/place/?q=place_id:${loc.googlePlaceId}`;
     const tradeLabel = loc.trade ? TRADE_LABELS[loc.trade] : "home services";

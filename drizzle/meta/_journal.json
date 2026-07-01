@@ -22,6 +22,13 @@
       "when": 1782890509197,
       "tag": "0002_polite_rafael_vega",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1782917335432,
+      "tag": "0003_aspiring_wolf_cub",
+      "breakpoints": true
     }
   ]
 }
