@@ -4,7 +4,7 @@ config({ path: ".env" });
 
 import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, locations } from "@/lib/db/schema";
+import { companies, locations, tradeEnum } from "@/lib/db/schema";
 import { locationSlug } from "@/lib/slug";
 
 /**
@@ -12,15 +12,20 @@ import { locationSlug } from "@/lib/slug";
  *
  * Usage:
  *   pnpm import:places --state IA --query "lumber yard"
+ *   pnpm import:places --state IA --query "hvac company" --trade hvac
  *
  * For each result, upserts a location attached to the
  * "Unverified Independent" company. The operator reviews these and reassigns
- * the company_id to the correct operating brand.
+ * the company_id to the correct operating brand. Pass --trade to tag the
+ * staged locations (lumber | plumbing | electrical | hvac) so they surface on
+ * the trade filters and per-trade landing pages.
  *
  * Note: Text Search returns up to 60 results per query (3 pages of 20).
  * For state-wide coverage you typically run multiple queries with different
  * keywords ("lumber yard", "building materials", "lumberyard supplier", etc.).
  */
+
+const TRADES = tradeEnum.enumValues as readonly string[];
 
 const PLACES_KEY = process.env.MAPS_API ?? process.env.GOOGLE_PLACES_API_KEY;
 const ENDPOINT = "https://places.googleapis.com/v1/places:searchText";
@@ -41,16 +46,21 @@ type Place = {
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const out: { state?: string; query?: string } = {};
+  const out: { state?: string; query?: string; trade?: string } = {};
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--state") out.state = args[++i];
     else if (args[i] === "--query") out.query = args[++i];
+    else if (args[i] === "--trade") out.trade = args[++i];
   }
   if (!out.state || !out.query) {
-    console.error("usage: pnpm import:places --state XX --query \"lumber yard\"");
+    console.error('usage: pnpm import:places --state XX --query "lumber yard" [--trade hvac|plumbing|electrical|lumber]');
     process.exit(1);
   }
-  return out as { state: string; query: string };
+  if (out.trade && !TRADES.includes(out.trade)) {
+    console.error(`--trade must be one of: ${TRADES.join(", ")}`);
+    process.exit(1);
+  }
+  return out as { state: string; query: string; trade?: string };
 }
 
 function pickComponent(p: Place, type: string) {
@@ -98,7 +108,7 @@ async function searchPage(query: string, pageToken?: string): Promise<{ places: 
 }
 
 async function main() {
-  const { state, query } = parseArgs();
+  const { state, query, trade } = parseArgs();
   const company = await ensureUnverifiedIndependent();
   const fullQuery = `${query} in ${state}`;
 
@@ -156,6 +166,7 @@ async function main() {
       city,
       state: stateCode.toUpperCase(),
       zip,
+      trade: (trade ?? null) as typeof locations.$inferInsert.trade,
       phone: p.internationalPhoneNumber ?? null,
       lat: p.location ? p.location.latitude.toFixed(6) : null,
       lng: p.location ? p.location.longitude.toFixed(6) : null,

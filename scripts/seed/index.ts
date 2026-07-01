@@ -15,6 +15,7 @@ import { seedCoops } from "./coops";
 import { seedNationalHomeServices } from "./national-home-services";
 import { seedIowaHomeServices } from "./iowa-home-services";
 import { seedIowaIndependents } from "./iowa-independents";
+import { seedIowaIndependentsMore } from "./iowa-independents-more";
 import { seedTradeCoops } from "./trade-coops";
 
 /**
@@ -51,6 +52,8 @@ async function main() {
   console.log("  ✓ Iowa PE-owned home-services brands (TurnPoint, PremiStar, ARS)");
   await seedIowaIndependents();
   console.log("  ✓ Iowa independents (Des Moines, Sioux City, Quad Cities, Dubuque, Ames, Waterloo, Ottumwa, Mason City)");
+  await seedIowaIndependentsMore();
+  console.log("  ✓ Iowa independents, statewide batch 2 (Muscatine, Clinton, Keokuk, Carroll, Le Mars, Spencer, Boone, Grinnell, Pella + more)");
   await seedTradeCoops();
   console.log("  ✓ Member-owned trade buying groups (Nexstar, IMARK, Blue Hawk, AD)");
 
