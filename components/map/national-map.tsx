@@ -10,6 +10,12 @@ import type { Trade } from "@/lib/db/schema";
 
 const TRADES = Object.keys(TRADE_SHORT_LABELS) as Trade[];
 
+// Legend rows use the app's real ownership palette (see globals.css badge tokens).
+const LEGEND: ReadonlyArray<{ color: string; label: string }> = [
+  { color: "var(--color-badge-pe)", label: "Consolidator / PE-owned" },
+  { color: "var(--color-badge-independent)", label: "Independent or unverified" },
+];
+
 type FlyoutFeature = {
   slug: string;
   name: string;
@@ -58,7 +64,6 @@ export function NationalMap() {
   const [count, setCount] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [usingFallback, setUsingFallback] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return;
@@ -271,125 +276,153 @@ export function NationalMap() {
   }, [filter]);
 
   return (
-    <div className="relative h-[calc(100dvh-8rem)] min-h-[480px] w-full bg-[var(--color-muted-bg)]">
-      <div ref={containerRef} className="absolute inset-0" />
-
-      {loading ? (
-        <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
-          <div className="rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] px-4 py-2 text-sm shadow">
-            Loading map…
+    <div className="mt-[22px] grid grid-cols-1 items-start gap-[18px] lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+      {/* ── Filter + legend column ── */}
+      <div className="flex w-full max-w-[340px] flex-col gap-4">
+        {/* Filter panel */}
+        <div className="rounded-[12px] border border-rule bg-paper p-4">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.07em] text-muted">
+            Trade
           </div>
-        </div>
-      ) : null}
-
-      {/* Mobile: a single button at top-left toggles a centered sheet.
-          Desktop: the panel is always visible at top-left. */}
-      <button
-        type="button"
-        onClick={() => setFiltersOpen((v) => !v)}
-        className="absolute top-4 left-4 z-10 sm:hidden rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] px-3 py-1.5 text-xs font-medium shadow-sm"
-        aria-expanded={filtersOpen}
-        aria-controls="map-filters"
-      >
-        {filtersOpen ? "Hide filters" : "Filters"}
-      </button>
-
-      <aside
-        id="map-filters"
-        className={
-          "absolute z-10 rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] p-3 shadow-sm text-sm " +
-          // Desktop: pinned top-left
-          "sm:top-4 sm:left-4 sm:w-64 sm:max-w-[80vw] sm:block " +
-          // Mobile: pinned below the toggle button, full-ish width
-          (filtersOpen
-            ? "top-14 left-4 right-4 sm:right-auto"
-            : "hidden sm:block")
-        }
-      >
-        <p className="font-serif text-base mb-2">Filters</p>
-        <label className="flex items-center gap-2">
-          <input
-            type="checkbox"
-            checked={filter.consolidatedOnly}
-            onChange={(e) => setFilter((f) => ({ ...f, consolidatedOnly: e.target.checked }))}
-          />
-          <span>Consolidator-owned only</span>
-        </label>
-
-        <p className="mt-3 mb-1.5 text-xs font-medium text-[var(--color-muted)]">Trade</p>
-        <div className="flex flex-wrap gap-1.5">
-          <button
-            type="button"
-            onClick={() => setFilter((f) => ({ ...f, trade: null }))}
-            className={
-              "rounded-full px-2.5 py-1 text-xs ring-1 " +
-              (filter.trade === null
-                ? "bg-[var(--color-ink)] text-[var(--color-paper)] ring-transparent"
-                : "ring-[var(--color-rule)]")
-            }
-          >
-            All
-          </button>
-          {TRADES.map((t) => (
+          <div className="mt-[10px] flex flex-wrap gap-[7px]">
             <button
-              key={t}
               type="button"
-              onClick={() => setFilter((f) => ({ ...f, trade: f.trade === t ? null : t }))}
+              onClick={() => setFilter((f) => ({ ...f, trade: null }))}
               className={
-                "rounded-full px-2.5 py-1 text-xs ring-1 " +
-                (filter.trade === t
-                  ? "bg-[var(--color-ink)] text-[var(--color-paper)] ring-transparent"
-                  : "ring-[var(--color-rule)]")
+                "rounded-full px-3 py-1 text-[12.5px] font-medium transition-colors " +
+                (filter.trade === null
+                  ? "bg-accent text-white"
+                  : "bg-muted-bg text-muted hover:text-ink")
               }
             >
-              {TRADE_SHORT_LABELS[t]}
+              All
             </button>
-          ))}
-        </div>
-        <p className="mt-3 text-xs text-[var(--color-muted)]">
-          Red = under consolidator ownership · Green = independent or unverified
-        </p>
-        {count != null ? (
-          <p className="mt-2 text-xs text-[var(--color-muted)]">
-            Showing {count.toLocaleString()} businesses
-          </p>
-        ) : null}
-        {usingFallback ? (
-          <p className="mt-2 text-xs text-[var(--color-muted)]">
-            Basemap unavailable — showing business data on plain background.
-          </p>
-        ) : null}
-      </aside>
-
-      {error ? (
-        <div className="absolute top-4 right-16 z-10 max-w-md rounded-md border border-[var(--color-badge-pe)]/30 bg-[var(--color-paper)] p-3 text-sm shadow">
-          <p className="text-[var(--color-badge-pe)] font-medium">Map error</p>
-          <p className="text-[var(--color-muted)] mt-1">{error}</p>
-        </div>
-      ) : null}
-
-      {flyout ? (
-        <div className="absolute bottom-4 left-1/2 z-10 -translate-x-1/2 w-[min(420px,90vw)] rounded-md border border-[var(--color-rule)] bg-[var(--color-paper)] p-4 shadow">
-          <button
-            type="button"
-            className="absolute top-2 right-2 text-xs text-[var(--color-muted)]"
-            onClick={() => setFlyout(null)}
-            aria-label="Close"
-          >
-            ✕
-          </button>
-          <div className="flex items-start justify-between gap-2">
-            <div className="font-serif text-lg">{flyout.name}</div>
-            <TradeChip trade={flyout.trade} className="mt-1 shrink-0" />
+            {TRADES.map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() =>
+                  setFilter((f) => ({ ...f, trade: f.trade === t ? null : t }))
+                }
+                className={
+                  "rounded-full px-3 py-1 text-[12.5px] font-medium transition-colors " +
+                  (filter.trade === t
+                    ? "bg-accent text-white"
+                    : "bg-muted-bg text-muted hover:text-ink")
+                }
+              >
+                {TRADE_SHORT_LABELS[t]}
+              </button>
+            ))}
           </div>
-          <div className="text-xs text-[var(--color-muted)] mt-1">
-            {flyout.city}, {flyout.state} · {flyout.companyName}
+
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-rule pt-[14px]">
+            <div className="text-[13px] leading-[1.35] text-ink">
+              Consolidator-owned only
+              <div className="text-[11.5px] text-muted">
+                PE firms &amp; public roll-ups
+              </div>
+            </div>
+            <button
+              type="button"
+              role="switch"
+              aria-checked={filter.consolidatedOnly}
+              aria-label="Consolidator-owned only"
+              onClick={() =>
+                setFilter((f) => ({ ...f, consolidatedOnly: !f.consolidatedOnly }))
+              }
+              className={
+                "relative inline-flex h-[22px] w-[38px] shrink-0 items-center rounded-full transition-colors " +
+                (filter.consolidatedOnly ? "bg-accent" : "bg-muted-bg")
+              }
+            >
+              <span
+                className={
+                  "inline-block h-[16px] w-[16px] transform rounded-full bg-white shadow transition-transform " +
+                  (filter.consolidatedOnly ? "translate-x-[19px]" : "translate-x-[3px]")
+                }
+              />
+            </button>
           </div>
-          <Link href={`/yard/${flyout.slug}`} className="mt-3 inline-block text-sm underline">
-            See ownership chain →
-          </Link>
         </div>
-      ) : null}
+
+        {/* Legend */}
+        <div className="rounded-[12px] border border-rule bg-paper p-4">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.07em] text-muted">
+            Legend
+          </div>
+          <div className="mt-[10px] flex flex-col gap-2">
+            {LEGEND.map((lg) => (
+              <div key={lg.label} className="flex items-center gap-[9px] text-[13px] text-ink">
+                <span
+                  className="h-[13px] w-[13px] rounded-full"
+                  style={{
+                    background: lg.color,
+                    boxShadow: `0 0 0 2px var(--color-paper), 0 0 0 3px ${lg.color}`,
+                  }}
+                />
+                {lg.label}
+              </div>
+            ))}
+          </div>
+          {count != null ? (
+            <p className="mt-3 text-[12px] text-muted">
+              Showing {count.toLocaleString()} businesses
+            </p>
+          ) : null}
+          {usingFallback ? (
+            <p className="mt-2 text-[12px] text-muted">
+              Basemap unavailable — showing business data on plain background.
+            </p>
+          ) : null}
+        </div>
+      </div>
+
+      {/* ── Real MapLibre map ── */}
+      <div className="relative h-[calc(100dvh-12rem)] min-h-[480px] w-full overflow-hidden rounded-[14px] border border-rule bg-[var(--color-muted-bg)]">
+        <div ref={containerRef} className="absolute inset-0" />
+
+        {loading ? (
+          <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
+            <div className="rounded-md border border-rule bg-paper px-4 py-2 text-sm shadow">
+              Loading map…
+            </div>
+          </div>
+        ) : null}
+
+        {error ? (
+          <div className="absolute top-4 right-16 z-10 max-w-md rounded-md border border-[var(--color-badge-pe)]/30 bg-paper p-3 text-sm shadow">
+            <p className="font-medium text-[var(--color-badge-pe)]">Map error</p>
+            <p className="mt-1 text-muted">{error}</p>
+          </div>
+        ) : null}
+
+        {flyout ? (
+          <div className="absolute bottom-4 left-1/2 z-10 w-[min(420px,90vw)] -translate-x-1/2 rounded-[12px] border border-rule bg-paper p-4 shadow">
+            <button
+              type="button"
+              className="absolute top-2 right-2 text-xs text-muted"
+              onClick={() => setFlyout(null)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <div className="flex items-start justify-between gap-2">
+              <div className="font-serif text-lg text-ink">{flyout.name}</div>
+              <TradeChip trade={flyout.trade} className="mt-1 shrink-0" />
+            </div>
+            <div className="mt-1 text-xs text-muted">
+              {flyout.city}, {flyout.state} · {flyout.companyName}
+            </div>
+            <Link
+              href={`/yard/${flyout.slug}`}
+              className="mt-3 inline-block text-sm text-accent underline underline-offset-2"
+            >
+              See ownership chain →
+            </Link>
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

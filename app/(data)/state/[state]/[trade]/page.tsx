@@ -9,6 +9,7 @@ import {
   STATE_NAME_BY_CODE,
   TRADE_LABELS,
   TRADE_SHORT_LABELS,
+  COMPANY_TYPE_LABELS,
 } from "@/lib/constants";
 import {
   getOwnershipChain,
@@ -17,6 +18,7 @@ import {
 } from "@/lib/ownership-graph";
 import { OwnershipBadge } from "@/components/ownership-badge";
 import { TradeChip } from "@/components/trade-chip";
+import { BizRow } from "@/components/biz-row";
 import type { OwnershipBadgeKind } from "@/lib/constants";
 
 export const revalidate = 3600;
@@ -57,6 +59,27 @@ type Row = {
   owner: Company | null;
 };
 
+// Short, human ownerLine for a BizRow — the ultimate owner when there is one,
+// otherwise a badge-appropriate description of how it's held.
+function ownerLine(row: Row): string {
+  const { company, badge, owner } = row;
+  if (owner && owner.id !== company.id) return `Owned by ${owner.name}`;
+  switch (badge) {
+    case "independent":
+      return "Locally owned";
+    case "coop":
+      return "Co-op member";
+    case "family_mega":
+      return "Family-owned";
+    case "public":
+      return "Publicly traded";
+    case "private_equity":
+      return "Private-equity-owned";
+    default:
+      return "Ownership on record";
+  }
+}
+
 export default async function StateTradePage({ params }: { params: Params }) {
   const { state, trade } = await params;
   const resolved = resolve(state, trade);
@@ -75,12 +98,16 @@ export default async function StateTradePage({ params }: { params: Params }) {
   }
 
   // Classify each distinct operating company once, then map back to rows.
-  const chainByCompany = new Map<string, { badge: OwnershipBadgeKind; owner: Company | null }>();
+  const chainByCompany = new Map<
+    string,
+    { badge: OwnershipBadgeKind; owner: Company | null; chainTop: Company | null }
+  >();
   for (const companyId of new Set(base.map((r) => r.company.id))) {
     const chain = await getOwnershipChain(companyId);
     chainByCompany.set(companyId, {
       badge: classifyOwnership(chain),
       owner: ultimateOwner(chain),
+      chainTop: chain.length > 1 ? chain[chain.length - 1].company : null,
     });
   }
   const rows: Row[] = base.map((r) => ({
@@ -92,91 +119,195 @@ export default async function StateTradePage({ params }: { params: Params }) {
   const independents = rows.filter((r) => r.badge === "independent");
   const owned = rows.filter((r) => r.badge !== "independent");
 
+  const stateName = resolved.name;
+  const tradeShort = TRADE_SHORT_LABELS[resolved.trade];
+  const tradeTitle = `Who owns ${stateName}'s ${tradeShort.toLowerCase()} companies?`;
+
+  // Stat pills — real counts off the classified rows.
+  const stats: { value: number; label: string; color: string }[] = [
+    { value: rows.length, label: "Businesses tracked", color: "var(--color-ink)" },
+    { value: independents.length, label: "Locally owned", color: "var(--color-badge-independent)" },
+    { value: owned.length, label: "Owned up the chain", color: "var(--color-badge-pe)" },
+  ];
+
+  // Lumber-only "consolidators & owners" list: the distinct ultimate owners
+  // behind the tracked yards, in the prototype's company-row style.
+  const lumberCos: { name: string; typeLabel: string; note: string; badge: OwnershipBadgeKind }[] =
+    [];
+  if (resolved.trade === "lumber") {
+    const seen = new Set<string>();
+    for (const r of owned) {
+      const info = chainByCompany.get(r.company.id);
+      const co = info?.owner ?? info?.chainTop;
+      if (!co || seen.has(co.id)) continue;
+      seen.add(co.id);
+      const count = owned.filter((o) => {
+        const oi = chainByCompany.get(o.company.id);
+        return (oi?.owner ?? oi?.chainTop)?.id === co.id;
+      }).length;
+      lumberCos.push({
+        name: co.name,
+        typeLabel: COMPANY_TYPE_LABELS[co.type],
+        note: `${count} tracked ${count === 1 ? "yard" : "yards"} in ${stateName}`,
+        badge: r.badge,
+      });
+    }
+    lumberCos.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-10">
-      <header className="mb-6">
-        <p className="text-xs uppercase tracking-wide text-[var(--color-muted)]">
-          {resolved.name} · {TRADE_LABELS[resolved.trade]}
-        </p>
-        <h1 className="font-serif text-3xl sm:text-4xl mt-1">
-          Who owns {TRADE_SHORT_LABELS[resolved.trade]} companies in {resolved.name}?
-        </h1>
-        <p className="mt-3 text-[var(--color-muted)] max-w-2xl">{INTRO[resolved.trade]}</p>
-      </header>
+      <section className="pt-4">
+        <div className="flex flex-wrap items-center gap-2.5">
+          <TradeChip trade={resolved.trade} />
+          <span className="text-[12.5px] text-muted">{stateName}</span>
+        </div>
 
-      {rows.length === 0 ? (
-        <p className="text-[var(--color-muted)]">
-          No {TRADE_SHORT_LABELS[resolved.trade]} companies tracked in {resolved.name} yet.{" "}
+        <h1 className="mt-3 max-w-[18ch] text-balance font-serif font-semibold tracking-tight text-ink text-[clamp(28px,4.5vw,42px)] leading-[1.08]">
+          {tradeTitle}
+        </h1>
+
+        <div className="mt-4 max-w-[64ch]">
+          <p className="mb-3.5 text-[15.5px] leading-[1.65] text-ink">{INTRO[resolved.trade]}</p>
+          <p className="mb-3.5 text-[15.5px] leading-[1.65] text-ink">
+            Below, {tradeShort.toLowerCase()} businesses tracked in {stateName} are sorted by who
+            actually owns them. Independents come first — then the ones held further up the chain,
+            with the parent named on each row.
+          </p>
+        </div>
+
+        {rows.length === 0 ? (
+          <p className="mt-6 text-muted">
+            No {tradeShort.toLowerCase()} companies tracked in {stateName} yet.{" "}
+            <Link href="/submit" className="underline">
+              Know one? Submit a tip
+            </Link>
+            .
+          </p>
+        ) : (
+          <>
+            <div className="mt-2 flex flex-wrap gap-2.5">
+              {stats.map((s) => (
+                <div
+                  key={s.label}
+                  className="min-w-[120px] rounded-[12px] border border-rule bg-paper px-4 py-3"
+                >
+                  <div
+                    className="font-serif text-[26px] font-semibold leading-none"
+                    style={{ color: s.color }}
+                  >
+                    {s.value.toLocaleString()}
+                  </div>
+                  <div className="mt-1.5 text-[12px] leading-[1.4] text-muted">{s.label}</div>
+                </div>
+              ))}
+            </div>
+
+            {independents.length > 0 ? (
+              <div
+                className="mt-[34px] rounded-[14px] bg-accent-soft p-5"
+                style={{
+                  border: "1px solid color-mix(in oklch, var(--color-accent) 30%, var(--color-rule))",
+                }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <OwnershipBadge kind="independent" />
+                  <h2 className="font-serif text-[20px] font-semibold text-ink">
+                    Locally owned in {stateName}
+                  </h2>
+                </div>
+                <p className="mb-4 mt-2.5 max-w-[60ch] text-[13.5px] leading-[1.55] text-ink">
+                  No private-equity or consolidator parent on the public record — family-owned,
+                  employee-owned, or member-owned. These are the ones to call first.
+                </p>
+                <div className="flex flex-col gap-2">
+                  {independents.map((r) => (
+                    <BizRow
+                      key={r.location.id}
+                      href={`/yard/${r.location.slug}`}
+                      name={r.location.displayName}
+                      city={r.location.city}
+                      state={r.location.state}
+                      ownerLine={ownerLine(r)}
+                      trade={r.location.trade}
+                      badge={r.badge}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {owned.length > 0 ? (
+              <div className="mt-[26px]">
+                <div className="flex items-center gap-2.5">
+                  <OwnershipBadge kind="private_equity" />
+                  <h2 className="font-serif text-[20px] font-semibold text-ink">
+                    Owned further up the chain
+                  </h2>
+                </div>
+                <p className="mb-4 mt-2.5 max-w-[60ch] text-[13.5px] leading-[1.55] text-muted">
+                  Still run under the local name, but ultimately controlled by a private-equity
+                  fund, consolidator, or public company. Tap any row for the full ownership chain
+                  and sources.
+                </p>
+                <div className="flex flex-col gap-2">
+                  {owned.map((r) => (
+                    <BizRow
+                      key={r.location.id}
+                      href={`/yard/${r.location.slug}`}
+                      name={r.location.displayName}
+                      city={r.location.city}
+                      state={r.location.state}
+                      ownerLine={ownerLine(r)}
+                      trade={r.location.trade}
+                      badge={r.badge}
+                    />
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            {lumberCos.length > 0 ? (
+              <div className="mt-[26px]">
+                <div className="flex items-baseline gap-2 border-b border-rule pb-[9px]">
+                  <h2 className="font-serif text-[20px] font-semibold text-ink">
+                    The consolidators &amp; owners
+                  </h2>
+                </div>
+                <div className="mt-3.5 flex flex-col gap-2">
+                  {lumberCos.map((co) => (
+                    <div
+                      key={co.name}
+                      className="flex items-center gap-3.5 rounded-[12px] border border-rule bg-paper px-[15px] py-[13px]"
+                    >
+                      <div className="min-w-0 flex-1">
+                        <div className="font-serif text-[16px] font-semibold leading-[1.25] text-ink">
+                          {co.name}
+                        </div>
+                        <div className="mt-[3px] text-[12.5px] text-muted">
+                          {co.typeLabel} &middot; {co.note}
+                        </div>
+                      </div>
+                      <div className="shrink-0">
+                        <OwnershipBadge kind={co.badge} size="sm" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </>
+        )}
+
+        <p className="mt-10 text-xs text-muted">
+          Ownership reflects the best available public evidence and is sourced on each business
+          page. Spotted something wrong?{" "}
           <Link href="/submit" className="underline">
-            Know one? Submit a tip
+            Submit a source-backed correction
           </Link>
           .
         </p>
-      ) : (
-        <div className="space-y-10">
-          {independents.length > 0 ? (
-            <section>
-              <h2 className="font-serif text-xl mb-1">Locally owned &amp; independent</h2>
-              <p className="text-sm text-[var(--color-muted)] mb-3">
-                No private-equity or out-of-state consolidator owner on the public record.
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {independents.map((r) => (
-                  <BusinessRow key={r.location.id} row={r} />
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          {owned.length > 0 ? (
-            <section>
-              <h2 className="font-serif text-xl mb-1">Owned by a larger company</h2>
-              <p className="text-sm text-[var(--color-muted)] mb-3">
-                Operating under the local name, but owned further up the chain — often by
-                a private-equity-backed platform.
-              </p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                {owned.map((r) => (
-                  <BusinessRow key={r.location.id} row={r} />
-                ))}
-              </div>
-            </section>
-          ) : null}
-        </div>
-      )}
-
-      <p className="mt-10 text-xs text-[var(--color-muted)]">
-        Ownership reflects the best available public evidence and is sourced on each
-        business page. Spotted something wrong?{" "}
-        <Link href="/submit" className="underline">
-          Submit a source-backed correction
-        </Link>
-        .
-      </p>
+      </section>
     </div>
-  );
-}
-
-function BusinessRow({ row }: { row: Row }) {
-  const { location, company, badge, owner } = row;
-  return (
-    <Link
-      href={`/yard/${location.slug}`}
-      className="block rounded-md border border-[var(--color-rule)] p-4 hover:border-[var(--color-accent)] transition-colors"
-    >
-      <div className="flex items-start justify-between gap-2">
-        <div className="font-serif text-base">{location.displayName}</div>
-        <TradeChip trade={location.trade} className="mt-0.5 shrink-0" />
-      </div>
-      <div className="mt-1 text-sm text-[var(--color-muted)]">
-        {location.city}, {location.state}
-      </div>
-      <div className="mt-2">
-        <OwnershipBadge
-          kind={badge}
-          label={owner && owner.id !== company.id ? `Owned by ${owner.name}` : undefined}
-        />
-      </div>
-    </Link>
   );
 }
