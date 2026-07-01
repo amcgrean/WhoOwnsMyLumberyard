@@ -15,6 +15,7 @@ import { getCitedSources } from "@/lib/queries/sources";
 import { OwnershipChain } from "@/components/ownership-chain";
 import { OwnershipBadge } from "@/components/ownership-badge";
 import { TradeChip } from "@/components/trade-chip";
+import { Socials } from "@/components/socials";
 import { LocationCard } from "@/components/location-card";
 import { CitationRegistry, CitationMarker, SourcesList } from "@/components/citation";
 import { COMPANY_TYPE_LABELS, STATE_NAME_BY_CODE } from "@/lib/constants";
@@ -211,6 +212,14 @@ export default async function YardPage({ params }: { params: Params }) {
             <div className="sm:col-span-2">
               <dt className="text-[var(--color-muted)]">Services</dt>
               <dd>{loc.services.join(", ")}</dd>
+            </div>
+          ) : null}
+          {operatingCompany.socials.length > 0 ? (
+            <div className="sm:col-span-2">
+              <dt className="text-[var(--color-muted)]">Social</dt>
+              <dd>
+                <Socials urls={operatingCompany.socials} />
+              </dd>
             </div>
           ) : null}
         </dl>

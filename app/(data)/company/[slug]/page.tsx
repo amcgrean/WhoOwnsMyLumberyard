@@ -14,6 +14,7 @@ import {
 import { getCitedSources } from "@/lib/queries/sources";
 import { OwnershipChain } from "@/components/ownership-chain";
 import { OwnershipBadge } from "@/components/ownership-badge";
+import { Socials } from "@/components/socials";
 import { LocationCard } from "@/components/location-card";
 import { CitationRegistry, SourcesList } from "@/components/citation";
 import { COMPANY_TYPE_LABELS } from "@/lib/constants";
@@ -105,6 +106,7 @@ export default async function CompanyPage({ params }: { params: Params }) {
             </a>
           </p>
         ) : null}
+        <Socials urls={company.socials} className="mt-2" />
       </header>
 
       {chain.length > 1 ? (

@@ -98,6 +98,9 @@ export const companies = pgTable(
     description: text("description"),
     notes: text("notes"),
     logoUrl: text("logo_url"),
+    // Social profile URLs (facebook, instagram, x, youtube, linkedin, tiktok),
+    // populated by the website-scrape enrichment.
+    socials: text("socials").array().notNull().default(sql`ARRAY[]::text[]`),
     status: companyStatusEnum("status").notNull().default("active"),
     // Generated tsvector kept in sync by Postgres
     searchVector: text("search_vector"),
