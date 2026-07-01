@@ -10,22 +10,19 @@ import { upsertCompany, linkSource } from "./seed/_helpers";
 import { TRADE_LABELS } from "@/lib/constants";
 
 /**
- * ⚠️ Falls back to PAID Google Place Details for rows without an import-captured
- * website — do not run without explicit, per-run approval. See CLAUDE.md.
- *
- * Enrich the bulk Google-Places imports: give each staged business its own
- * Independent company (its real name), cite its official website as the source
- * for that status, and cross-check every name against national franchise / PE
- * brands so those are NOT mislabeled as independent.
+ * FREE — no paid API. Enrich the bulk imports (Google Places or OSM): give each
+ * staged business its own Independent company (its real name), cite the website
+ * captured at import time as the source, and cross-check every name against
+ * national franchise / PE brands so those are NOT mislabeled as independent.
  *
  * For each location currently under "Unverified Independent":
- *   1. Fetch its official website via Google Place Details (the per-business
- *      source, instead of a bare Google Maps pin).
+ *   1. Use the website captured at import (location.website); if none, cite the
+ *      location's source URL (its map/OSM listing). No Place Details call.
  *   2. If the name matches a known franchise / PE-rollup brand → leave it
  *      staged and flag it (a franchisee is not a clean independent).
  *   3. Otherwise create/attach an Independent operating company named after the
- *      business, reassign the location to it, set the location's source to the
- *      website, and record the website as a cited source on the company.
+ *      business, reassign the location to it, set the location's source, and
+ *      record the source on the company.
  *
  * Flags: --limit N (process only N), --dry-run (no writes).
  *
@@ -33,8 +30,6 @@ import { TRADE_LABELS } from "@/lib/constants";
  * website evidences a real local operator but does not prove the absence of a
  * hidden parent. Source-backed corrections are welcome via /submit.
  */
-
-const PLACES_KEY = process.env.MAPS_API ?? process.env.GOOGLE_PLACES_API_KEY;
 
 // National franchise / PE-rollup brands. A business whose name contains any of
 // these is a franchise or known rollup brand, not a clean local independent.
@@ -88,22 +83,6 @@ function parseArgs() {
   return { limit, dryRun };
 }
 
-async function fetchWebsite(placeId: string): Promise<string | null> {
-  if (!PLACES_KEY) throw new Error("MAPS_API is not set");
-  const res = await fetch(`https://places.googleapis.com/v1/places/${placeId}`, {
-    headers: {
-      "x-goog-api-key": PLACES_KEY,
-      "x-goog-fieldmask": "websiteUri",
-    },
-  });
-  if (!res.ok) {
-    console.warn(`  ! place details ${placeId} -> ${res.status}`);
-    return null;
-  }
-  const json = (await res.json()) as { websiteUri?: string };
-  return json.websiteUri ?? null;
-}
-
 function isFranchise(name: string): boolean {
   const n = name.toLowerCase();
   return FRANCHISE_BRANDS.some((b) => n.includes(b));
@@ -137,9 +116,8 @@ async function main() {
       continue;
     }
 
-    // Prefer the website captured at import time; only hit Place Details for
-    // older rows that predate that field.
-    const website = loc.website ?? (loc.googlePlaceId ? await fetchWebsite(loc.googlePlaceId) : null);
+    // Website captured at import time (Places or OSM). No paid Place Details.
+    const website = loc.website ?? null;
     if (!website) noWebsite++;
     const source = website ?? loc.sourceUrl ?? `https://www.google.com/maps/place/?q=place_id:${loc.googlePlaceId}`;
     const tradeLabel = loc.trade ? TRADE_LABELS[loc.trade] : "home services";

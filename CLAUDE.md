@@ -16,9 +16,15 @@ proven otherwise, and confirm cost + get an explicit "yes, run it" first.
 "Keep expanding" / "get more data" is **not** blanket approval to spend on the
 Google APIs — ask each time.
 
-**Free** and fine to run without asking: the DB (Neon), `scripts/scrape-websites.ts`
-(plain HTTP fetches of business homepages — no Google API), typecheck/lint/build,
-and the seed scripts.
+**Free** and fine to run without asking: the DB (Neon), `pnpm import:osm`
+(`scripts/import-overpass.ts` — OpenStreetMap/Overpass, no key, ODbL open data),
+`scripts/scrape-websites.ts` (plain HTTP fetches of business homepages — no
+Google API), `enrich-imported.ts` (no longer calls Place Details), typecheck/
+lint/build, and the seed scripts.
+
+The app's map is powered by MapLibre + OpenFreeMap (OSM) tiles, **not** Google —
+the Google `MAPS_API` key is only ever used by the paid import/geocode scripts,
+so turning that key off does not affect the running app.
 
 ## Ownership modeling reminders
 
