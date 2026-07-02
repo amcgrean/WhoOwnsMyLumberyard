@@ -1,26 +1,36 @@
 import { NextResponse } from "next/server";
-import { sql, eq, and, isNull, ne } from "drizzle-orm";
+import { sql, eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, locations, ownershipEdges } from "@/lib/db/schema";
+import { companies, locations } from "@/lib/db/schema";
 
-export const revalidate = 600;
+// Depends on the ?state= query param, so it must not be statically cached.
+// We still cache aggressively at the edge via cache-control below (the CDN
+// keys on the full URL, so each state gets its own cached payload).
+export const dynamic = "force-dynamic";
 
 /**
- * Returns a GeoJSON FeatureCollection of every geocoded location.
+ * Returns a GeoJSON FeatureCollection of geocoded locations, optionally scoped
+ * to a single state via `?state=IA`. Scoping keeps the payload small — the
+ * national set is ~8K features (~1 MB); a single state is a fraction of that,
+ * which is why the map defaults to one state.
  *
- * Property keys are intentionally short (single-letter where unambiguous) to
- * keep the wire payload small — at 3K+ features even modest savings per row
- * add up. The map component reads them via a tiny aliasing layer.
+ * Property keys are intentionally short to keep the wire payload small:
+ *   slug   s  – yard slug for the detail-page link
+ *   name   n  – display name
+ *   city   c  – city
+ *   st     t  – two-letter state code
+ *   brand  b  – operating-brand (company) name
+ *   owner  o  – ultimate ownership parent name, or null when independent
+ *   trade  r  – trade (lumber/plumbing/electrical/hvac) or null
  *
- *   slug  s  – yard slug for the detail-page link
- *   name  n  – display name for the flyout
- *   city  c  – city for the flyout subhead
- *   st    t  – two-letter state code for the flyout subhead
- *   brand b  – operating-brand name for the flyout subhead
- *   cons  x  – boolean: true if currently under a consolidator parent edge
- *   trade r  – trade (lumber/plumbing/electrical/hvac) or null, for filtering
+ * The single payload drives both the map pins and the results list, so `o`
+ * (present ⇒ consolidator/PE-owned) doubles as the red/green pin signal.
  */
-export async function GET() {
+export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const stateParam = searchParams.get("state");
+  const state = stateParam && /^[A-Za-z]{2}$/.test(stateParam) ? stateParam.toUpperCase() : null;
+
   let rows: Array<{
     slug: string;
     displayName: string;
@@ -29,11 +39,12 @@ export async function GET() {
     lat: string | null;
     lng: string | null;
     trade: string | null;
-    companyId: string;
     companyName: string;
+    ownerName: string | null;
   }> = [];
-  const consolidatedSet = new Set<string>();
+
   try {
+    const geocoded = sql`${locations.lat} IS NOT NULL AND ${locations.lng} IS NOT NULL`;
     rows = await db
       .select({
         slug: locations.slug,
@@ -43,21 +54,21 @@ export async function GET() {
         lat: locations.lat,
         lng: locations.lng,
         trade: locations.trade,
-        companyId: companies.id,
         companyName: companies.name,
+        // ownerName: the operating company's current (active) ownership parent,
+        // excluding co-op membership (member_of is not ownership).
+        ownerName: sql<string | null>`(
+          select p.name from ownership_edges e
+          join companies p on p.id = e.parent_id
+          where e.child_id = ${companies.id} and e.end_date is null
+            and e.relationship <> 'member_of'
+          order by e.start_date desc nulls last
+          limit 1
+        )`,
       })
       .from(locations)
       .innerJoin(companies, eq(locations.companyId, companies.id))
-      .where(sql`${locations.lat} IS NOT NULL AND ${locations.lng} IS NOT NULL`);
-
-    if (rows.length) {
-      const edges = await db
-        .select({ childId: ownershipEdges.childId })
-        .from(ownershipEdges)
-        // Exclude co-op membership — it is not ownership.
-        .where(and(isNull(ownershipEdges.endDate), ne(ownershipEdges.relationship, "member_of")));
-      for (const e of edges) consolidatedSet.add(e.childId);
-    }
+      .where(state ? and(geocoded, eq(locations.state, state)) : geocoded);
   } catch (err) {
     console.warn("[api/map] DB read failed", err);
   }
@@ -74,7 +85,7 @@ export async function GET() {
       c: r.city,
       t: r.state,
       b: r.companyName,
-      x: consolidatedSet.has(r.companyId),
+      o: r.ownerName,
       r: r.trade,
     },
   }));
@@ -83,11 +94,8 @@ export async function GET() {
     { type: "FeatureCollection", features },
     {
       headers: {
-        // Cache aggressively at the edge; bump revalidate when the seed/import
-        // pipeline writes new yards. ISR also revalidates every 600s.
         "cache-control":
           "public, max-age=300, s-maxage=600, stale-while-revalidate=86400",
-        // Hint the CDN it's compressible.
         "content-type": "application/json; charset=utf-8",
       },
     }

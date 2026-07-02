@@ -7,6 +7,7 @@ import {
 } from "@/lib/constants";
 import { BizRow } from "@/components/biz-row";
 import { OwnershipBadge } from "@/components/ownership-badge";
+import { ResultsMap, type MapPoint } from "@/components/map/results-map";
 import { SearchField } from "./search-field";
 import Link from "next/link";
 import type { Trade } from "@/lib/db/schema";
@@ -56,6 +57,22 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
     : grouped.location;
   const companies = grouped.company;
 
+  // Any matched businesses that carry coordinates get plotted on a map so a
+  // location search (zip, city) shows where the results are, not just a list.
+  const mapPoints: MapPoint[] = locations
+    .filter((r) => r.lat != null && r.lng != null)
+    .map((r) => ({
+      slug: r.slug,
+      name: r.displayName,
+      city: r.city,
+      state: r.state,
+      brand: r.displayName,
+      owner: null,
+      trade: r.trade,
+      lng: Number(r.lng),
+      lat: Number(r.lat),
+    }));
+
   return (
     <div className="mx-auto max-w-3xl px-4 pb-16 pt-4">
       <h1 className="m-0 font-serif text-[clamp(26px,4vw,36px)] font-semibold leading-[1.1] tracking-tight text-ink">
@@ -74,6 +91,16 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
             <div className="mt-6">
               <TradeFilter q={q} active={activeTrade} />
             </div>
+          ) : null}
+
+          {mapPoints.length > 0 ? (
+            <section className="mt-6">
+              <ResultsMap points={mapPoints} className="h-[360px]" />
+              <p className="mt-2 text-[12px] text-muted">
+                {mapPoints.length.toLocaleString()} of {locations.length.toLocaleString()}{" "}
+                matched businesses have mapped locations. Click a pin for details.
+              </p>
+            </section>
           ) : null}
 
           {/* ---------------- Businesses ---------------- */}
