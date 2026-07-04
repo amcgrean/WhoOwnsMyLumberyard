@@ -2,24 +2,33 @@ import type { Trade } from "@/lib/db/schema";
 import { TRADE_SHORT_LABELS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-const STYLES: Record<Trade, string> = {
-  lumber: "bg-[var(--color-trade-lumber)]/10 text-[var(--color-trade-lumber)] ring-[var(--color-trade-lumber)]/30",
-  plumbing: "bg-[var(--color-trade-plumbing)]/10 text-[var(--color-trade-plumbing)] ring-[var(--color-trade-plumbing)]/30",
-  electrical: "bg-[var(--color-trade-electrical)]/10 text-[var(--color-trade-electrical)] ring-[var(--color-trade-electrical)]/30",
-  hvac: "bg-[var(--color-trade-hvac)]/10 text-[var(--color-trade-hvac)] ring-[var(--color-trade-hvac)]/30",
+// Trade color, shared with globals.css (--color-trade-*). Kept inline here so the
+// chip can build the tinted background/border with color-mix at exactly the design
+// spec (12% / 32% toward white).
+const TRADE_COLOR: Record<Trade, string> = {
+  lumber: "oklch(0.48 0.09 68)",
+  plumbing: "oklch(0.49 0.13 252)",
+  electrical: "oklch(0.53 0.13 78)",
+  hvac: "oklch(0.50 0.10 205)",
 };
 
 /** Small color-coded pill labeling a business's trade. Renders nothing when trade is null. */
 export function TradeChip({ trade, className }: { trade?: Trade | null; className?: string }) {
   if (!trade) return null;
+  const c = TRADE_COLOR[trade];
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ring-1",
-        STYLES[trade],
+        "inline-flex items-center gap-[5px] whitespace-nowrap rounded-full border py-[2px] pl-2 pr-[9px] text-[11.5px] font-semibold leading-normal",
         className
       )}
+      style={{
+        color: c,
+        background: `color-mix(in oklch, ${c} 12%, white)`,
+        borderColor: `color-mix(in oklch, ${c} 32%, white)`,
+      }}
     >
+      <span className="h-1.5 w-1.5 shrink-0 rounded-full" style={{ background: c }} />
       {TRADE_SHORT_LABELS[trade]}
     </span>
   );

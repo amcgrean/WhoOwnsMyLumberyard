@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, locations, ownershipEdges } from "@/lib/db/schema";
+import { companies, locations, ownershipEdges, type Trade } from "@/lib/db/schema";
 import { SearchBar } from "@/components/search-bar";
-import { SITE_TAGLINE } from "@/lib/constants";
+import { TradeChip } from "@/components/trade-chip";
 
 export const revalidate = 600; // 10 minutes
 
@@ -41,120 +41,180 @@ async function getStats() {
   }
 }
 
+// Trade cards for the "Browse Iowa by trade" section. Each links to the existing
+// /state/iowa/[trade] landing route.
+const TRADE_CARDS: ReadonlyArray<{ trade: Trade; title: string; blurb: string; stat: string }> = [
+  {
+    trade: "hvac",
+    title: "HVAC",
+    blurb:
+      "Heating and cooling companies — the trade private-equity roll-ups have moved into hardest across Iowa.",
+    stat: "Who really owns the name on the truck",
+  },
+  {
+    trade: "plumbing",
+    title: "Plumbing",
+    blurb:
+      "Plumbers and drain companies, from family-owned shops to consolidator-backed brands.",
+    stat: "Locally owned vs. rolled up",
+  },
+  {
+    trade: "electrical",
+    title: "Electrical",
+    blurb:
+      "Electrical contractors and repair companies — trace each back to its ultimate owner.",
+    stat: "Independent, ESOP, or PE-backed",
+  },
+  {
+    trade: "lumber",
+    title: "Lumber & Building Materials",
+    blurb:
+      "Lumberyards and building-materials dealers behind the local storefront and buying-group signage.",
+    stat: "Distributor, co-op, or consolidator",
+  },
+];
+
 export default async function HomePage() {
   const stats = await getStats();
   return (
-    <div>
-      <section className="mx-auto max-w-3xl px-4 pt-16 pb-10 text-center">
-        <h1 className="font-serif text-4xl sm:text-5xl tracking-tight">
-          Who owns my trades?
+    <div className="mx-auto max-w-5xl px-4 pb-16">
+      <section className="pt-14">
+        <div className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[var(--color-accent)]">
+          Iowa · Public ownership records
+        </div>
+        <h1 className="mt-3 max-w-[16ch] text-balance font-serif font-semibold leading-[1.05] tracking-tight text-[clamp(30px,5vw,52px)]">
+          The name on the truck is local. The owner might not be.
         </h1>
-        <p className="mt-4 text-[var(--color-muted)] text-lg">{SITE_TAGLINE}</p>
-        <p className="mt-2 text-[var(--color-muted)] max-w-xl mx-auto text-sm">
-          Look up a plumber, electrician, HVAC company, or lumberyard and trace the
-          ownership chain — from the brand on the sign to the ultimate owner. Tell a
-          locally-owned business from one rolled up by private equity.
+        <p className="mt-[18px] max-w-[60ch] leading-[1.6] text-[var(--color-muted)] text-[clamp(15px,2vw,18px)]">
+          Across Iowa, private-equity funds are quietly rolling up the plumbers,
+          electricians, HVAC companies, and lumberyards you already know — and keeping
+          the familiar name on the sign. We map who really owns them, with every link
+          sourced, so you can choose a locally-owned business on purpose.
         </p>
-        <div className="mt-8">
-          <SearchBar />
+
+        <div className="mt-[26px] max-w-[620px]">
+          <SearchBar variant="hero" />
         </div>
-        <p className="mt-3 text-xs text-[var(--color-muted)]">
-          Try a zip code, a business name, or a city.
-        </p>
-      </section>
-
-      <section className="mx-auto max-w-5xl px-4 grid gap-4 sm:grid-cols-3 mb-12">
-        <Stat label="Businesses tracked" value={stats.totalYards.toLocaleString()} />
-        <Stat label="Under consolidator ownership" value={`${stats.pctConsolidated}%`} />
-        <Stat label="Distinct PE & family-office owners" value={stats.peFirms.toLocaleString()} />
-      </section>
-
-      <section className="mx-auto max-w-5xl px-4 mb-16">
-        <div className="rounded-lg border border-[var(--color-rule)] bg-[var(--color-accent-muted)]/40 p-6">
-          <p className="text-xs uppercase tracking-wide text-[var(--color-muted)]">
-            New · Iowa
-          </p>
-          <h2 className="font-serif text-2xl mt-1">Who owns your local trades in Iowa?</h2>
-          <p className="mt-2 text-sm text-[var(--color-muted)] max-w-2xl">
-            Private-equity-backed platforms have been quietly buying up Iowa plumbers,
-            electricians, and HVAC companies — and keeping the local name on the truck.
-            See which are still locally owned and which aren&rsquo;t.
-          </p>
-          <div className="mt-4 flex flex-wrap gap-2 text-sm">
-            <Link
-              href="/state/iowa/hvac"
-              className="rounded-full bg-[var(--color-ink)] px-4 py-1.5 text-[var(--color-paper)] hover:opacity-90"
-            >
-              HVAC in Iowa
-            </Link>
-            <Link
-              href="/state/iowa/plumbing"
-              className="rounded-full bg-[var(--color-ink)] px-4 py-1.5 text-[var(--color-paper)] hover:opacity-90"
-            >
-              Plumbers in Iowa
-            </Link>
-            <Link
-              href="/state/iowa/electrical"
-              className="rounded-full bg-[var(--color-ink)] px-4 py-1.5 text-[var(--color-paper)] hover:opacity-90"
-            >
-              Electricians in Iowa
-            </Link>
-            <Link
-              href="/state/iowa"
-              className="rounded-full px-4 py-1.5 ring-1 ring-[var(--color-rule)] hover:border-[var(--color-accent)]"
-            >
-              All Iowa businesses →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-5xl px-4 mb-16">
-        <h2 className="font-serif text-2xl mb-4">Featured</h2>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FeatureCard
+        <div className="mt-2.5 text-[12.5px] text-[var(--color-muted)]">
+          Try{" "}
+          <Link
+            href="/search?q=Schaal"
+            className="text-[var(--color-accent)] underline underline-offset-2"
+          >
+            Schaal Heating &amp; Cooling
+          </Link>
+          ,{" "}
+          <Link
+            href="/search?q=Golden%20Rule"
+            className="text-[var(--color-accent)] underline underline-offset-2"
+          >
+            Golden Rule
+          </Link>
+          , or{" "}
+          <Link
             href="/map"
-            title="National map"
-            blurb="Every tracked yard, color-coded by ownership type."
+            className="text-[var(--color-accent)] underline underline-offset-2"
+          >
+            the map
+          </Link>
+          .
+        </div>
+
+        <div className="mt-[38px] grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+          <Stat
+            value={stats.totalYards.toLocaleString()}
+            label="Iowa businesses tracked"
+            color="var(--color-ink)"
           />
-          <FeatureCard
+          <Stat
+            value={`${stats.pctConsolidated}%`}
+            label="Under consolidator or private-equity ownership"
+            color="var(--color-badge-pe)"
+          />
+          <Stat
+            value={stats.peFirms.toLocaleString()}
+            label="Distinct PE & family-office owners on the record"
+            color="var(--color-accent)"
+          />
+        </div>
+        <div className="mt-3 text-[12px] text-[var(--color-muted)]">
+          Iowa dataset · last updated April 2025 ·{" "}
+          <Link
             href="/methodology"
-            title="Methodology"
-            blurb="How ownership is verified, what 'verified' means, what's still missing."
-          />
-          <FeatureCard
-            href="/about"
-            title="About"
-            blurb="Who runs this site, why it exists, and how to contribute."
-          />
-          <FeatureCard
-            href="/submit"
-            title="Submit a tip"
-            blurb="Know an ownership detail we don't? Send a source-backed correction."
-          />
+            className="text-[var(--color-accent)] underline underline-offset-2"
+          >
+            methodology &amp; sources
+          </Link>
+        </div>
+      </section>
+
+      <section className="mt-[52px] border-t border-[var(--color-rule)] pt-8">
+        <div className="flex flex-wrap items-baseline justify-between gap-4">
+          <h2 className="m-0 font-serif text-[24px] font-semibold tracking-tight">
+            Browse Iowa by trade
+          </h2>
+          <Link
+            href="/map"
+            className="text-sm font-semibold text-[var(--color-accent)]"
+          >
+            Open the full map →
+          </Link>
+        </div>
+        <div className="mt-5 grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
+          {TRADE_CARDS.map((t) => (
+            <TradeCard key={t.trade} {...t} />
+          ))}
         </div>
       </section>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ value, label, color }: { value: string; label: string; color: string }) {
   return (
-    <div className="rounded-md border border-[var(--color-rule)] p-5">
-      <div className="font-serif text-3xl">{value}</div>
-      <div className="mt-1 text-sm text-[var(--color-muted)]">{label}</div>
+    <div className="rounded-[14px] border border-[var(--color-rule)] bg-[var(--color-paper)] p-5">
+      <div
+        className="font-serif text-[40px] font-semibold leading-none tracking-tight"
+        style={{ color }}
+      >
+        {value}
+      </div>
+      <div className="mt-2.5 text-[13.5px] leading-[1.45] text-[var(--color-muted)]">
+        {label}
+      </div>
     </div>
   );
 }
 
-function FeatureCard({ href, title, blurb }: { href: string; title: string; blurb: string }) {
+function TradeCard({
+  trade,
+  title,
+  blurb,
+  stat,
+}: {
+  trade: Trade;
+  title: string;
+  blurb: string;
+  stat: string;
+}) {
   return (
     <Link
-      href={href}
-      className="block rounded-md border border-[var(--color-rule)] p-5 hover:border-[var(--color-accent)] transition-colors"
+      href={`/state/iowa/${trade}`}
+      className="flex min-h-[150px] flex-col gap-3.5 rounded-[14px] border border-[var(--color-rule)] bg-[var(--color-paper)] p-[18px] transition hover:-translate-y-0.5 hover:border-[color-mix(in_oklch,var(--color-accent)_45%,var(--color-rule))] hover:shadow-[0_10px_26px_-18px_rgba(30,30,20,0.55)]"
     >
-      <div className="font-serif text-lg">{title}</div>
-      <div className="mt-1 text-sm text-[var(--color-muted)]">{blurb}</div>
+      <div>
+        <TradeChip trade={trade} />
+      </div>
+      <div className="mt-0.5 font-serif text-[19px] font-semibold leading-[1.2]">
+        {title}
+      </div>
+      <div className="-mt-1 text-[13px] leading-[1.5] text-[var(--color-muted)]">
+        {blurb}
+      </div>
+      <div className="mt-auto flex items-center justify-between gap-2 border-t border-dashed border-[var(--color-rule)] pt-2">
+        <span className="text-[12.5px] text-[var(--color-muted)]">{stat}</span>
+        <span className="text-[18px] font-semibold text-[var(--color-accent)]">→</span>
+      </div>
     </Link>
   );
 }

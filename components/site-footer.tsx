@@ -1,41 +1,47 @@
 import Link from "next/link";
-import { SITE_NAME } from "@/lib/constants";
 
 export function SiteFooter() {
   const year = new Date().getFullYear();
   return (
-    <footer className="border-t border-[var(--color-rule)] mt-16">
-      <div className="mx-auto max-w-6xl px-4 py-8 grid gap-6 sm:grid-cols-3 text-sm text-[var(--color-muted)]">
-        <div>
-          <p className="font-serif text-[var(--color-ink)]">{SITE_NAME}</p>
-          <p className="mt-2">
-            A public, sourced reference on who owns local trade &amp; building-materials
-            businesses — plumbing, electrical, HVAC, and lumber.
-          </p>
-        </div>
-        <div>
-          <p className="text-[var(--color-ink)] mb-2">Browse</p>
-          <ul className="space-y-1">
-            <li><Link href="/map">National map</Link></li>
-            <li><Link href="/search">Search</Link></li>
-            <li><Link href="/methodology">Methodology</Link></li>
-            <li><Link href="/about">About</Link></li>
-          </ul>
-        </div>
-        <div>
-          <p className="text-[var(--color-ink)] mb-2">Contribute</p>
-          <ul className="space-y-1">
-            <li><Link href="/submit">Submit a correction or tip</Link></li>
-            <li>
-              <a href="https://github.com/amcgrean/WhoOwnsMyLumberyard" target="_blank" rel="noreferrer">
-                Source on GitHub
-              </a>
-            </li>
-          </ul>
-        </div>
+    <footer className="mt-[60px] border-t border-rule">
+      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-3 px-5 pb-[10px] pt-6">
+        <p className="max-w-[52ch] text-[12.5px] leading-[1.5] text-muted">
+          Every ownership claim links to a primary source. &ldquo;Independent&rdquo;
+          reflects the best available public record, not certainty &mdash; private
+          deals often go unannounced.
+        </p>
+        <p className="text-[12.5px] text-muted">
+          A journalism-grade public database &middot; Iowa
+        </p>
       </div>
-      <div className="mx-auto max-w-6xl px-4 pb-8 text-xs text-[var(--color-muted)]">
-        © {year}. Code under MIT. Compiled ownership data published under CC&nbsp;BY-SA&nbsp;4.0.
+
+      <div className="mx-auto flex max-w-[1180px] flex-wrap items-center gap-x-4 gap-y-1 px-5 pb-8 text-[12.5px] text-muted">
+        <Link href="/map" className="hover:text-ink">
+          National map
+        </Link>
+        <Link href="/search" className="hover:text-ink">
+          Search
+        </Link>
+        <Link href="/methodology" className="hover:text-ink">
+          Methodology
+        </Link>
+        <Link href="/about" className="hover:text-ink">
+          About
+        </Link>
+        <Link href="/submit" className="hover:text-ink">
+          Submit a correction or tip
+        </Link>
+        <a
+          href="https://github.com/amcgrean/WhoOwnsMyLumberyard"
+          target="_blank"
+          rel="noreferrer"
+          className="hover:text-ink"
+        >
+          Source on GitHub
+        </a>
+        <span className="ml-auto">
+          &copy; {year} &middot; Code under MIT &middot; Data CC&nbsp;BY-SA&nbsp;4.0
+        </span>
       </div>
     </footer>
   );

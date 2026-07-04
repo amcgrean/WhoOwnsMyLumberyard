@@ -11,6 +11,8 @@ export type SearchResultLocation = {
   state: string;
   zip: string;
   trade: Trade | null;
+  lat: string | null;
+  lng: string | null;
 };
 
 export type SearchResultCompany = {
@@ -41,6 +43,8 @@ async function searchLocationsByZip(zip: string, limit: number): Promise<SearchR
       state: locations.state,
       zip: locations.zip,
       trade: locations.trade,
+      lat: locations.lat,
+      lng: locations.lng,
     })
     .from(locations)
     .where(sql`${locations.zip} = ${zip}`)
@@ -61,6 +65,8 @@ async function searchLocationsByZipPrefix(
       state: locations.state,
       zip: locations.zip,
       trade: locations.trade,
+      lat: locations.lat,
+      lng: locations.lng,
     })
     .from(locations)
     .where(sql`${locations.zip} LIKE ${prefix + "%"}`)
@@ -101,6 +107,8 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
       state: locations.state,
       zip: locations.zip,
       trade: locations.trade,
+      lat: locations.lat,
+      lng: locations.lng,
     })
     .from(locations)
     .where(sql`${locDoc} @@ ${tsq}`)
@@ -140,6 +148,8 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
           state: locations.state,
           zip: locations.zip,
           trade: locations.trade,
+          lat: locations.lat,
+          lng: locations.lng,
         })
         .from(locations)
         .where(
