@@ -36,15 +36,18 @@ const SOCIAL_PATTERNS: Array<{ label: string; re: RegExp }> = [
 // Widget / share / tracking URLs that are not the business's own profile.
 const BAD_SOCIAL = /sharer|\/plugins\/|\/intent\/|\/share|dialog|\/tr\b|\/gtag|\/embed|profile\.php\?id=$/i;
 
-// PE roll-up platforms (from the TradeRunner platforms chart). Multi-word to
-// avoid matching common English / city names.
+// PE roll-up platforms (from the TradeRunner platforms chart). Each entry is a
+// distinctive, full brand phrase — bare/generic tokens like "any hour",
+// "near u", "service partners", or "home services group" were removed or made
+// specific because they substring-match ordinary marketing copy ("available
+// any hour", "companies near us", "trusted service partners").
 const PE_PLATFORMS = [
   "apex service partners",
   "wrench group",
   "sila services",
   "redwood services",
   "turnpoint",
-  "any hour",
+  "any hour services", // the brand — not bare "any hour"
   "leap partners",
   "legacy service partners",
   "liberty service partners",
@@ -52,17 +55,37 @@ const PE_PLATFORMS = [
   "authority brands",
   "strikepoint",
   "blue cardinal",
-  "northwinds",
   "p1 service group",
   "resixperts",
   "granite comfort",
   "champions group",
-  "cascade services",
-  "near u",
   "premistar",
-  "home services group",
-  "service partners",
 ];
+
+// Brand-attribution cues. A platform name only counts when one of these appears
+// near it, so a passing mention in prose doesn't flag — we want "proudly part
+// of the Apex Service Partners family", not "…serving you any hour of the day".
+const ATTRIBUTION = /part of|family of|proudly|powered by|owned by|acquired by|backed by|portfolio|a\s+\w+\s+company|brand of|member of the|now part|joined/;
+const ATTRIBUTION_WINDOW = 90;
+
+function escapeRegExp(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Find a PE-platform brand mentioned in a brand-attribution context. Returns the
+// matched platform name, or null. `lower` is the lowercased page HTML.
+function findPePlatform(lower: string): string | null {
+  for (const p of PE_PLATFORMS) {
+    const re = new RegExp(`\\b${escapeRegExp(p)}\\b`, "g");
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(lower)) !== null) {
+      const start = Math.max(0, m.index - ATTRIBUTION_WINDOW);
+      const end = Math.min(lower.length, m.index + p.length + ATTRIBUTION_WINDOW);
+      if (ATTRIBUTION.test(lower.slice(start, end))) return p;
+    }
+  }
+  return null;
+}
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -150,7 +173,7 @@ async function main() {
       const socials = extractSocials(html);
       const isNexstar = lower.includes("nexstar");
       const isServiceNation = /service\s*nation|service\s*roundtable/.test(lower);
-      const peMatch = PE_PLATFORMS.find((p) => lower.includes(p));
+      const peMatch = findPePlatform(lower);
 
       if (peMatch) {
         peFlags.push({ slug: c.slug, name: c.name, city: c.city, website: c.website!, matched: peMatch });
