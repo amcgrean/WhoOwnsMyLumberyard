@@ -67,7 +67,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       city: r.city,
       state: r.state,
       brand: r.displayName,
-      owner: null,
+      owner: r.ownerName,
       trade: r.trade,
       lng: Number(r.lng),
       lat: Number(r.lat),
@@ -118,9 +118,14 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                     name={r.displayName}
                     city={r.city}
                     state={r.state}
-                    ownerLine={r.zip || (r.trade ? TRADE_SHORT_LABELS[r.trade] : "On the record")}
+                    ownerLine={
+                      r.ownerName
+                        ? `Owned by ${r.ownerName}`
+                        : r.zip ||
+                          (r.trade ? TRADE_SHORT_LABELS[r.trade] : "On the record")
+                    }
                     trade={r.trade}
-                    badge="unknown"
+                    badge={r.ownerName ? "private_equity" : "independent"}
                   />
                 ))
               ) : (

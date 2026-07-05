@@ -13,6 +13,7 @@ export type SearchResultLocation = {
   trade: Trade | null;
   lat: string | null;
   lng: string | null;
+  ownerName: string | null;
 };
 
 export type SearchResultCompany = {
@@ -33,6 +34,18 @@ export type SearchResult = SearchResultLocation | SearchResultCompany;
 const locDoc = sql`to_tsvector('english', coalesce(${locations.displayName}, '') || ' ' || coalesce(${locations.city}, '') || ' ' || coalesce(${locations.state}, '') || ' ' || coalesce(${locations.zip}, ''))`;
 const compDoc = sql`to_tsvector('english', coalesce(${companies.name}, '') || ' ' || coalesce(${companies.legalName}, '') || ' ' || coalesce(${companies.description}, ''))`;
 
+// A location's current ultimate ownership parent name (null ⇒ independent).
+// Excludes co-op membership (member_of is not ownership). Mirrors /api/map so
+// search pins/badges color-code the same way as the map.
+const locOwner = sql<string | null>`(
+  select p.name from ownership_edges e
+  join companies p on p.id = e.parent_id
+  where e.child_id = ${locations.companyId} and e.end_date is null
+    and e.relationship <> 'member_of'
+  order by e.start_date desc nulls last
+  limit 1
+)`;
+
 async function searchLocationsByZip(zip: string, limit: number): Promise<SearchResultLocation[]> {
   const rows = await db
     .select({
@@ -45,6 +58,7 @@ async function searchLocationsByZip(zip: string, limit: number): Promise<SearchR
       trade: locations.trade,
       lat: locations.lat,
       lng: locations.lng,
+      ownerName: locOwner,
     })
     .from(locations)
     .where(sql`${locations.zip} = ${zip}`)
@@ -67,6 +81,7 @@ async function searchLocationsByZipPrefix(
       trade: locations.trade,
       lat: locations.lat,
       lng: locations.lng,
+      ownerName: locOwner,
     })
     .from(locations)
     .where(sql`${locations.zip} LIKE ${prefix + "%"}`)
@@ -109,6 +124,7 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
       trade: locations.trade,
       lat: locations.lat,
       lng: locations.lng,
+      ownerName: locOwner,
     })
     .from(locations)
     .where(sql`${locDoc} @@ ${tsq}`)
@@ -150,6 +166,7 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
           trade: locations.trade,
           lat: locations.lat,
           lng: locations.lng,
+          ownerName: locOwner,
         })
         .from(locations)
         .where(
