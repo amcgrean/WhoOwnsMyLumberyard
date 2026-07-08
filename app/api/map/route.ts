@@ -41,6 +41,7 @@ export async function GET(request: Request) {
     trade: string | null;
     companyName: string;
     ownerName: string | null;
+    franchiseOf: string | null;
   }> = [];
 
   try {
@@ -56,12 +57,23 @@ export async function GET(request: Request) {
         trade: locations.trade,
         companyName: companies.name,
         // ownerName: the operating company's current (active) ownership parent,
-        // excluding co-op membership (member_of is not ownership).
+        // excluding co-op membership and franchise affiliation (neither is
+        // ownership of the business).
         ownerName: sql<string | null>`(
           select p.name from ownership_edges e
           join companies p on p.id = e.parent_id
           where e.child_id = ${companies.id} and e.end_date is null
-            and e.relationship <> 'member_of'
+            and e.relationship not in ('member_of', 'franchise_of')
+          order by e.start_date desc nulls last
+          limit 1
+        )`,
+        // franchiseOf: the national brand this business is a franchisee of, if
+        // any — a locally-owned business operating under that brand.
+        franchiseOf: sql<string | null>`(
+          select p.name from ownership_edges e
+          join companies p on p.id = e.parent_id
+          where e.child_id = ${companies.id} and e.end_date is null
+            and e.relationship = 'franchise_of'
           order by e.start_date desc nulls last
           limit 1
         )`,
@@ -86,6 +98,7 @@ export async function GET(request: Request) {
       t: r.state,
       b: r.companyName,
       o: r.ownerName,
+      f: r.franchiseOf,
       r: r.trade,
     },
   }));

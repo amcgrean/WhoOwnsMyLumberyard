@@ -36,6 +36,7 @@ export type OwnershipBadgeKind =
   | "private_equity"
   | "public"
   | "coop"
+  | "franchise"
   | "family_mega"
   | "unknown";
 
@@ -44,6 +45,7 @@ export const OWNERSHIP_BADGE_LABELS: Record<OwnershipBadgeKind, string> = {
   private_equity: "Private Equity-owned",
   public: "Public Company",
   coop: "Co-op Member",
+  franchise: "Franchise",
   family_mega: "Family-Owned (Large)",
   unknown: "Ownership Unknown",
 };

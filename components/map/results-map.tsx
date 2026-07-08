@@ -8,7 +8,8 @@ import { TradeChip } from "@/components/trade-chip";
 import type { Trade } from "@/lib/db/schema";
 
 // One tracked business with coordinates. `owner` is the ultimate ownership
-// parent name (null ⇒ independent) — it drives the red/green pin color.
+// parent (null ⇒ not owned); `franchise` is the national brand this is a
+// franchisee of (null ⇒ not a franchise). Together they drive the pin color.
 export type MapPoint = {
   slug: string;
   name: string;
@@ -16,6 +17,7 @@ export type MapPoint = {
   state: string;
   brand: string;
   owner: string | null;
+  franchise?: string | null;
   trade: Trade | null;
   lng: number;
   lat: number;
@@ -28,6 +30,7 @@ type FlyoutFeature = {
   state: string;
   brand: string;
   owner: string | null;
+  franchise: string | null;
   trade: Trade | null;
 };
 
@@ -45,6 +48,7 @@ const FALLBACK_STYLE: maplibregl.StyleSpecification = {
 
 const PE_COLOR = "#a23a2a";
 const INDIE_COLOR = "#3b6b51";
+const FRANCHISE_COLOR = "#7c4fd4";
 
 function toFeatureCollection(points: MapPoint[]): GeoJSON.FeatureCollection {
   return {
@@ -59,8 +63,10 @@ function toFeatureCollection(points: MapPoint[]): GeoJSON.FeatureCollection {
         t: p.state,
         b: p.brand,
         o: p.owner,
+        f: p.franchise ?? null,
         r: p.trade,
         x: p.owner != null,
+        fr: p.franchise != null,
       },
     })),
   };
@@ -145,7 +151,14 @@ export function ResultsMap({
         filter: ["!", ["has", "point_count"]],
         paint: {
           "circle-radius": 6,
-          "circle-color": ["case", ["get", "x"], PE_COLOR, INDIE_COLOR],
+          "circle-color": [
+            "case",
+            ["get", "fr"],
+            FRANCHISE_COLOR,
+            ["get", "x"],
+            PE_COLOR,
+            INDIE_COLOR,
+          ],
           "circle-stroke-color": "#fff",
           "circle-stroke-width": 1.5,
         },
@@ -212,6 +225,7 @@ export function ResultsMap({
           state: String(p.t),
           brand: String(p.b),
           owner: p.o == null ? null : String(p.o),
+          franchise: p.f == null ? null : String(p.f),
           trade: (p.r as Trade | null) ?? null,
         });
       });
@@ -327,7 +341,11 @@ export function ResultsMap({
           </div>
           <div className="mt-1 text-xs text-muted">
             {flyout.city}, {flyout.state} ·{" "}
-            {flyout.owner ? `Owned by ${flyout.owner}` : flyout.brand}
+            {flyout.franchise
+              ? `Franchise of ${flyout.franchise}`
+              : flyout.owner
+                ? `Owned by ${flyout.owner}`
+                : flyout.brand}
           </div>
           <Link
             href={`/yard/${flyout.slug}`}
