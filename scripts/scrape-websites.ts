@@ -135,6 +135,47 @@ function extractSocials(html: string): string[] {
 }
 
 type PeFlag = { slug: string; name: string; city: string | null; website: string; matched: string };
+type FranchiseFlag = PeFlag;
+
+// National home-services FRANCHISE brands. Unlike PE roll-ups (which buy the
+// company outright), a franchisee is a locally-owned business operating under a
+// national brand — often under a local-sounding name that hides the affiliation
+// (e.g. "Olathe Heating & Cooling" is a One Hour franchise). The name-based
+// check in enrich-imported.ts can't catch those; this scans the website. Use
+// full, distinctive brand names — never bare "one hour" / "mr" tokens.
+const FRANCHISE_BRANDS = [
+  "one hour heating & air conditioning",
+  "one hour heating and air conditioning",
+  "one hour air conditioning & heating",
+  "aire serv",
+  "aire-serv",
+  "mr. rooter",
+  "mister sparky",
+  "mr. electric",
+  "benjamin franklin plumbing",
+  "rooter-man",
+  "bluefrog plumbing",
+  "z plumberz",
+  "z-plumberz",
+  "precision door service",
+];
+
+// The tell that a brand mention is a franchise relationship (not a passing
+// reference). Required somewhere on the page in addition to the brand name.
+const FRANCHISE_CUES = /franchise|independently owned and operated|independently owned & operated|each (?:location|franchise) is independently|authorized dealer/;
+
+// Detect a franchise affiliation the business's NAME doesn't already reveal.
+// Requires a full franchise-brand name (word-boundaried) AND a franchise cue on
+// the page. Returns the brand, or null.
+function findFranchise(lower: string, name: string): string | null {
+  if (!FRANCHISE_CUES.test(lower)) return null;
+  const lname = name.toLowerCase();
+  for (const b of FRANCHISE_BRANDS) {
+    if (lname.includes(b)) continue; // name already reveals it — enrich handles those
+    if (new RegExp(`\\b${escapeRegExp(b)}\\b`).test(lower)) return b;
+  }
+  return null;
+}
 
 async function main() {
   const { limit, dryRun, concurrency } = parseArgs();
@@ -157,6 +198,7 @@ async function main() {
   let socialsFound = 0;
   let members = 0;
   const peFlags: PeFlag[] = [];
+  const franchiseFlags: FranchiseFlag[] = [];
   let processed = 0;
 
   // Simple bounded-concurrency pool.
@@ -174,16 +216,20 @@ async function main() {
       const isNexstar = lower.includes("nexstar");
       const isServiceNation = /service\s*nation|service\s*roundtable/.test(lower);
       const peMatch = findPePlatform(lower);
+      const franchiseMatch = findFranchise(lower, c.name);
 
       if (peMatch) {
         peFlags.push({ slug: c.slug, name: c.name, city: c.city, website: c.website!, matched: peMatch });
+      }
+      if (franchiseMatch) {
+        franchiseFlags.push({ slug: c.slug, name: c.name, city: c.city, website: c.website!, matched: franchiseMatch });
       }
 
       if (dryRun) {
         if (socials.length) socialsFound++;
         if (isNexstar || isServiceNation) members++;
-        if (socials.length || isNexstar || peMatch) {
-          console.log(`  ${c.name} — socials:[${socials.map((s) => s.replace(/https?:\/\/(www\.)?/, "").split("/")[0]).join(",")}]${isNexstar ? " NEXSTAR" : ""}${isServiceNation ? " SERVICE-NATION" : ""}${peMatch ? ` PE?:${peMatch}` : ""}`);
+        if (socials.length || isNexstar || peMatch || franchiseMatch) {
+          console.log(`  ${c.name} — socials:[${socials.map((s) => s.replace(/https?:\/\/(www\.)?/, "").split("/")[0]).join(",")}]${isNexstar ? " NEXSTAR" : ""}${isServiceNation ? " SERVICE-NATION" : ""}${peMatch ? ` PE?:${peMatch}` : ""}${franchiseMatch ? ` FRANCHISE?:${franchiseMatch}` : ""}`);
         }
         continue;
       }
@@ -216,15 +262,20 @@ async function main() {
 
   await Promise.all(Array.from({ length: Math.max(1, concurrency) }, () => worker()));
 
-  // Write the PE-review report (never auto-reassigns).
+  // Write the review reports (never auto-reassigns — these are for human review).
   if (peFlags.length && !dryRun) {
     const path = `data/scraped/pe-review-flags.json`;
     await writeFile(path, JSON.stringify(peFlags, null, 2));
     console.log(`\nWrote ${peFlags.length} PE-review flags → ${path}`);
   }
+  if (franchiseFlags.length && !dryRun) {
+    const path = `data/scraped/franchise-review-flags.json`;
+    await writeFile(path, JSON.stringify(franchiseFlags, null, 2));
+    console.log(`Wrote ${franchiseFlags.length} franchise-review flags → ${path}`);
+  }
 
   console.log(
-    `\nDone. Socials found: ${socialsFound} · Network members: ${members} · PE flags: ${peFlags.length}`
+    `\nDone. Socials found: ${socialsFound} · Network members: ${members} · PE flags: ${peFlags.length} · Franchise flags: ${franchiseFlags.length}`
   );
 }
 

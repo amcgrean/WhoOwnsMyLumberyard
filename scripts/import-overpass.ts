@@ -23,7 +23,10 @@ import { locationSlug } from "@/lib/slug";
  */
 
 const TRADES = tradeEnum.enumValues as readonly string[];
-const ENDPOINT = "https://overpass-api.de/api/interpreter";
+// Overpass endpoint. Override with --endpoint <url> or OVERPASS_ENDPOINT to hit
+// a faster mirror (e.g. https://overpass.kumi.systems/api/interpreter) when the
+// default times out (504) on large states like CA/NY.
+const DEFAULT_ENDPOINT = "https://overpass-api.de/api/interpreter";
 
 // OSM craft/shop tags per trade.
 const TRADE_FILTERS: Record<string, string> = {
@@ -44,20 +47,22 @@ type OsmElement = {
 
 function parseArgs() {
   const args = process.argv.slice(2);
-  const out: { state?: string; trade?: string } = {};
+  const out: { state?: string; trade?: string; endpoint?: string } = {};
   for (let i = 0; i < args.length; i++) {
     if (args[i] === "--state") out.state = args[++i];
     else if (args[i] === "--trade") out.trade = args[++i];
+    else if (args[i] === "--endpoint") out.endpoint = args[++i];
   }
   if (!out.state || !out.trade) {
-    console.error('usage: pnpm import:osm --state XX --trade plumbing|electrical|hvac|lumber');
+    console.error('usage: pnpm import:osm --state XX --trade plumbing|electrical|hvac|lumber [--endpoint <url>]');
     process.exit(1);
   }
   if (!TRADES.includes(out.trade)) {
     console.error(`--trade must be one of: ${TRADES.join(", ")}`);
     process.exit(1);
   }
-  return out as { state: string; trade: string };
+  out.endpoint = out.endpoint ?? process.env.OVERPASS_ENDPOINT ?? DEFAULT_ENDPOINT;
+  return out as { state: string; trade: string; endpoint: string };
 }
 
 async function ensureUnverifiedIndependent() {
@@ -72,7 +77,7 @@ async function ensureUnverifiedIndependent() {
 }
 
 async function main() {
-  const { state, trade } = parseArgs();
+  const { state, trade, endpoint } = parseArgs();
   const filter = TRADE_FILTERS[trade];
   const query = `[out:json][timeout:90];
 area["ISO3166-2"="US-${state.toUpperCase()}"][admin_level=4]->.a;
@@ -81,7 +86,7 @@ area["ISO3166-2"="US-${state.toUpperCase()}"][admin_level=4]->.a;
 );
 out center tags;`;
 
-  const res = await fetch(ENDPOINT, {
+  const res = await fetch(endpoint, {
     method: "POST",
     headers: {
       "content-type": "application/x-www-form-urlencoded",
