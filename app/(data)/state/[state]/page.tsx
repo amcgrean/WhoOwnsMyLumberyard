@@ -66,12 +66,14 @@ export default async function StatePage({ params }: { params: Params }) {
   const ownerByChild = new Map<string, string>();
   if (operatingIds.length) {
     const edges = await db.query.ownershipEdges.findMany({
-      // Co-op membership (member_of) is not ownership — exclude it so co-op
-      // members read as independent, not "owned".
+      // Co-op membership (member_of) and franchise affiliation (franchise_of)
+      // are not ownership — exclude them so co-op members and franchisees don't
+      // read as "owned".
       where: and(
         inArray(ownershipEdges.childId, operatingIds),
         isNull(ownershipEdges.endDate),
-        ne(ownershipEdges.relationship, "member_of")
+        ne(ownershipEdges.relationship, "member_of"),
+        ne(ownershipEdges.relationship, "franchise_of")
       ),
       columns: { childId: true, parentId: true },
     });

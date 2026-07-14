@@ -36,6 +36,7 @@ const BADGE_VAR: Record<OwnershipBadgeKind, string> = {
   private_equity: "--color-badge-pe",
   public: "--color-badge-public",
   coop: "--color-badge-coop",
+  franchise: "--color-badge-franchise",
   family_mega: "--color-badge-family",
   unknown: "--color-badge-unknown",
 };

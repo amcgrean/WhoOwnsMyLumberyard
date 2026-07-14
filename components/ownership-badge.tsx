@@ -8,6 +8,7 @@ const CFG: Record<OwnershipBadgeKind, { varName: string; icon: string }> = {
   private_equity: { varName: "--color-badge-pe", icon: "M12 3 2 20h20L12 3Z M12 10v4 M12 16.5h.01" },
   public: { varName: "--color-badge-public", icon: "M4 21h16 M5 21V10l7-4 7 4v11 M10 21v-6h4v6" },
   coop: { varName: "--color-badge-coop", icon: "M9 11a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z M3 20a6 6 0 0 1 12 0 M16.5 11a3 3 0 0 0 0-6 M17 20a6 6 0 0 0-3-5.2" },
+  franchise: { varName: "--color-badge-franchise", icon: "M9 12a4 4 0 0 0 6 .5l2.5-2.5a4 4 0 0 0-5.7-5.7l-1 1 M15 12a4 4 0 0 0-6-.5L6.5 14a4 4 0 0 0 5.7 5.7l1-1" },
   family_mega: { varName: "--color-badge-family", icon: "M3 11 12 4l9 7 M5 9.5V20h14V9.5 M10 20v-5h4v5" },
   unknown: { varName: "--color-badge-unknown", icon: "M9.4 9a2.6 2.6 0 1 1 3.6 2.4c-1 .5-1.2 1.1-1.2 2.1 M12 17h.01" },
 };

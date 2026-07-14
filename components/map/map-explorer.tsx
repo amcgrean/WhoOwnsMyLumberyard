@@ -21,6 +21,7 @@ type GeoFeature = {
     t: string;
     b: string;
     o: string | null;
+    f: string | null;
     r: Trade | null;
   };
 };
@@ -33,6 +34,7 @@ function parseFeatures(fc: { features?: GeoFeature[] }): MapPoint[] {
     state: f.properties.t,
     brand: f.properties.b,
     owner: f.properties.o,
+    franchise: f.properties.f ?? null,
     trade: f.properties.r,
     lng: f.geometry.coordinates[0],
     lat: f.geometry.coordinates[1],
@@ -97,7 +99,9 @@ export function MapExplorer() {
     const q = query.trim().toLowerCase();
     return points.filter((p) => {
       if (trade && p.trade !== trade) return false;
-      if (ownership === "local" && p.owner != null) return false;
+      // "Local only" means truly local — not owned up a chain and not a
+      // franchisee of a national brand.
+      if (ownership === "local" && (p.owner != null || p.franchise != null)) return false;
       if (ownership === "consolidator" && p.owner == null) return false;
       if (q && !(`${p.name} ${p.city}`.toLowerCase().includes(q))) return false;
       return true;
@@ -194,6 +198,7 @@ export function MapExplorer() {
           </div>
           <div className="mt-[10px] flex flex-col gap-2">
             <LegendDot color="var(--color-badge-pe)" label="Consolidator / PE-owned" />
+            <LegendDot color="var(--color-badge-franchise)" label="Franchise of a national brand" />
             <LegendDot color="var(--color-badge-independent)" label="Independent or unverified" />
           </div>
           <p className="mt-3 text-[12px] text-muted">
@@ -245,8 +250,14 @@ export function MapExplorer() {
                   city={p.city}
                   state={p.state}
                   trade={p.trade}
-                  ownerLine={p.owner ? `Owned by ${p.owner}` : p.brand}
-                  badge={p.owner ? "private_equity" : "independent"}
+                  ownerLine={
+                    p.franchise
+                      ? `Franchise of ${p.franchise}`
+                      : p.owner
+                        ? `Owned by ${p.owner}`
+                        : p.brand
+                  }
+                  badge={p.franchise ? "franchise" : p.owner ? "private_equity" : "independent"}
                 />
               ))
             )}

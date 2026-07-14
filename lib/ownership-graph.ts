@@ -86,6 +86,11 @@ export async function getOwnedCompanies(ownerId: string): Promise<
 export function classifyOwnership(chain: OwnershipNode[]): OwnershipBadgeKind {
   if (chain.length === 0) return "unknown";
 
+  // A franchisee — its own nearest parent link is a franchise affiliation. It
+  // is locally owned but operates under a national brand, so surface it as its
+  // own category rather than inheriting the brand's (often PE) ownership above.
+  if (chain[1]?.edge?.relationship === "franchise_of") return "franchise";
+
   // Walk from the top down — ultimate owner first
   for (let i = chain.length - 1; i >= 0; i--) {
     const t = chain[i].company.type;
@@ -109,20 +114,26 @@ export function classifyOwnership(chain: OwnershipNode[]): OwnershipBadgeKind {
 
 /**
  * Returns the ultimate *ownership* parent — i.e. the top of the chain
- * reached only via subsidiary_of / acquired_by edges. Returns null when
- * the only parent relationship is member_of (co-op / buying-group
- * membership does not transfer ownership).
+ * reached only via ownership edges (owns / controls / subsidiary_of /
+ * acquired_by). Returns null when the nearest parent link is a non-ownership
+ * hop — co-op membership (member_of) or franchise affiliation (franchise_of)
+ * do not transfer ownership of the business below them.
  */
 export function ultimateOwner(chain: OwnershipNode[]): Company | null {
   if (chain.length === 0) return null;
-  // Find the highest node reachable without crossing a member_of edge.
   let best: Company | null = null;
   for (const node of chain) {
-    if (node.edge === null || node.edge.relationship !== "member_of") {
-      best = node.company;
+    // Stop at the first non-ownership hop — nodes above it own the brand, not
+    // the business we started from.
+    if (
+      node.edge &&
+      (node.edge.relationship === "member_of" || node.edge.relationship === "franchise_of")
+    ) {
+      break;
     }
+    best = node.company;
   }
-  // If the starting node (the yard itself) is the only non-member_of node,
+  // If the starting node (the business itself) is the only owner reached,
   // there is no ownership parent — return null.
   if (best?.id === chain[0].company.id) return null;
   return best;
