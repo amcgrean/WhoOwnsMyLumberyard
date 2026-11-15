@@ -32,14 +32,14 @@ export function ownershipKind(p: OwnershipParts): OwnershipBadgeKind {
   const all = [p.rootType, ...p.chainTypes];
   if (all.includes("public_company")) return "public";
   if (all.includes("pe_firm")) return "private_equity";
-  if (p.coop || all.includes("coop")) return "coop";
   if (all.includes("family_office")) return "family_mega";
-  if (p.chainTypes.length > 0) {
-    // Owned by a privately-held chain with no PE/public parent on record
-    // (e.g. ABC Supply → Hendricks Holding).
-    const top = p.chainTypes[p.chainTypes.length - 1];
-    return top === "consolidator" || top === "holding_company" ? "family_mega" : "unknown";
-  }
+  // Owned by a privately-held chain with no PE/public parent on record
+  // (e.g. ABC Supply → Hendricks Holding). Checked before co-op membership: a
+  // member yard bought by a large dealer (Munn → Mead Lumber) isn't local.
+  const top = p.chainTypes[p.chainTypes.length - 1];
+  if (top === "consolidator" || top === "holding_company") return "family_mega";
+  if (p.coop || all.includes("coop")) return "coop";
+  if (p.chainTypes.length > 0) return "unknown";
   return p.rootType === "yard" ? "independent" : "unknown";
 }
 

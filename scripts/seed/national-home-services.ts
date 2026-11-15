@@ -454,25 +454,44 @@ export async function seedNationalHomeServices() {
     ],
   });
 
-  // USA Hometown Experts — MSouth Equity Partners
-  await platform({
+  // USA Hometown Experts — GHK Capital Partners (acquired from MSouth, Oct 2026)
+  const { plat: usaHometown } = await platform({
     pe: {
-      name: "MSouth Equity Partners",
-      headquartersCity: "Atlanta",
-      headquartersState: "GA",
-      website: "https://www.msouth.com",
-      description:
-        "Private-equity firm; owner of USA Hometown Experts. (Reported to be exploring a sale in 2026 — ownership may change.)",
+      name: "GHK Capital Partners",
+      headquartersCity: "Greenwich",
+      headquartersState: "CT",
+      website: "https://www.ghkcapital.com",
+      description: "Private-equity firm; acquired USA Hometown Experts from MSouth Equity Partners in October 2026.",
     },
     platform: {
       name: "USA Hometown Experts",
-      headquartersCity: "Atlanta",
-      headquartersState: "GA",
+      headquartersCity: "Memphis",
+      headquartersState: "TN",
       website: "https://www.usahometownexperts.com",
       description:
-        "Residential HVAC, plumbing, and electrical platform (~9 locations across the Southeast). Owned by MSouth Equity Partners.",
+        "Residential HVAC, plumbing, and electrical platform (eight local brands across the Southeast). Owned by GHK Capital Partners since October 2026; previously MSouth Equity Partners.",
     },
-    edgeNote: "MSouth Equity Partners owns USA Hometown Experts.",
+    startDate: "2026-10-15",
+    edgeNote: "GHK Capital Partners acquired USA Hometown Experts from MSouth Equity Partners (reported October 15, 2026).",
+    sources: [
+      "https://www.paulweiss.com/insights/client-news/ghk-capital-partners-acquires-usa-hometown-experts",
+      "https://pulse2.com/ghk-capital-partners-acquires-usa-hometown-experts-to-accelerate-southeast-expansion/",
+    ],
+  });
+  const msouth = await upsertCompany({
+    type: "pe_firm",
+    name: "MSouth Equity Partners",
+    headquartersCity: "Atlanta",
+    headquartersState: "GA",
+    website: "https://www.msouth.com",
+    description: "Private-equity firm; former owner of USA Hometown Experts (sold to GHK Capital Partners in October 2026).",
+  });
+  await upsertEdge({
+    parentId: msouth.id,
+    childId: usaHometown.id,
+    relationship: "controls",
+    endDate: "2026-10-15",
+    note: "MSouth Equity Partners owned USA Hometown Experts until its sale to GHK Capital Partners in October 2026.",
     sources: ["https://www.msouth.com/Portfolio/Bio?id=2045"],
   });
 }
