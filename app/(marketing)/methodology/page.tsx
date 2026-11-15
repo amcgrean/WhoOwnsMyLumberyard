@@ -35,6 +35,39 @@ export default function MethodologyPage() {
         unverified.
       </p>
 
+      <h2>What the badges mean</h2>
+      <ul>
+        <li>
+          <strong>Independent.</strong> Owned locally, with no private-equity firm, public
+          company, or larger private chain above it on the public record.
+        </li>
+        <li>
+          <strong>Co-op Member.</strong> Independently owned, and a member of a buying group
+          such as LMC or Do it Best. Membership is not ownership.
+        </li>
+        <li>
+          <strong>Franchise.</strong> Independently owned under a national brand&rsquo;s
+          license (Mr. Rooter, One Hour, Roto-Rooter franchises).
+        </li>
+        <li>
+          <strong>Private Equity-owned.</strong> A private-equity firm sits somewhere in the
+          ownership chain.
+        </li>
+        <li>
+          <strong>Public Company.</strong> Owned by a company whose stock trades publicly.
+        </li>
+        <li>
+          <strong>Private Chain.</strong> Owned by a large private company that runs
+          locations across many markets, such as ABC Supply or 84 Lumber. These companies
+          may be family-held at the top, but the business near you is one branch of a
+          national or regional chain, not a local family business.
+        </li>
+        <li>
+          <strong>Unverified.</strong> Imported from public listings and not yet checked
+          against an ownership source.
+        </li>
+      </ul>
+
       <h2>Ownership type definitions</h2>
       <ul>
         <li>

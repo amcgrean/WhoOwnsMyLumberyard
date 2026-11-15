@@ -40,7 +40,7 @@ function buyerLabel(n: NewsItem): string | undefined {
   if (n.acquirer.ownerName) return `Buyer owned by ${n.acquirer.ownerName}`;
   if (n.acquirer.type === "pe_firm") return "Private-equity firm";
   if (n.acquirer.type === "public_company") return "Public company";
-  if (n.acquirer.kind === "family_mega") return "Large private company";
+  if (n.acquirer.kind === "family_mega") return "Private chain";
   if (n.acquirer.kind === "independent") return "Independently owned buyer";
   return undefined;
 }
