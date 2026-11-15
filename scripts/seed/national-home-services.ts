@@ -358,7 +358,7 @@ export async function seedNationalHomeServices() {
       headquartersState: "NY",
       website: "https://www.newmountaincapital.com",
       description:
-        "Private-equity firm; acquired Horizon Services in 2024 from Sun Capital Partners.",
+        "Private-equity firm; acquired Horizon Services in November 2019 from an affiliate of Sun Capital Partners.",
     },
     platform: {
       name: "Horizon Services",
@@ -366,11 +366,14 @@ export async function seedNationalHomeServices() {
       headquartersState: "DE",
       website: "https://www.horizonservices.com",
       description:
-        "Residential HVAC and plumbing platform (~29 locations across the Mid-Atlantic and Southeast). Owned by New Mountain Capital since 2024 (previously Sun Capital Partners).",
+        "Residential HVAC and plumbing platform (~29 locations across the Mid-Atlantic and Southeast). Owned by New Mountain Capital since November 2019 (previously Sun Capital Partners).",
     },
-    startDate: "2024-01-01",
-    edgeNote: "New Mountain Capital acquired Horizon Services in 2024 from Sun Capital Partners.",
-    sources: ["https://www.newmountaincapital.com/portfolio/horizon-services/"],
+    startDate: "2019-11-01",
+    edgeNote: "New Mountain Capital acquired Horizon Services in November 2019 from an affiliate of Sun Capital Partners.",
+    sources: [
+      "https://www.newmountaincapital.com/portfolio/horizon-services/",
+      "https://peprofessional.com/2019/11/sun-sells-horizon-new-mountain/",
+    ],
   });
 
   // ── Commercial / institutional mechanical roll-ups (flagged) ──────────

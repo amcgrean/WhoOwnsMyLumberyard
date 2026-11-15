@@ -6,10 +6,12 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import Link from "next/link";
 import { TradeChip } from "@/components/trade-chip";
 import type { Trade } from "@/lib/db/schema";
+import type { OwnershipBadgeKind } from "@/lib/constants";
+import { OwnershipBadge } from "@/components/ownership-badge";
 
-// One tracked business with coordinates. `owner` is the ultimate ownership
-// parent (null ⇒ not owned); `franchise` is the national brand this is a
-// franchisee of (null ⇒ not a franchise). Together they drive the pin color.
+// One tracked business with coordinates. `kind` is its classified ownership
+// badge (drives the pin color); `owner` is the immediate ownership parent and
+// `franchise` the national brand it operates under, for the flyout line.
 export type MapPoint = {
   slug: string;
   name: string;
@@ -18,6 +20,7 @@ export type MapPoint = {
   brand: string;
   owner: string | null;
   franchise?: string | null;
+  kind: OwnershipBadgeKind;
   trade: Trade | null;
   lng: number;
   lat: number;
@@ -31,6 +34,7 @@ type FlyoutFeature = {
   brand: string;
   owner: string | null;
   franchise: string | null;
+  kind: OwnershipBadgeKind;
   trade: Trade | null;
 };
 
@@ -46,9 +50,17 @@ const FALLBACK_STYLE: maplibregl.StyleSpecification = {
   layers: [{ id: "bg", type: "background", paint: { "background-color": "#e8e6df" } }],
 };
 
-const PE_COLOR = "#a23a2a";
-const INDIE_COLOR = "#3b6b51";
-const FRANCHISE_COLOR = "#7c4fd4";
+// Pin colors per ownership kind — hex equivalents of the --color-badge-*
+// tokens (MapLibre paint can't read CSS variables).
+export const KIND_COLORS: Record<OwnershipBadgeKind, string> = {
+  independent: "#2f7a4b",
+  coop: "#2c7f89",
+  franchise: "#7c4fd4",
+  private_equity: "#b8382c",
+  public: "#2f62b0",
+  family_mega: "#a5741b",
+  unknown: "#8a8f98",
+};
 
 function toFeatureCollection(points: MapPoint[]): GeoJSON.FeatureCollection {
   return {
@@ -65,8 +77,7 @@ function toFeatureCollection(points: MapPoint[]): GeoJSON.FeatureCollection {
         o: p.owner,
         f: p.franchise ?? null,
         r: p.trade,
-        x: p.owner != null,
-        fr: p.franchise != null,
+        k: p.kind,
       },
     })),
   };
@@ -122,6 +133,14 @@ export function ResultsMap({
         cluster: true,
         clusterMaxZoom: 12,
         clusterRadius: 50,
+        // Count chain-owned businesses inside each cluster so a cluster that
+        // hides PE/public/chain-owned pins doesn't read as "all independent".
+        clusterProperties: {
+          owned: [
+            "+",
+            ["case", ["in", ["get", "k"], ["literal", ["private_equity", "public", "family_mega"]]], 1, 0],
+          ],
+        },
       });
       map.addLayer({
         id: "clusters",
@@ -129,21 +148,32 @@ export function ResultsMap({
         source: "yards",
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": [
-            "step",
-            ["get", "point_count"],
-            "#3b6b51",
-            10,
-            "#2d4a3a",
-            50,
-            "#1f3527",
-          ],
-          "circle-radius": ["step", ["get", "point_count"], 14, 10, 18, 50, 24, 200, 30],
-          "circle-opacity": 0.9,
-          "circle-stroke-width": 2,
-          "circle-stroke-color": "#fff",
+          // Neutral fill — the cluster itself says nothing about ownership…
+          "circle-color": "#3f4a52",
+          "circle-radius": ["step", ["get", "point_count"], 15, 10, 19, 50, 25, 200, 31],
+          "circle-opacity": 0.88,
+          // …but a red ring flags that it contains chain-owned businesses.
+          "circle-stroke-width": ["case", [">", ["get", "owned"], 0], 3.5, 2],
+          "circle-stroke-color": ["case", [">", ["get", "owned"], 0], KIND_COLORS.private_equity, "#ffffff"],
         },
       });
+      // Count labels need glyphs; the inline fallback style has none, so only
+      // add them when the basemap provides a glyph server.
+      if (map.getStyle()?.glyphs) {
+        map.addLayer({
+          id: "cluster-count",
+          type: "symbol",
+          source: "yards",
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": ["get", "point_count_abbreviated"],
+            "text-font": ["Noto Sans Bold"],
+            "text-size": 12,
+            "text-allow-overlap": true,
+          },
+          paint: { "text-color": "#ffffff" },
+        });
+      }
       map.addLayer({
         id: "yard",
         type: "circle",
@@ -152,13 +182,11 @@ export function ResultsMap({
         paint: {
           "circle-radius": 6,
           "circle-color": [
-            "case",
-            ["get", "fr"],
-            FRANCHISE_COLOR,
-            ["get", "x"],
-            PE_COLOR,
-            INDIE_COLOR,
-          ],
+            "match",
+            ["get", "k"],
+            ...Object.entries(KIND_COLORS).flat(),
+            KIND_COLORS.unknown,
+          ] as unknown as maplibregl.ExpressionSpecification,
           "circle-stroke-color": "#fff",
           "circle-stroke-width": 1.5,
         },
@@ -226,6 +254,7 @@ export function ResultsMap({
           brand: String(p.b),
           owner: p.o == null ? null : String(p.o),
           franchise: p.f == null ? null : String(p.f),
+          kind: (p.k as OwnershipBadgeKind) ?? "unknown",
           trade: (p.r as Trade | null) ?? null,
         });
       });
@@ -280,10 +309,15 @@ export function ResultsMap({
     const resizeRaf = window.requestAnimationFrame(() => map.resize());
     const onWinResize = () => map.resize();
     window.addEventListener("resize", onWinResize);
+    // Re-measure whenever the container itself changes size (layout shifts,
+    // fonts loading, grid reflow) — not just on window resize.
+    const ro = new ResizeObserver(() => map.resize());
+    if (containerRef.current) ro.observe(containerRef.current);
 
     return () => {
       window.cancelAnimationFrame(resizeRaf);
       window.removeEventListener("resize", onWinResize);
+      ro.disconnect();
       window.clearTimeout(loadTimeout);
       map.remove();
       mapRef.current = null;
@@ -309,7 +343,12 @@ export function ResultsMap({
         (className ?? "")
       }
     >
-      <div ref={containerRef} className="absolute inset-0" />
+      {/* Inline positioning on purpose: maplibre-gl.css sets
+          `.maplibregl-map { position: relative }` on this element, and since
+          Tailwind v4 utilities live in a CSS layer, that unlayered rule beats
+          `absolute inset-0` — collapsing the map to 0px tall (invisible).
+          Inline styles win over both. */}
+      <div ref={containerRef} style={{ position: "absolute", inset: 0 }} />
 
       {points.length === 0 ? (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-center justify-center">
@@ -326,32 +365,33 @@ export function ResultsMap({
       ) : null}
 
       {flyout ? (
-        <div className="absolute bottom-4 left-1/2 z-10 w-[min(420px,90vw)] -translate-x-1/2 rounded-[12px] border border-rule bg-paper p-4 shadow">
+        <div className="absolute bottom-4 left-1/2 z-10 w-[min(420px,calc(100%-2rem))] -translate-x-1/2 rounded-[12px] border border-rule bg-paper p-4 shadow-[0_12px_32px_-12px_rgba(30,30,20,0.35)]">
           <button
             type="button"
-            className="absolute right-2 top-2 text-xs text-muted"
+            className="absolute right-2.5 top-2.5 grid h-7 w-7 place-items-center rounded-full text-muted transition-colors hover:bg-muted-bg hover:text-ink"
             onClick={() => setFlyout(null)}
             aria-label="Close"
           >
-            ✕
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" aria-hidden><path d="M18 6 6 18M6 6l12 12" /></svg>
           </button>
-          <div className="flex items-start justify-between gap-2">
-            <div className="font-serif text-lg text-ink">{flyout.name}</div>
-            <TradeChip trade={flyout.trade} className="mt-1 shrink-0" />
-          </div>
-          <div className="mt-1 text-xs text-muted">
-            {flyout.city}, {flyout.state} ·{" "}
+          <div className="pr-8 font-serif text-[17px] font-semibold leading-snug text-ink">{flyout.name}</div>
+          <div className="mt-1 text-[12.5px] text-muted">
+            {flyout.city}, {flyout.state}
             {flyout.franchise
-              ? `Franchise of ${flyout.franchise}`
+              ? ` · Franchise of ${flyout.franchise}`
               : flyout.owner
-                ? `Owned by ${flyout.owner}`
-                : flyout.brand}
+                ? ` · Owned by ${flyout.owner}`
+                : ""}
+          </div>
+          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            <OwnershipBadge kind={flyout.kind} size="sm" />
+            <TradeChip trade={flyout.trade} />
           </div>
           <Link
             href={`/yard/${flyout.slug}`}
-            className="mt-3 inline-block text-sm text-accent underline underline-offset-2"
+            className="mt-3 inline-flex items-center gap-1 text-[13.5px] font-semibold text-accent hover:underline hover:underline-offset-2"
           >
-            See ownership chain →
+            See the ownership chain &rarr;
           </Link>
         </div>
       ) : null}

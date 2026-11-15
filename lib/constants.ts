@@ -47,7 +47,7 @@ export const OWNERSHIP_BADGE_LABELS: Record<OwnershipBadgeKind, string> = {
   coop: "Co-op Member",
   franchise: "Franchise",
   family_mega: "Family-Owned (Large)",
-  unknown: "Ownership Unknown",
+  unknown: "Unverified",
 };
 
 export const US_STATES: ReadonlyArray<{ code: string; name: string }> = [

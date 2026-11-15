@@ -1,43 +1,88 @@
 import Link from "next/link";
-import { sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { companies, locations, ownershipEdges, type Trade } from "@/lib/db/schema";
 import { SearchBar } from "@/components/search-bar";
 import { TradeChip } from "@/components/trade-chip";
+import { ownershipSelect, kindFromRow } from "@/lib/ownership-sql";
+import { isChainOwned, isLocallyOwned } from "@/lib/ownership-kind";
 
 export const revalidate = 600; // 10 minutes
 
+type TradeCount = { total: number; chain: number };
+
 async function getStats() {
-  // Build runs before migrations may have been applied. Wrap each query so a
-  // missing table degrades to zero rather than crashing the whole render.
+  const empty = {
+    iowaTotal: 0,
+    iowaLocal: 0,
+    iowaChain: 0,
+    nationalTotal: 0,
+    statesCovered: 0,
+    peFirms: 0,
+    lastUpdated: null as Date | null,
+    byTrade: {} as Partial<Record<Trade, TradeCount>>,
+  };
+  // Degrade to zeros if the DB is unreachable or mid-migration at build time.
   try {
-    const [yardRow] = await db
-      .select({ count: sql<number>`cast(count(*) as int)` })
-      .from(locations);
-    const totalYards = yardRow?.count ?? 0;
-
-    // % consolidated = locations whose operating company has any active parent edge
-    const [consolidatedRow] = await db
-      .select({ count: sql<number>`cast(count(distinct ${locations.id}) as int)` })
+    // Iowa: classify every location the same way the map and detail pages do.
+    const iowa = await db
+      .select({
+        trade: locations.trade,
+        companySlug: companies.slug,
+        companyType: companies.type,
+        ...ownershipSelect(companies.id),
+      })
       .from(locations)
-      .innerJoin(ownershipEdges, sql`${ownershipEdges.childId} = ${locations.companyId} AND ${ownershipEdges.endDate} IS NULL AND ${ownershipEdges.relationship} NOT IN ('member_of', 'franchise_of')`);
-    const consolidatedYards = consolidatedRow?.count ?? 0;
+      .innerJoin(companies, eq(locations.companyId, companies.id))
+      .where(eq(locations.state, "IA"));
 
-    const [peRow] = await db
+    const byTrade: Partial<Record<Trade, TradeCount>> = {};
+    let iowaLocal = 0;
+    let iowaChain = 0;
+    for (const r of iowa) {
+      const kind = kindFromRow(r);
+      const chain = isChainOwned(kind);
+      if (chain) iowaChain++;
+      if (isLocallyOwned(kind)) iowaLocal++;
+      if (r.trade) {
+        const t = (byTrade[r.trade] ??= { total: 0, chain: 0 });
+        t.total++;
+        if (chain) t.chain++;
+      }
+    }
+
+    const [national] = await db
+      .select({
+        total: sql<number>`cast(count(*) as int)`,
+        states: sql<number>`cast(count(distinct ${locations.state}) as int)`,
+        updated: sql<string | null>`max(${locations.updatedAt})`,
+      })
+      .from(locations);
+    const [edges] = await db
+      .select({ updated: sql<string | null>`max(${ownershipEdges.updatedAt})` })
+      .from(ownershipEdges);
+    const [pe] = await db
       .select({ count: sql<number>`cast(count(*) as int)` })
       .from(companies)
-      .where(sql`${companies.type} IN ('pe_firm','family_office')`);
-    const peFirms = peRow?.count ?? 0;
+      .where(eq(companies.type, "pe_firm"));
+
+    const stamps = [national?.updated, edges?.updated]
+      .filter((x): x is string => Boolean(x))
+      .map((x) => new Date(x).getTime());
 
     return {
-      totalYards,
-      consolidatedYards,
-      peFirms,
-      pctConsolidated: totalYards > 0 ? Math.round((consolidatedYards / totalYards) * 100) : 0,
+      iowaTotal: iowa.length,
+      iowaLocal,
+      iowaChain,
+      nationalTotal: national?.total ?? 0,
+      statesCovered: national?.states ?? 0,
+      peFirms: pe?.count ?? 0,
+      lastUpdated: stamps.length ? new Date(Math.max(...stamps)) : null,
+      byTrade,
     };
   } catch (err) {
     console.warn("[home] getStats failed (likely no migrations yet)", err);
-    return { totalYards: 0, consolidatedYards: 0, peFirms: 0, pctConsolidated: 0 };
+    return empty;
   }
 }
 
@@ -120,25 +165,37 @@ export default async function HomePage() {
           .
         </div>
 
-        <div className="mt-[38px] grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(180px,1fr))]">
+        <div className="mt-[38px] grid grid-cols-2 gap-3 lg:grid-cols-4">
           <Stat
-            value={stats.totalYards.toLocaleString()}
+            value={stats.iowaTotal.toLocaleString()}
             label="Iowa businesses tracked"
             color="var(--color-ink)"
           />
           <Stat
-            value={`${stats.pctConsolidated}%`}
-            label="Under consolidator or private-equity ownership"
+            value={`${pct(stats.iowaChain, stats.iowaTotal)}%`}
+            label="of them owned up a chain — private equity, public, or national"
             color="var(--color-badge-pe)"
           />
           <Stat
-            value={stats.peFirms.toLocaleString()}
-            label="Distinct PE & family-office owners on the record"
+            value={stats.iowaLocal.toLocaleString()}
+            label="Iowa businesses locally owned on the public record"
+            color="var(--color-badge-independent)"
+          />
+          <Stat
+            value={stats.nationalTotal.toLocaleString()}
+            label={`tracked nationwide across ${stats.statesCovered} ${stats.statesCovered === 1 ? "state" : "states"}`}
             color="var(--color-accent)"
           />
         </div>
-        <div className="mt-3 text-[12px] text-[var(--color-muted)]">
-          Iowa dataset · last updated April 2025 ·{" "}
+        <div className="mt-3 flex flex-wrap gap-x-1.5 text-[12px] text-[var(--color-muted)]">
+          {stats.lastUpdated ? (
+            <span>
+              Updated{" "}
+              {stats.lastUpdated.toLocaleDateString("en-US", { month: "long", year: "numeric" })}{" "}
+              ·
+            </span>
+          ) : null}
+          <span>{stats.peFirms.toLocaleString()} private-equity owners on the record ·</span>
           <Link
             href="/methodology"
             className="text-[var(--color-accent)] underline underline-offset-2"
@@ -162,12 +219,16 @@ export default async function HomePage() {
         </div>
         <div className="mt-5 grid gap-3.5 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
           {TRADE_CARDS.map((t) => (
-            <TradeCard key={t.trade} {...t} />
+            <TradeCard key={t.trade} {...t} counts={stats.byTrade[t.trade]} />
           ))}
         </div>
       </section>
     </div>
   );
+}
+
+function pct(n: number, d: number): number {
+  return d > 0 ? Math.round((n / d) * 100) : 0;
 }
 
 function Stat({ value, label, color }: { value: string; label: string; color: string }) {
@@ -191,16 +252,18 @@ function TradeCard({
   title,
   blurb,
   stat,
+  counts,
 }: {
   trade: Trade;
   title: string;
   blurb: string;
   stat: string;
+  counts?: TradeCount;
 }) {
   return (
     <Link
       href={`/state/iowa/${trade}`}
-      className="flex min-h-[150px] flex-col gap-3.5 rounded-[14px] border border-[var(--color-rule)] bg-[var(--color-paper)] p-[18px] transition hover:-translate-y-0.5 hover:border-[color-mix(in_oklch,var(--color-accent)_45%,var(--color-rule))] hover:shadow-[0_10px_26px_-18px_rgba(30,30,20,0.55)]"
+      className="group flex min-h-[150px] flex-col gap-3.5 rounded-[14px] border border-[var(--color-rule)] bg-[var(--color-paper)] p-[18px] transition hover:-translate-y-0.5 hover:border-[color-mix(in_oklch,var(--color-accent)_45%,var(--color-rule))] hover:shadow-[0_10px_26px_-18px_rgba(30,30,20,0.55)]"
     >
       <div>
         <TradeChip trade={trade} />
@@ -211,9 +274,26 @@ function TradeCard({
       <div className="-mt-1 text-[13px] leading-[1.5] text-[var(--color-muted)]">
         {blurb}
       </div>
-      <div className="mt-auto flex items-center justify-between gap-2 border-t border-dashed border-[var(--color-rule)] pt-2">
-        <span className="text-[12.5px] text-[var(--color-muted)]">{stat}</span>
-        <span className="text-[18px] font-semibold text-[var(--color-accent)]">→</span>
+      <div className="mt-auto flex min-h-[44px] items-center justify-between gap-2 border-t border-dashed border-[var(--color-rule)] pt-2.5">
+        <span className="text-[12.5px] leading-snug text-[var(--color-muted)]">
+          {counts && counts.total > 0 ? (
+            <>
+              <span className="font-semibold text-[var(--color-ink)]">
+                {counts.total.toLocaleString()}
+              </span>{" "}
+              tracked ·{" "}
+              <span className="font-semibold text-[var(--color-badge-pe)]">
+                {counts.chain.toLocaleString()}
+              </span>{" "}
+              chain-owned
+            </>
+          ) : (
+            stat
+          )}
+        </span>
+        <span className="text-[18px] font-semibold text-[var(--color-accent)] transition-transform group-hover:translate-x-0.5">
+          &rarr;
+        </span>
       </div>
     </Link>
   );

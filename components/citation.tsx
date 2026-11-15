@@ -1,3 +1,4 @@
+import { formatMonthYear } from "@/lib/utils";
 import type { CitedSource } from "@/lib/queries/sources";
 
 /**
@@ -61,9 +62,9 @@ export function SourcesList({ sources }: { sources: Array<CitedSource & { number
             <span>
               {s.title ? <span className="text-[var(--color-ink)]">{s.title}</span> : null}
               {s.publication ? <span>{s.title ? ", " : ""}{s.publication}</span> : null}
-              {s.publishedDate ? <span>, {s.publishedDate}</span> : null}
-              {". "}
-              <a href={s.url} target="_blank" rel="noreferrer" className="underline">
+              {s.publishedDate ? <span>, {formatMonthYear(s.publishedDate)}</span> : null}
+              {s.title || s.publication || s.publishedDate ? ". " : null}
+              <a href={s.url} target="_blank" rel="noreferrer" className="break-all underline">
                 {s.url}
               </a>
               {s.archiveUrl ? (

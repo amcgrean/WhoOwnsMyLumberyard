@@ -1,6 +1,7 @@
 import { sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { companies, locations, type Trade } from "@/lib/db/schema";
+import { ownershipSelect, q } from "@/lib/ownership-sql";
 
 export type SearchResultLocation = {
   kind: "location";
@@ -15,6 +16,10 @@ export type SearchResultLocation = {
   lng: string | null;
   ownerName: string | null;
   franchiseOf: string | null;
+  isCoop: boolean;
+  chainTypes: string | null;
+  companySlug: string;
+  companyType: string;
 };
 
 export type SearchResultCompany = {
@@ -24,6 +29,12 @@ export type SearchResultCompany = {
   name: string;
   type: string;
   description: string | null;
+  companySlug: string;
+  companyType: string;
+  ownerName: string | null;
+  franchiseOf: string | null;
+  isCoop: boolean;
+  chainTypes: string | null;
 };
 
 export type SearchResult = SearchResultLocation | SearchResultCompany;
@@ -35,27 +46,13 @@ export type SearchResult = SearchResultLocation | SearchResultCompany;
 const locDoc = sql`to_tsvector('english', coalesce(${locations.displayName}, '') || ' ' || coalesce(${locations.city}, '') || ' ' || coalesce(${locations.state}, '') || ' ' || coalesce(${locations.zip}, ''))`;
 const compDoc = sql`to_tsvector('english', coalesce(${companies.name}, '') || ' ' || coalesce(${companies.legalName}, '') || ' ' || coalesce(${companies.description}, ''))`;
 
-// A location's current ultimate ownership parent name (null ⇒ not owned).
-// Excludes co-op membership and franchise affiliation (neither is ownership).
-// Mirrors /api/map so search pins/badges color-code the same way as the map.
-const locOwner = sql<string | null>`(
-  select p.name from ownership_edges e
-  join companies p on p.id = e.parent_id
-  where e.child_id = ${locations.companyId} and e.end_date is null
-    and e.relationship not in ('member_of', 'franchise_of')
-  order by e.start_date desc nulls last
-  limit 1
-)`;
-
-// The national brand this location is a franchisee of, if any.
-const locFranchise = sql<string | null>`(
-  select p.name from ownership_edges e
-  join companies p on p.id = e.parent_id
-  where e.child_id = ${locations.companyId} and e.end_date is null
-    and e.relationship = 'franchise_of'
-  order by e.start_date desc nulls last
-  limit 1
-)`;
+// Ownership facts for each matched location, classified the same way as the
+// map and the detail page (see lib/ownership-sql.ts).
+const locOwnership = {
+  ...ownershipSelect(locations.companyId),
+  companySlug: sql<string>`(select c.slug from companies c where c.id = ${q(locations.companyId)})`,
+  companyType: sql<string>`(select c.type::text from companies c where c.id = ${q(locations.companyId)})`,
+};
 
 async function searchLocationsByZip(zip: string, limit: number): Promise<SearchResultLocation[]> {
   const rows = await db
@@ -69,8 +66,7 @@ async function searchLocationsByZip(zip: string, limit: number): Promise<SearchR
       trade: locations.trade,
       lat: locations.lat,
       lng: locations.lng,
-      ownerName: locOwner,
-      franchiseOf: locFranchise,
+      ...locOwnership,
     })
     .from(locations)
     .where(sql`${locations.zip} = ${zip}`)
@@ -93,8 +89,7 @@ async function searchLocationsByZipPrefix(
       trade: locations.trade,
       lat: locations.lat,
       lng: locations.lng,
-      ownerName: locOwner,
-      franchiseOf: locFranchise,
+      ...locOwnership,
     })
     .from(locations)
     .where(sql`${locations.zip} LIKE ${prefix + "%"}`)
@@ -137,8 +132,7 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
       trade: locations.trade,
       lat: locations.lat,
       lng: locations.lng,
-      ownerName: locOwner,
-      franchiseOf: locFranchise,
+      ...locOwnership,
     })
     .from(locations)
     .where(sql`${locDoc} @@ ${tsq}`)
@@ -152,6 +146,9 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
       name: companies.name,
       type: companies.type,
       description: companies.description,
+      companySlug: companies.slug,
+      companyType: sql<string>`${companies.type}::text`,
+      ...ownershipSelect(companies.id),
     })
     .from(companies)
     .where(sql`${compDoc} @@ ${tsq}`)
@@ -180,8 +177,7 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
           trade: locations.trade,
           lat: locations.lat,
           lng: locations.lng,
-          ownerName: locOwner,
-          franchiseOf: locFranchise,
+          ...locOwnership,
         })
         .from(locations)
         .where(
@@ -195,6 +191,9 @@ export async function searchAll(query: string, limit = 20): Promise<SearchResult
           name: companies.name,
           type: companies.type,
           description: companies.description,
+          companySlug: companies.slug,
+          companyType: sql<string>`${companies.type}::text`,
+          ...ownershipSelect(companies.id),
         })
         .from(companies)
         .where(

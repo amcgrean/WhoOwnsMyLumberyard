@@ -37,7 +37,7 @@ export function SearchBar({
           name="q"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search a business, brand, or owner…"
+          placeholder="Business, brand, or owner…"
           // text-base (16px) avoids iOS Safari focus-zoom; sm:text-[15px] matches spec.
           className="min-w-0 flex-1 border-0 bg-transparent py-3.5 text-base sm:text-[15px] text-[var(--color-ink)] placeholder:text-[var(--color-muted)] focus:outline-none"
           aria-label="Search businesses, companies, and owners"
