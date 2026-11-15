@@ -13,9 +13,9 @@ import { upsertCompany, upsertEdge } from "./_helpers";
  *
  *   pnpm tsx --env-file=.env.local scripts/seed/leads-2026-11.ts --dry-run
  *
- * Holt → Apex and ServiceOne → Apex are deliberately NOT here: the only
- * evidence is shared Apex tracking code and an Apex-branded careers portal,
- * with no announcement. See the review doc's "Lead review" section.
+ * Holt → Apex and ServiceOne → Apex have no public announcement; the edges
+ * cite the evidence (a shared Apex Service Partners hiring system and Apex
+ * marketing containers). See the review doc's section F.
  */
 
 const DRY = process.argv.includes("--dry-run");
@@ -143,11 +143,33 @@ async function manufacturers() {
   await addOwner("lennox nadc", "Marshalltown", "lennox-international", LENNOX);
 }
 
+// ── 5. Holt and ServiceOne → Apex Service Partners (Alpine Investors) ─────
+// No announcement. Both brands hire through one Apex Service Partners iCIMS
+// tenant (shared with Apex's All Hours brand) and load Apex's shared Google
+// Tag Manager container (GTM-NPGVD6LP) on their homepages (checked 2026-11-15).
+async function apex() {
+  log("Apex Service Partners: Holt (Des Moines), ServiceOne (Dubuque)");
+  const NOTE =
+    "Operated by Apex Service Partners (controlled by Alpine Investors). No public announcement: the evidence is that the brand hires through Apex Service Partners' own iCIMS careers system and its website runs Apex's shared marketing tags (checked November 2026).";
+  // Fold the imported Holt rows into the curated Holt company first.
+  await moveTo("holt plumbing & heating", "West Des Moines", "holt-plumbing-heating-and-cooling");
+  await moveTo("holt plumbing & heating, inc.", "Des Moines", "holt-plumbing-heating-and-cooling");
+  await addOwner("holt plumbing, heating & cooling", "Des Moines", "apex-service-partners", {
+    note: NOTE,
+    sources: ["https://careers-holtplumbingandheating.icims.com/jobs/8154/hvac-service-tech/job", "https://holtplumbingandheating.com/"],
+  });
+  await addOwner("serviceone%", "Dubuque", "apex-service-partners", {
+    note: NOTE,
+    sources: ["https://career-serviceone.icims.com/jobs/23274/2026-23274/job", "https://serviceone.com/"],
+  });
+}
+
 async function main() {
   await merit();
   await mead();
   await suter();
   await manufacturers();
+  await apex();
   log("Done.");
 }
 
