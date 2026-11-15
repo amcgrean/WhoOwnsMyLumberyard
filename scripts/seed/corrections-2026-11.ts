@@ -2,7 +2,7 @@ import { config } from "dotenv";
 config({ path: ".env.local" });
 config({ path: ".env" });
 
-import { and, eq, ilike, inArray, or } from "drizzle-orm";
+import { and, eq, ilike, inArray, isNull, notInArray, or } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { claimSources, companies, locations, ownershipEdges, sources } from "@/lib/db/schema";
 import { slugify } from "@/lib/slug";
@@ -48,8 +48,15 @@ async function companyBySlug(slug: string) {
   return db.query.companies.findFirst({ where: eq(companies.slug, slug) });
 }
 
+// Co-op membership and franchise affiliation are not ownership.
 async function hasOwnershipParent(companyId: string): Promise<boolean> {
-  const e = await db.query.ownershipEdges.findFirst({ where: eq(ownershipEdges.childId, companyId) });
+  const e = await db.query.ownershipEdges.findFirst({
+    where: and(
+      eq(ownershipEdges.childId, companyId),
+      isNull(ownershipEdges.endDate),
+      notInArray(ownershipEdges.relationship, ["member_of", "franchise_of"]),
+    ),
+  });
   return Boolean(e);
 }
 
@@ -170,10 +177,12 @@ async function lampertDupe() {
     .select({ id: locations.id, name: locations.displayName, companyId: locations.companyId })
     .from(locations)
     .where(and(eq(locations.state, "IA"), eq(locations.city, "Webster City"), ilike(locations.displayName, "lampert%")));
-  if (locs.length < 2) return;
-  let owned: string | null = null;
-  for (const l of locs) if (await hasOwnershipParent(l.companyId)) owned = l.companyId;
-  if (!owned) return;
+  if (!locs.length) return;
+  // Webster City is a US LBM (Lampert Lumber) yard; a Do it Best membership
+  // listing for the same store is not a separate owner.
+  const lampert = await db.query.companies.findFirst({ where: eq(companies.slug, "lampert-lumber"), columns: { id: true } });
+  if (!lampert || !(await hasOwnershipParent(lampert.id))) return;
+  const owned = lampert.id;
   for (const l of locs) if (l.companyId !== owned) await moveLocation(l.id, `${l.name} (Webster City) → US LBM-owned Lampert company`, owned);
 }
 
