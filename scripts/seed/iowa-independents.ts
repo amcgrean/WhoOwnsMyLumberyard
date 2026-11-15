@@ -391,9 +391,9 @@ export async function seedIowaIndependents() {
       website: "https://holtplumbingandheating.com",
       foundedYear: 1947,
       description:
-        "Family-owned Des Moines plumbing, heating, cooling, and electrical company founded by John F. and Edith Holt in 1947.",
+        "Des Moines plumbing, heating, cooling, and electrical company founded by John F. and Edith Holt in 1947. Now operated by Apex Service Partners (Alpine Investors): it hires through Apex's careers system and runs Apex's marketing tags, though no acquisition was announced. Its website still says family-owned.",
       services: ["plumbing_repair", "hvac_service", "electrical_repair", "drain_sewer"],
-      sources: ["https://holtplumbingandheating.com/"],
+      sources: ["https://holtplumbingandheating.com/", "https://careers-holtplumbingandheating.icims.com/jobs/8154/hvac-service-tech/job"],
     },
     {
       name: "H & H Plumbing",
