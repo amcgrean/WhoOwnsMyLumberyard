@@ -1,0 +1,2412 @@
+[
+  {
+    "acquirer": {
+      "name": "Ogden & Adams Building Solutions",
+      "type": "yard",
+      "ticker": null,
+      "hqCity": "Hiawatha",
+      "hqState": "IA",
+      "website": "https://www.ogdenadams.com",
+      "slug": "ogden-and-adams-building-solutions"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Maquoketa Lumber and Bellevue Lumber",
+      "trade": "lumber",
+      "hqCity": "Maquoketa",
+      "hqState": "IA",
+      "website": null,
+      "slug": "maquoketa-do-it-best-lumber-maquoketa-ia"
+    },
+    "announcedDate": "2026-06-18",
+    "closedDate": null,
+    "dealValueUsd": null,
+    "summary": "Ogden & Adams agreed to buy the assets of Maquoketa Lumber and Bellevue Lumber, two eastern Iowa lumberyards owned by Mark Maze, and plans to keep the staff and run both sites under the Ogden & Adams name. No closing has been reported.",
+    "iowa": true,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.lmc.net/News/Ogden-Adams-Building-Solutions-to-acquire-Maquoket",
+        "title": "Ogden & Adams Building Solutions to acquire Maquoketa Lumber, Bellevue Lumber",
+        "publication": "LMC",
+        "publishedDate": "2026-06-18"
+      },
+      {
+        "url": "https://www.building-products.com/ogden-adams-buying-iowa-lumberyards/",
+        "title": "Ogden & Adams buying Iowa lumberyards",
+        "publication": "Building Products Digest",
+        "publishedDate": "2026-06-18"
+      },
+      {
+        "url": "https://www.redbooklumberdata.com/2026/06/22/ogden-adams-building-solutions-to-acquire-maquoketa-and-bellevue-lumber/",
+        "title": "Ogden & Adams Building Solutions To Acquire Maquoketa and Bellevue Lumber",
+        "publication": "Red Book Lumber Data",
+        "publishedDate": "2026-06-22"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Merit Management Group",
+      "type": "pe_firm",
+      "ticker": null,
+      "hqCity": "Johnston",
+      "hqState": "IA",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Metro Heating & Cooling",
+      "trade": "hvac",
+      "hqCity": "Des Moines",
+      "hqState": "IA",
+      "website": null,
+      "slug": "metro-heating-and-cooling-des-moines"
+    },
+    "announcedDate": "2025-11-14",
+    "closedDate": "2025-11-14",
+    "dealValueUsd": null,
+    "summary": "Johnston-based private equity firm Merit Management Group acquired Metro Heating & Cooling, a Des Moines HVAC contractor founded in 1984.",
+    "iowa": true,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.businessrecord.com/merit-management-group-acquires-two-central-iowa-companies/",
+        "title": "Merit Management Group acquires two Central Iowa companies",
+        "publication": "Business Record",
+        "publishedDate": "2025-11-14"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Merit Management Group",
+      "type": "pe_firm",
+      "ticker": null,
+      "hqCity": "Johnston",
+      "hqState": "IA",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Heartland Heating & Cooling",
+      "trade": "hvac",
+      "hqCity": "Grimes",
+      "hqState": "IA",
+      "website": null,
+      "slug": "heartland-heating-and-cooling-grimes"
+    },
+    "announcedDate": "2025-11-14",
+    "closedDate": "2025-11-14",
+    "dealValueUsd": null,
+    "summary": "Merit Management Group acquired Heartland Heating & Cooling of Grimes. Business Record reported the purchase as recent in November 2025 without giving an exact date.",
+    "iowa": true,
+    "confidence": "medium",
+    "sources": [
+      {
+        "url": "https://www.businessrecord.com/merit-management-group-acquires-two-central-iowa-companies/",
+        "title": "Merit Management Group acquires two Central Iowa companies",
+        "publication": "Business Record",
+        "publishedDate": "2025-11-14"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Quanta Services",
+      "type": "public_company",
+      "ticker": "PWR",
+      "hqCity": "Houston",
+      "hqState": "TX",
+      "website": "https://www.quantaservices.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Tri-City Group",
+      "trade": "electrical",
+      "hqCity": "Davenport",
+      "hqState": "IA",
+      "website": null,
+      "slug": "tri-city-group"
+    },
+    "announcedDate": "2026-04-03",
+    "closedDate": "2026-04-03",
+    "dealValueUsd": null,
+    "summary": "Quanta Services acquired Davenport-based Tri-City Group, an electrical contractor made up of 11 operating companies, in the fourth quarter of 2025; the exact closing date and price were not disclosed. Quanta disclosed the deal in its quarterly reporting, and announcedDate is the date of the Quad Cities Business Journal report.",
+    "iowa": true,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://quadcitiesbusiness.com/quanta-services-acquires-tri-city-group",
+        "title": "Quanta Services acquires Tri-City Group",
+        "publication": "Quad Cities Business Journal",
+        "publishedDate": "2026-04-03"
+      },
+      {
+        "url": "https://www.quantaservices.com/companies/tri-city-group",
+        "title": "Tri-City Group",
+        "publication": "Quanta Services",
+        "publishedDate": null
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Building Products Inc.",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Watertown",
+      "hqState": "SD",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Heartland Millwork",
+      "trade": "lumber",
+      "hqCity": "Larchwood",
+      "hqState": "IA",
+      "website": null
+    },
+    "announcedDate": "2025-01-10",
+    "closedDate": "2025-01-10",
+    "dealValueUsd": null,
+    "summary": "Building Products Inc., a South Dakota building-materials dealer, acquired Heartland Millwork, a custom millwork manufacturer in Larchwood, Iowa, effective immediately.",
+    "iowa": true,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.pr.com/press-release/928810",
+        "title": "Building Products Inc. Acquires Heartland Millwork, Expanding Custom Millwork Capabilities",
+        "publication": "PR.com",
+        "publishedDate": "2025-01-10"
+      },
+      {
+        "url": "https://www.building-products.com/bpi-acquires-heartland-millwork/",
+        "title": "BPI acquires Heartland Millwork",
+        "publication": "Building Products Digest",
+        "publishedDate": "2025-01-17"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Decks & Docks Company",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Clearwater",
+      "hqState": "FL",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "The Deck Supply",
+      "trade": "lumber",
+      "hqCity": "Kansas City",
+      "hqState": "MO",
+      "website": null
+    },
+    "announcedDate": "2025-06-23",
+    "closedDate": "2025-06-23",
+    "dealValueUsd": null,
+    "summary": "Decks & Docks, a Florida-based decking and outdoor-living products distributor, acquired The Deck Supply, a composite decking supplier with six locations in Missouri, Kansas and Iowa.",
+    "iowa": true,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.nadra.org/blog/decks-docks-company-partners-with-midwest-based-the-deck-supply",
+        "title": "Decks & Docks Company Partners with Midwest-Based The Deck Supply",
+        "publication": "NADRA (Business Wire release)",
+        "publishedDate": "2025-06-23"
+      },
+      {
+        "url": "https://building-products.com/decks-docks-acquires-the-deck-supply",
+        "title": "Decks & Docks acquires The Deck Supply",
+        "publication": "Building Products Digest",
+        "publishedDate": "2025-06-24"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Kingsway Financial Services",
+      "type": "public_company",
+      "ticker": "KFS",
+      "hqCity": "Chicago",
+      "hqState": "IL",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Southside Plumbing",
+      "trade": "plumbing",
+      "hqCity": "Omaha",
+      "hqState": "NE",
+      "website": null,
+      "slug": "southside-plumbing-omaha"
+    },
+    "announcedDate": "2025-08-18",
+    "closedDate": "2025-08-14",
+    "dealValueUsd": 6750000,
+    "summary": "Kingsway's Skilled Trades unit bought an 80% stake in Omaha's Southside Plumbing for $5.625 million plus an earn-out of up to $1.125 million; founder Josh Gruhn stays on as president. Omaha-area spillover.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.newswire.com/news/kingsway-announces-acquisition-of-southside-plumbing",
+        "title": "Kingsway Announces Acquisition of Southside Plumbing",
+        "publication": "Newswire (company release)",
+        "publishedDate": "2025-08-18"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "The Waldinger Corporation",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Des Moines",
+      "hqState": "IA",
+      "website": "https://www.waldinger.com",
+      "slug": "the-waldinger-corporation"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Project Design and Piping, Inc.",
+      "trade": "plumbing",
+      "hqCity": "Fort Wayne",
+      "hqState": "IN",
+      "website": null
+    },
+    "announcedDate": "2025-05-15",
+    "closedDate": "2025-05-15",
+    "dealValueUsd": null,
+    "summary": "Des Moines-based Waldinger acquired Project Design and Piping, a Fort Wayne mechanical and plumbing contractor, giving Waldinger its first Indiana branch.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.waldinger.com/about/news/the-waldinger-corporation-acquires-project-design-and-piping-inc-in-fort-wayne-indiana",
+        "title": "The Waldinger Corporation Acquires Project Design and Piping, Inc.",
+        "publication": "The Waldinger Corporation",
+        "publishedDate": "2025-05-15"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "The Waldinger Corporation",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Des Moines",
+      "hqState": "IA",
+      "website": "https://www.waldinger.com",
+      "slug": "the-waldinger-corporation"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Summit Electric, Inc.",
+      "trade": "electrical",
+      "hqCity": "St. Louis",
+      "hqState": "MO",
+      "website": null
+    },
+    "announcedDate": "2025-06-12",
+    "closedDate": "2025-06-12",
+    "dealValueUsd": null,
+    "summary": "Waldinger acquired Summit Electric, a St. Louis electrical service contractor founded in 2008.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.waldinger.com/about/news/the-waldinger-corporation-acquires-summit-electric-inc-in-st-louis-missouri",
+        "title": "The Waldinger Corporation Acquires Summit Electric, Inc.",
+        "publication": "The Waldinger Corporation",
+        "publishedDate": "2025-06-12"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "The Waldinger Corporation",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Des Moines",
+      "hqState": "IA",
+      "website": "https://www.waldinger.com",
+      "slug": "the-waldinger-corporation"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Pro Electric",
+      "trade": "electrical",
+      "hqCity": "Kansas City",
+      "hqState": "KS",
+      "website": null
+    },
+    "announcedDate": "2025-10-01",
+    "closedDate": "2025-10-01",
+    "dealValueUsd": null,
+    "summary": "Waldinger acquired Pro Electric, a commercial and industrial electrical contractor with locations in Kansas City, Kansas, and Mt. Vernon, Missouri.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.waldinger.com/about/news/the-waldinger-corporation-acquires-pro-electric-in-kansas-city-and-southern-missouri",
+        "title": "The Waldinger Corporation Acquires Pro Electric in Kansas City and Southern Missouri",
+        "publication": "The Waldinger Corporation",
+        "publishedDate": "2025-10-01"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "The Waldinger Corporation",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Des Moines",
+      "hqState": "IA",
+      "website": "https://www.waldinger.com",
+      "slug": "the-waldinger-corporation"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Forward Electric",
+      "trade": "electrical",
+      "hqCity": "Madison",
+      "hqState": "WI",
+      "website": null,
+      "slug": "forward-electric-monona"
+    },
+    "announcedDate": "2026-08-24",
+    "closedDate": "2026-08-24",
+    "dealValueUsd": null,
+    "summary": "Forward Electric, a 50-person electrical contractor in Madison, Wisconsin, joined Waldinger's Madison operations and keeps its brand name.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.waldinger.com/about/news/forward-electric-joins-the-waldinger-corporation",
+        "title": "Forward Electric in Madison, Wisconsin, Joins The Waldinger Corporation",
+        "publication": "The Waldinger Corporation",
+        "publishedDate": "2026-08-24"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "The Waldinger Corporation",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Des Moines",
+      "hqState": "IA",
+      "website": "https://www.waldinger.com",
+      "slug": "the-waldinger-corporation"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "United Mechanical Group",
+      "trade": "hvac",
+      "hqCity": "Champaign",
+      "hqState": "IL",
+      "website": null
+    },
+    "announcedDate": "2026-10-05",
+    "closedDate": "2026-10-05",
+    "dealValueUsd": null,
+    "summary": "Waldinger acquired United Mechanical Group, a mechanical contractor in Champaign, Illinois.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.waldinger.com/about/news/the-waldinger-corporation-acquires-united-mechanical-group-in-champaign-illinois",
+        "title": "The Waldinger Corporation Acquires United Mechanical Group in Champaign, Illinois",
+        "publication": "The Waldinger Corporation",
+        "publishedDate": "2026-10-05"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Spahn & Rose Lumber Co.",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Dubuque",
+      "hqState": "IA",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Whit Davis Lumber Plus",
+      "trade": "lumber",
+      "hqCity": "Jacksonville",
+      "hqState": "AR",
+      "website": null
+    },
+    "announcedDate": "2025-06-06",
+    "closedDate": "2025-06-20",
+    "dealValueUsd": null,
+    "summary": "Dubuque-based Spahn & Rose agreed to buy Whit Davis Lumber Plus, a family-owned dealer with three Arkansas locations; the deal was set to close June 20, 2025.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://building-products.com/spahn-rose-acquiring-whit-davis-lumber-plus",
+        "title": "Spahn & Rose acquiring Whit Davis Lumber Plus",
+        "publication": "Building Products Digest",
+        "publishedDate": "2025-06-06"
+      },
+      {
+        "url": "https://armoneyandpolitics.com/acquire-whit-davis-lumber/",
+        "title": "Iowa-Based Company to Acquire Whit Davis Lumber Plus",
+        "publication": "Arkansas Money & Politics",
+        "publishedDate": "2025-06-09"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Busti Lumber",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Elma",
+      "hqState": "IA",
+      "website": null,
+      "slug": "busti-lumber"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Nodolf Lumber",
+      "trade": "lumber",
+      "hqCity": "Darlington",
+      "hqState": "WI",
+      "website": null
+    },
+    "announcedDate": "2025-01-28",
+    "closedDate": "2025-01-28",
+    "dealValueUsd": null,
+    "summary": "MetalTek, a division of Elma, Iowa-based Busti Lumber, acquired Nodolf Lumber, a century-old lumber supplier in Darlington, Wisconsin. The report called the purchase recent and gave no closing date; announcedDate is the report date.",
+    "iowa": false,
+    "confidence": "medium",
+    "sources": [
+      {
+        "url": "https://www.wglr.com/2025/01/28/darlington-lumber-company-acquired",
+        "title": "Darlington lumber company acquired by Iowa company",
+        "publication": "WGLR",
+        "publishedDate": "2025-01-28"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Mead Lumber",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Omaha",
+      "hqState": "NE",
+      "website": "https://meadlumber.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "OHC Supply and Guthrie's Ace Hardware",
+      "trade": "lumber",
+      "hqCity": "Guthrie",
+      "hqState": "OK",
+      "website": null
+    },
+    "announcedDate": null,
+    "closedDate": "2026-04-01",
+    "dealValueUsd": null,
+    "summary": "Omaha-based Mead Lumber acquired OHC Supply and Guthrie's Ace Hardware in Guthrie, Oklahoma, bringing it to 56 locations in nine states.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.building-products.com/mead-acquires-oklahoma-dealer/",
+        "title": "Mead acquires Oklahoma dealer",
+        "publication": "Building Products Digest",
+        "publishedDate": "2026-04-06"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "QXO",
+      "type": "public_company",
+      "ticker": "QXO",
+      "hqCity": "Greenwich",
+      "hqState": "CT",
+      "website": "https://www.qxo.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Beacon Roofing Supply",
+      "trade": "lumber",
+      "hqCity": "Herndon",
+      "hqState": "VA",
+      "website": null,
+      "slug": "beacon-building-products"
+    },
+    "announcedDate": null,
+    "closedDate": "2025-04-29",
+    "dealValueUsd": 11000000000,
+    "summary": "QXO completed its acquisition of Beacon Roofing Supply at $124.35 per share, a deal valued at about $11 billion, making Beacon a wholly owned subsidiary.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.rooferscoffeeshop.com/post/qxo-completes-acquisition-of-beacon-roofing-supply",
+        "title": "QXO completes acquisition of Beacon Roofing Supply",
+        "publication": "RoofersCoffeeShop",
+        "publishedDate": "2025-04-29"
+      },
+      {
+        "url": "https://s204.q4cdn.com/433193842/files/doc_news/2025/Apr/29/QXO-Completes-Beacon-Acquisition.pdf",
+        "title": "QXO Completes Beacon Acquisition (press release PDF)",
+        "publication": "QXO",
+        "publishedDate": "2025-04-29"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "QXO",
+      "type": "public_company",
+      "ticker": "QXO",
+      "hqCity": "Greenwich",
+      "hqState": "CT",
+      "website": "https://www.qxo.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Kodiak Building Partners",
+      "trade": "lumber",
+      "hqCity": "Englewood",
+      "hqState": "CO",
+      "website": null
+    },
+    "announcedDate": "2026-02-10",
+    "closedDate": "2026-04-01",
+    "dealValueUsd": 2250000000,
+    "summary": "QXO bought lumber and building-materials distributor Kodiak Building Partners from Court Square Capital Partners for about $2.25 billion in cash and stock; Kodiak became QXO's lumber and building materials division.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.roofingcontractor.com/articles/101875-qxo-to-acquire-kodiak-for-225-billion",
+        "title": "QXO to Acquire Kodiak for $2.25 Billion",
+        "publication": "Roofing Contractor",
+        "publishedDate": "2026-02-11"
+      },
+      {
+        "url": "https://www.roofingcontractor.com/articles/102055-qxo-completes-225b-acquisition-of-kodiak-building-partners",
+        "title": "QXO Completes $2.25B Acquisition of Kodiak Building Partners",
+        "publication": "Roofing Contractor",
+        "publishedDate": "2026-04-01"
+      },
+      {
+        "url": "https://distributionstrategy.com/2026/04/qxo-completes-2-25-billion-kodiak-deal-expands-into-lumber-distribution/",
+        "title": "QXO Completes $2.25 Billion Kodiak Deal, Expands into Lumber Distribution",
+        "publication": "Distribution Strategy Group",
+        "publishedDate": "2026-04-01"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "QXO",
+      "type": "public_company",
+      "ticker": "QXO",
+      "hqCity": "Greenwich",
+      "hqState": "CT",
+      "website": "https://www.qxo.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "TopBuild",
+      "trade": "lumber",
+      "hqCity": "Daytona Beach",
+      "hqState": "FL",
+      "website": "https://www.topbuild.com"
+    },
+    "announcedDate": "2026-04-19",
+    "closedDate": "2026-07-01",
+    "dealValueUsd": 17000000000,
+    "summary": "QXO acquired TopBuild, the largest insulation installer and distributor in North America, in a cash-and-stock deal valued at about $17 billion; TopBuild shares were delisted at closing.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://pulse2.com/qxo-17-billion-acquisition-of-topbuild-creates-building-products-distribution-leader/",
+        "title": "QXO: $17 Billion Acquisition Of TopBuild Creates Building Products Distribution Leader",
+        "publication": "Pulse 2.0",
+        "publishedDate": "2026-04-19"
+      },
+      {
+        "url": "https://www.roofingcontractor.com/articles/102397-qxo-closes-topbuild-acquisition-expands-roofing-reach",
+        "title": "QXO Closes TopBuild Acquisition, Expands Roofing Reach",
+        "publication": "Roofing Contractor",
+        "publishedDate": "2026-07-01"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "SRS Distribution",
+      "type": "public_company",
+      "ticker": "HD",
+      "hqCity": "McKinney",
+      "hqState": "TX",
+      "website": null,
+      "slug": "srs-distribution"
+    },
+    "acquirerOwner": {
+      "name": "The Home Depot",
+      "type": "public_company",
+      "ticker": "HD"
+    },
+    "target": {
+      "name": "GMS Inc.",
+      "trade": "lumber",
+      "hqCity": "Tucker",
+      "hqState": "GA",
+      "website": null,
+      "slug": "gms-inc"
+    },
+    "announcedDate": null,
+    "closedDate": "2025-09-04",
+    "dealValueUsd": 5500000000,
+    "summary": "Home Depot completed its purchase of specialty building-products distributor GMS through its SRS Distribution subsidiary, paying $110 per share in a deal valued at about $5.5 billion including debt.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://distributionstrategy.com/2025/09/home-depot-completes-5-5-billion-acquisition-of-gms-through-srs-distribution/",
+        "title": "Home Depot Completes $5.5 Billion Acquisition of GMS Through SRS Distribution",
+        "publication": "Distribution Strategy Group",
+        "publishedDate": "2025-09-04"
+      },
+      {
+        "url": "https://www.ajc.com/business/2025/09/home-depot-completes-55b-deal-to-boost-pro-business",
+        "title": "Home Depot completes $5.5B deal to boost pro business",
+        "publication": "Atlanta Journal-Constitution",
+        "publishedDate": "2025-09-04"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Lowe's Companies",
+      "type": "public_company",
+      "ticker": "LOW",
+      "hqCity": "Mooresville",
+      "hqState": "NC",
+      "website": "https://www.lowes.com",
+      "slug": "lowe-s-companies"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Foundation Building Materials (FBM)",
+      "trade": "lumber",
+      "hqCity": "Santa Ana",
+      "hqState": "CA",
+      "website": null,
+      "slug": "foundation-building-materials"
+    },
+    "announcedDate": null,
+    "closedDate": "2025-10-09",
+    "dealValueUsd": null,
+    "summary": "Lowe's completed its acquisition of Foundation Building Materials, a building-materials distributor with more than 370 locations in the U.S. and Canada, to expand its business with professional contractors. Price widely reported at about $8.8 billion but not stated in the closing release.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.nasdaq.com/press-release/lowes-completes-acquisition-foundation-building-materials-2025-10-09",
+        "title": "Lowe's Completes Acquisition of Foundation Building Materials",
+        "publication": "Nasdaq (PR Newswire)",
+        "publishedDate": "2025-10-09"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Lowe's Companies",
+      "type": "public_company",
+      "ticker": "LOW",
+      "hqCity": "Mooresville",
+      "hqState": "NC",
+      "website": "https://www.lowes.com",
+      "slug": "lowe-s-companies"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Artisan Design Group (ADG)",
+      "trade": "lumber",
+      "hqCity": "Dallas",
+      "hqState": "TX",
+      "website": null,
+      "slug": "artisan-design-group"
+    },
+    "announcedDate": null,
+    "closedDate": "2025-06-02",
+    "dealValueUsd": null,
+    "summary": "Lowe's completed its acquisition of Artisan Design Group, which designs, distributes and installs interior finishes such as flooring and cabinets for home builders.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.nasdaq.com/press-release/lowes-completes-acquisition-artisan-design-group-2025-06-02",
+        "title": "Lowe's Completes Acquisition of Artisan Design Group",
+        "publication": "Nasdaq (PR Newswire)",
+        "publishedDate": "2025-06-02"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "TopBuild",
+      "type": "public_company",
+      "ticker": "BLD",
+      "hqCity": "Daytona Beach",
+      "hqState": "FL",
+      "website": "https://www.topbuild.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Progressive Roofing",
+      "trade": "lumber",
+      "hqCity": "Phoenix",
+      "hqState": "AZ",
+      "website": null
+    },
+    "announcedDate": null,
+    "closedDate": "2025-07-15",
+    "dealValueUsd": 810000000,
+    "summary": "TopBuild bought commercial roofing contractor Progressive Roofing from Bow River Capital for $810 million in cash.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.nasdaq.com/press-release/topbuild-completes-progressive-roofing-acquisition-2025-07-15",
+        "title": "TopBuild Completes Progressive Roofing Acquisition",
+        "publication": "Nasdaq (GlobeNewswire)",
+        "publishedDate": "2025-07-15"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Builders FirstSource",
+      "type": "public_company",
+      "ticker": "BLDR",
+      "hqCity": "Irving",
+      "hqState": "TX",
+      "website": "https://www.bldr.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Truckee Tahoe Lumber Company",
+      "trade": "lumber",
+      "hqCity": "Reno",
+      "hqState": "NV",
+      "website": null
+    },
+    "announcedDate": "2025-04-10",
+    "closedDate": "2025-04-10",
+    "dealValueUsd": null,
+    "summary": "Builders FirstSource acquired Truckee Tahoe Lumber, a lumber and building-materials dealer with seven locations in the Northern Sierra Nevada region.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://distributionstrategy.com/builders-firstsource-acquires-truckee-tahoe-lumber-company",
+        "title": "Builders FirstSource Acquires Truckee Tahoe Lumber Company",
+        "publication": "Distribution Strategy Group",
+        "publishedDate": "2025-04-10"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Builders FirstSource",
+      "type": "public_company",
+      "ticker": "BLDR",
+      "hqCity": "Irving",
+      "hqState": "TX",
+      "website": "https://www.bldr.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Builder's Door & Trim and Rystin Construction",
+      "trade": "lumber",
+      "hqCity": "Las Vegas",
+      "hqState": "NV",
+      "website": null
+    },
+    "announcedDate": "2025-10-01",
+    "closedDate": "2025-10-01",
+    "dealValueUsd": null,
+    "summary": "Builders FirstSource bought two Las Vegas-area millwork businesses, Builder's Door & Trim and Rystin Construction, its first millwork operations in that market.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.nasdaq.com/press-release/builders-firstsource-announces-two-acquisitions-turnkey-millwork-solutions-2025-10-01",
+        "title": "Builders FirstSource Announces Two Acquisitions in Turnkey Millwork Solutions",
+        "publication": "Nasdaq (Business Wire)",
+        "publishedDate": "2025-10-01"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Builders FirstSource",
+      "type": "public_company",
+      "ticker": "BLDR",
+      "hqCity": "Irving",
+      "hqState": "TX",
+      "website": "https://www.bldr.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Lengefeld Lumber",
+      "trade": "lumber",
+      "hqCity": "Temple",
+      "hqState": "TX",
+      "website": null
+    },
+    "announcedDate": "2025-11-06",
+    "closedDate": "2025-11-06",
+    "dealValueUsd": null,
+    "summary": "Builders FirstSource acquired Lengefeld Lumber, a central Texas lumber and building-materials dealer, keeping its leadership team in place.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.woodandpanel.us/news/article/builders-firstsource-expands-its-footprint-with-lengefeld-lumber-acquisition/",
+        "title": "Builders FirstSource expands its footprint with Lengefeld Lumber acquisition",
+        "publication": "Wood & Panel",
+        "publishedDate": "2025-11-06"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Builders FirstSource",
+      "type": "public_company",
+      "ticker": "BLDR",
+      "hqCity": "Irving",
+      "hqState": "TX",
+      "website": "https://www.bldr.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Precision Design and Trim",
+      "trade": "lumber",
+      "hqCity": "Boise",
+      "hqState": "ID",
+      "website": null
+    },
+    "announcedDate": "2026-06-05",
+    "closedDate": "2026-06-05",
+    "dealValueUsd": null,
+    "summary": "Builders FirstSource acquired Precision Design and Trim, a Boise finish-carpentry and trim installation company founded in 2006.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://distributionstrategy.com/2026/06/builders-firstsource-acquires-boise-installation-company-precision-design-and-trim/",
+        "title": "Builders FirstSource Acquires Boise Installation Company Precision Design and Trim",
+        "publication": "Distribution Strategy Group",
+        "publishedDate": "2026-06-05"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Builders FirstSource",
+      "type": "public_company",
+      "ticker": "BLDR",
+      "hqCity": "Irving",
+      "hqState": "TX",
+      "website": "https://www.bldr.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Innovative Construction Group (ICG)",
+      "trade": "lumber",
+      "hqCity": "Jacksonville",
+      "hqState": "FL",
+      "website": null,
+      "slug": "innovative-construction-group"
+    },
+    "announcedDate": "2026-08-03",
+    "closedDate": null,
+    "dealValueUsd": null,
+    "summary": "Builders FirstSource agreed to buy off-site framing and panel maker Innovative Construction Group from homebuilder PulteGroup, adding off-site manufacturing capacity in the Southeast.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.housingwire.com/articles/why-builders-firstsource-bought-icg-and-why-pulte-sold-it/",
+        "title": "Why Builders FirstSource bought ICG; and why Pulte sold it",
+        "publication": "HousingWire / The Builder's Daily",
+        "publishedDate": "2026-08-03"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Builders FirstSource",
+      "type": "public_company",
+      "ticker": "BLDR",
+      "hqCity": "Irving",
+      "hqState": "TX",
+      "website": "https://www.bldr.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Gleckler and Sons Construction / Gleckler & Sons Building Supplies",
+      "trade": "lumber",
+      "hqCity": "Jacksonville",
+      "hqState": "FL",
+      "website": null
+    },
+    "announcedDate": "2026-09-01",
+    "closedDate": "2026-09-01",
+    "dealValueUsd": null,
+    "summary": "Builders FirstSource acquired family-owned Gleckler and Sons, a Florida framing, truss and building-supply business with 11 locations.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.building-products.com/bfs-acquires-floridas-gleckler-sons/",
+        "title": "BFS acquires Florida's Gleckler & Sons",
+        "publication": "Building Products Digest",
+        "publishedDate": "2026-09-02"
+      },
+      {
+        "url": "https://www.nadra.org/blog/builders-firstsource-acquires-gleckler-sons",
+        "title": "Builders FirstSource Acquires Gleckler & Sons",
+        "publication": "NADRA",
+        "publishedDate": "2026-09-03"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "US LBM",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Buffalo Grove",
+      "hqState": "IL",
+      "website": "https://www.uslbm.com"
+    },
+    "acquirerOwner": {
+      "name": "Bain Capital",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Walker Lumber & Supply",
+      "trade": "lumber",
+      "hqCity": "Nashville",
+      "hqState": "TN",
+      "website": null
+    },
+    "announcedDate": "2025-02-03",
+    "closedDate": "2025-02-03",
+    "dealValueUsd": null,
+    "summary": "US LBM acquired Walker Lumber & Supply, a Nashville building-products dealer founded in 1949 and its first Tennessee location.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://news.uslbm.com/us-lbm-acquires-walker-lumber--supply/",
+        "title": "US LBM Acquires Walker Lumber & Supply",
+        "publication": "US LBM",
+        "publishedDate": "2025-02-03"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "US LBM",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Buffalo Grove",
+      "hqState": "IL",
+      "website": "https://www.uslbm.com"
+    },
+    "acquirerOwner": {
+      "name": "Bain Capital",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Goodrich Brothers, Inc.",
+      "trade": "lumber",
+      "hqCity": "Pewamo",
+      "hqState": "MI",
+      "website": null
+    },
+    "announcedDate": "2025-02-05",
+    "closedDate": "2025-02-05",
+    "dealValueUsd": null,
+    "summary": "US LBM acquired Goodrich Brothers, a Michigan supplier of millwork, stairs, doors and windows founded in 1984.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://news.uslbm.com/us-lbm-acquires-michigans-goodrich-brothers-inc/",
+        "title": "US LBM Acquires Michigan's Goodrich Brothers, Inc.",
+        "publication": "US LBM",
+        "publishedDate": "2025-02-05"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "US LBM",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Buffalo Grove",
+      "hqState": "IL",
+      "website": "https://www.uslbm.com"
+    },
+    "acquirerOwner": {
+      "name": "Bain Capital",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Beach Window and Door",
+      "trade": "lumber",
+      "hqCity": "Calabash",
+      "hqState": "NC",
+      "website": null
+    },
+    "announcedDate": "2025-03-05",
+    "closedDate": "2025-03-05",
+    "dealValueUsd": null,
+    "summary": "US LBM acquired Beach Window and Door, a window and door supplier serving the Myrtle Beach area.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://news.uslbm.com/us-lbm-acquires-north-carolinas-beach-window-and-door/",
+        "title": "US LBM Acquires North Carolina's Beach Window and Door",
+        "publication": "US LBM",
+        "publishedDate": "2025-03-05"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "US LBM",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Buffalo Grove",
+      "hqState": "IL",
+      "website": "https://www.uslbm.com"
+    },
+    "acquirerOwner": {
+      "name": "Bain Capital",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "XO Windows",
+      "trade": "lumber",
+      "hqCity": "Phoenix",
+      "hqState": "AZ",
+      "website": null
+    },
+    "announcedDate": "2026-01-19",
+    "closedDate": "2026-01-19",
+    "dealValueUsd": null,
+    "summary": "US LBM acquired XO Windows, a window and door distributor and installer with locations in Phoenix, Tucson and Henderson, Nevada.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://news.uslbm.com/us-lbm-acquired-arizona-and-nevadas-xo-windows-llc/",
+        "title": "US LBM Acquired Arizona and Nevada's XO Windows, LLC",
+        "publication": "US LBM",
+        "publishedDate": "2026-01-19"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "US LBM",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Buffalo Grove",
+      "hqState": "IL",
+      "website": "https://www.uslbm.com"
+    },
+    "acquirerOwner": {
+      "name": "Bain Capital",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Builders Supply Company",
+      "trade": "lumber",
+      "hqCity": "Lancaster",
+      "hqState": "SC",
+      "website": null,
+      "slug": "builders-supply-company"
+    },
+    "announcedDate": "2026-05-13",
+    "closedDate": "2026-05-13",
+    "dealValueUsd": null,
+    "summary": "US LBM acquired Builders Supply Company, a lumber and millwork dealer that has served the Charlotte market since 1908.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://news.uslbm.com/us-lbm-acquired-carolinas-builders-supply-company/",
+        "title": "US LBM Acquired Carolina's Builders Supply Company",
+        "publication": "US LBM",
+        "publishedDate": "2026-05-13"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Kodiak Building Partners",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Englewood",
+      "hqState": "CO",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Court Square Capital Partners",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Kendell Lumber",
+      "trade": "lumber",
+      "hqCity": "Winona",
+      "hqState": "MN",
+      "website": null
+    },
+    "announcedDate": "2025-01-15",
+    "closedDate": "2025-01-15",
+    "dealValueUsd": null,
+    "summary": "Kodiak Building Partners acquired two-location Minnesota dealer Kendell Lumber and folded it into its Simonson Lumber division.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://building-products.com/kodiak-simonson-purchases-minnesotas-kendall-lumber",
+        "title": "Kodiak/Simonson purchases Minnesota's Kendell Lumber",
+        "publication": "Building Products Digest",
+        "publishedDate": "2025-01-15"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Kodiak Building Partners",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Englewood",
+      "hqState": "CO",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Court Square Capital Partners",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "New River Building Supply & Lumber Company",
+      "trade": "lumber",
+      "hqCity": "Boone",
+      "hqState": "NC",
+      "website": null
+    },
+    "announcedDate": "2025-04-15",
+    "closedDate": "2025-04-15",
+    "dealValueUsd": null,
+    "summary": "Kodiak Building Partners acquired New River Building Supply & Lumber, a building-materials supplier in North Carolina's High Country.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://distributionstrategy.com/2025/04/kodiak-acquires-new-river-building-supply-lumber/",
+        "title": "Kodiak Acquires New River Building Supply & Lumber",
+        "publication": "Distribution Strategy Group",
+        "publishedDate": "2025-04-15"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Carter Lumber",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Kent",
+      "hqState": "OH",
+      "website": "https://carterlumber.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Gaster Lumber & Hardware",
+      "trade": "lumber",
+      "hqCity": "Savannah",
+      "hqState": "GA",
+      "website": null
+    },
+    "announcedDate": "2026-05-04",
+    "closedDate": "2026-05-04",
+    "dealValueUsd": null,
+    "summary": "Carter Lumber acquired Gaster Lumber & Hardware, a three-location building-materials supplier in the Savannah, Georgia area.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.building-products.com/carter-acquires-georgias-gaster-lumber/",
+        "title": "Carter acquires Georgia's Gaster Lumber",
+        "publication": "Building Products Digest",
+        "publishedDate": "2026-05-04"
+      },
+      {
+        "url": "https://carterlumber.com/blog/carter-lumber-acquires-gaster-lumber",
+        "title": "Carter Lumber Acquires Gaster Lumber, Expanding into Savannah, Georgia",
+        "publication": "Carter Lumber",
+        "publishedDate": null
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "R.P. Lumber",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Edwardsville",
+      "hqState": "IL",
+      "website": "https://www.rplumber.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Dye Home Improvement",
+      "trade": "lumber",
+      "hqCity": "Monticello",
+      "hqState": "IN",
+      "website": null
+    },
+    "announcedDate": "2025-10-09",
+    "closedDate": "2025-10-10",
+    "dealValueUsd": null,
+    "summary": "R.P. Lumber, which also operates several Iowa stores, acquired Dye Home Improvement, a hardware store and lumberyard with locations in Monticello and Monon, Indiana.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.building-products.com/dye-buy-expands-rp-lumber-into-indiana/",
+        "title": "Dye buy expands RP Lumber into Indiana",
+        "publication": "Building Products Digest",
+        "publishedDate": "2025-10-09"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "R.P. Lumber",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Edwardsville",
+      "hqState": "IL",
+      "website": "https://www.rplumber.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Bender Lumber",
+      "trade": "lumber",
+      "hqCity": "Bloomington",
+      "hqState": "IN",
+      "website": null
+    },
+    "announcedDate": "2026-01-29",
+    "closedDate": "2026-02-13",
+    "dealValueUsd": null,
+    "summary": "R.P. Lumber acquired Bender Lumber, a partly employee-owned southern Indiana building-supply company with eight locations, bringing R.P. Lumber to 99 stores in seven states.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.rplumber.com/blog/press-release/r-p-lumber-to-acquire-bender-lumber",
+        "title": "R.P. Lumber To Acquire Bender Lumber",
+        "publication": "R.P. Lumber",
+        "publishedDate": "2026-01-29"
+      },
+      {
+        "url": "https://www.idsnews.com/article/2026/02/southern-indiana-bender-lumber-acquired-rp-lumber",
+        "title": "Southern Indiana-based Bender Lumber acquired by R.P. Lumber",
+        "publication": "Indiana Daily Student",
+        "publishedDate": "2026-02-15"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "R.P. Lumber",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Edwardsville",
+      "hqState": "IL",
+      "website": "https://www.rplumber.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "White Mountain Lumber",
+      "trade": "lumber",
+      "hqCity": "Green River",
+      "hqState": "WY",
+      "website": null
+    },
+    "announcedDate": "2026-10-16",
+    "closedDate": "2026-10-17",
+    "dealValueUsd": null,
+    "summary": "R.P. Lumber acquired White Mountain Lumber in Green River, Wyoming, which began operating as R.P. Lumber on October 17, 2026.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.bluebookservices.com/?p=455641",
+        "title": "R.P. Lumber acquires Wyoming's White Mountain Lumber",
+        "publication": "Blue Book Services",
+        "publishedDate": "2026-10-16"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Hammond Lumber Company",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Belgrade",
+      "hqState": "ME",
+      "website": "https://www.hammondlumber.com",
+      "slug": "hammond-lumber-company"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Ware-Butler Building Supply",
+      "trade": "lumber",
+      "hqCity": "Waterville",
+      "hqState": "ME",
+      "website": null
+    },
+    "announcedDate": "2025-07-22",
+    "closedDate": "2025-07-31",
+    "dealValueUsd": null,
+    "summary": "Hammond Lumber agreed to buy 15-location Ware-Butler Building Supply from Pleasant River Lumber, growing from 22 to 34 locations in Maine and New Hampshire.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.hammondlumber.com/hammond-warebutler-acquisition/",
+        "title": "Hammond Lumber Company to Acquire Ware-Butler Building Supply",
+        "publication": "Hammond Lumber Company",
+        "publishedDate": "2025-07-22"
+      },
+      {
+        "url": "https://www.building-products.com/hammond-lumber-to-acquire-ware-butler/",
+        "title": "Hammond Lumber to acquire Ware-Butler",
+        "publication": "Building Products Digest",
+        "publishedDate": "2025-07-22"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Kuiken Brothers Company",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Fair Lawn",
+      "hqState": "NJ",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Paramus Building Supply",
+      "trade": "lumber",
+      "hqCity": "Paramus",
+      "hqState": "NJ",
+      "website": null
+    },
+    "announcedDate": "2026-08-26",
+    "closedDate": null,
+    "dealValueUsd": null,
+    "summary": "Kuiken Brothers agreed to acquire Paramus Building Supply and its two northern New Jersey locations in Paramus and Bergenfield.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.lmc.net/News/Kuiken-Brothers-Company-To-Acquire-Paramus-Buildin",
+        "title": "Kuiken Brothers Company To Acquire Paramus Building Supply",
+        "publication": "LMC",
+        "publishedDate": "2026-08-26"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Bain Capital",
+      "type": "pe_firm",
+      "ticker": null,
+      "hqCity": "Boston",
+      "hqState": "MA",
+      "website": "https://www.baincapital.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Service Logic",
+      "trade": "hvac",
+      "hqCity": "Charlotte",
+      "hqState": "NC",
+      "website": null
+    },
+    "announcedDate": null,
+    "closedDate": "2025-12-16",
+    "dealValueUsd": null,
+    "summary": "Bain Capital, with Mubadala as co-investor, completed its acquisition of commercial HVAC and mechanical services platform Service Logic from Leonard Green & Partners.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.baincapital.com/news/bain-capital-completes-acquisition-service-logic",
+        "title": "Bain Capital Completes Acquisition of Service Logic",
+        "publication": "Bain Capital",
+        "publishedDate": "2025-12-16"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Blackstone",
+      "type": "pe_firm",
+      "ticker": "BX",
+      "hqCity": "New York",
+      "hqState": "NY",
+      "website": "https://www.blackstone.com",
+      "slug": "blackstone"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Champions Group",
+      "trade": "hvac",
+      "hqCity": "Irvine",
+      "hqState": "CA",
+      "website": null,
+      "slug": "champions-group-holdings"
+    },
+    "announcedDate": "2026-02-17",
+    "closedDate": null,
+    "dealValueUsd": null,
+    "summary": "Blackstone agreed to buy residential HVAC, plumbing and electrical services platform Champions Group from Odyssey Investment Partners, which keeps a significant minority stake. Terms were not disclosed (Bloomberg reported about $2.5 billion); no closing announcement found.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://pulse2.com/blackstone-to-acquire-home-services-platform-champions-group",
+        "title": "Blackstone To Acquire Home Services Platform Champions Group",
+        "publication": "Pulse 2.0",
+        "publishedDate": "2026-02-18"
+      },
+      {
+        "url": "https://www.ocbj.com/services/blackstone-buys-majority-stake-in-irvines-champions-group/",
+        "title": "Blackstone Buys Majority Stake in Irvine's Champions Group",
+        "publication": "Orange County Business Journal",
+        "publishedDate": "2026-02-19"
+      },
+      {
+        "url": "https://www.lw.com/en/news/2026/02/latham-watkins-advises-odyssey-investment-partners-in-sale-of-champions-group-to-blackstone",
+        "title": "Latham & Watkins Advises Odyssey Investment Partners in Sale of Champions Group to Blackstone",
+        "publication": "Latham & Watkins",
+        "publishedDate": null
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Apollo Funds",
+      "type": "pe_firm",
+      "ticker": "APO",
+      "hqCity": "New York",
+      "hqState": "NY",
+      "website": "https://www.apollo.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Apex Service Partners",
+      "trade": "hvac",
+      "hqCity": "Dallas",
+      "hqState": "TX",
+      "website": null
+    },
+    "announcedDate": "2026-05-28",
+    "closedDate": "2026-10-30",
+    "dealValueUsd": null,
+    "summary": "Apollo funds took a minority stake in Apex Service Partners, the Alpine Investors-backed residential HVAC, plumbing and electrical platform; Alpine and Sixth Street also invested more. Terms were not disclosed.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://dallasinnovates.com/dallas-based-apex-service-partners-gets-minority-investment-from-apollo-funds/",
+        "title": "Dallas-Based Apex Service Partners Gets Minority Investment From Apollo Funds",
+        "publication": "Dallas Innovates",
+        "publishedDate": "2026-05-28"
+      },
+      {
+        "url": "https://alpineinvestors.com/resource/apex-apollo-minority-investment/",
+        "title": "Apex Service Partners and Alpine Investors Announce Closing of Strategic Minority Investment from Apollo Funds in Apex",
+        "publication": "Alpine Investors",
+        "publishedDate": "2026-10-30"
+      }
+    ],
+    "minority": true
+  },
+  {
+    "acquirer": {
+      "name": "GHK Capital Partners",
+      "type": "pe_firm",
+      "ticker": null,
+      "hqCity": "Greenwich",
+      "hqState": "CT",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "USA Hometown Experts",
+      "trade": "hvac",
+      "hqCity": "Memphis",
+      "hqState": "TN",
+      "website": null
+    },
+    "announcedDate": "2026-10-13",
+    "closedDate": "2026-10-13",
+    "dealValueUsd": null,
+    "summary": "GHK Capital Partners acquired USA Hometown Experts, a Memphis-based HVAC, plumbing and electrical services platform with eight local brands in the Southeast; MSouth Equity Partners was the prior owner.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.paulweiss.com/insights/client-news/ghk-capital-partners-acquires-usa-hometown-experts",
+        "title": "GHK Capital Partners Acquires USA Hometown Experts",
+        "publication": "Paul, Weiss",
+        "publishedDate": "2026-10-13"
+      },
+      {
+        "url": "https://pulse2.com/ghk-capital-partners-acquires-usa-hometown-experts-to-accelerate-southeast-expansion/",
+        "title": "GHK Capital Partners Acquires USA Hometown Experts To Accelerate Southeast Expansion",
+        "publication": "Pulse 2.0",
+        "publishedDate": "2026-10-15"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "USA Hometown Experts",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Memphis",
+      "hqState": "TN",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "MSouth Equity Partners",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Metro Plumbing, Heating & Air",
+      "trade": "plumbing",
+      "hqCity": "Chattanooga",
+      "hqState": "TN",
+      "website": null
+    },
+    "announcedDate": "2025-09-04",
+    "closedDate": "2025-09-04",
+    "dealValueUsd": null,
+    "summary": "USA Hometown Experts, then owned by MSouth Equity Partners, acquired Metro Plumbing, Heating & Air, a Chattanooga residential plumbing, HVAC, septic and drain company founded in 1989.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://contractingbusiness.com/industry-news/article/55314345/metro-plumbing-heating-air-joins-usa-hometown-experts-in-strategic-acquisition",
+        "title": "Metro Plumbing, Heating & Air Joins USA Hometown Experts in Strategic Acquisition",
+        "publication": "Contracting Business",
+        "publishedDate": "2025-09-04"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Permira",
+      "type": "pe_firm",
+      "ticker": null,
+      "hqCity": "London",
+      "hqState": null,
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Flint Group",
+      "trade": "hvac",
+      "hqCity": null,
+      "hqState": null,
+      "website": null
+    },
+    "announcedDate": "2026-11-05",
+    "closedDate": null,
+    "dealValueUsd": null,
+    "summary": "Funds advised by Permira agreed to buy a majority stake in Flint Group, a residential HVAC, plumbing and electrical platform with 20 brands, from General Atlantic. Terms were not disclosed, and closing was expected by the end of 2026.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.constructionowners.com/news/flint-group-sells-majority-stake-to-permira-funds-as-home-services-platform-targets-expansion",
+        "title": "Flint Group Sells Majority Stake to Permira Funds",
+        "publication": "Construction Owners Club",
+        "publishedDate": null
+      },
+      {
+        "url": "https://pipelineroad.com/news/20261106-permira-agrees-to-buy-majority-stake-in-flint-group-in-deal-",
+        "title": "Permira agrees to buy majority stake in Flint Group",
+        "publication": "PipelineRoad",
+        "publishedDate": "2026-11-06"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Flint Group",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": null,
+      "hqState": null,
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "General Atlantic",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Staton Heating, Cooling & Plumbing",
+      "trade": "hvac",
+      "hqCity": "Annapolis",
+      "hqState": "MD",
+      "website": null
+    },
+    "announcedDate": "2026-10-30",
+    "closedDate": "2026-10-30",
+    "dealValueUsd": null,
+    "summary": "Flint Group added Staton Heating, Cooling & Plumbing, an Annapolis company serving Central Maryland since 1983, as its 20th brand in late October 2026; Staton keeps its name.",
+    "iowa": false,
+    "confidence": "medium",
+    "sources": [
+      {
+        "url": "https://www.constructionowners.com/news/flint-group-adds-staton-heating-cooling-plumbing-as-20th-brand",
+        "title": "Flint Group Adds Staton Heating, Cooling & Plumbing as 20th Brand",
+        "publication": "Construction Owners Club",
+        "publishedDate": "2026-10-30"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Altas Partners",
+      "type": "pe_firm",
+      "ticker": null,
+      "hqCity": "Toronto",
+      "hqState": null,
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Redwood Services",
+      "trade": "hvac",
+      "hqCity": "Memphis",
+      "hqState": "TN",
+      "website": null
+    },
+    "announcedDate": "2025-05-08",
+    "closedDate": "2025-05-08",
+    "dealValueUsd": null,
+    "summary": "Altas Partners made a significant equity investment in Redwood Services, a home-services platform with more than $500 million in revenue, alongside founding backer Union Main Group. Terms were not disclosed.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.kirkland.com/news/press-release/2025/05/kirkland-advises-altas-partners-on-investment-in-redwood-services",
+        "title": "Kirkland Advises Altas Partners on Investment in Redwood Services",
+        "publication": "Kirkland & Ellis",
+        "publishedDate": "2025-05-08"
+      },
+      {
+        "url": "https://www.achrnews.com/articles/164593-redwood-announces-investment-by-altas-partners",
+        "title": "Redwood Announces Investment by Altas Partners",
+        "publication": "ACHR News",
+        "publishedDate": "2025-05-09"
+      }
+    ],
+    "minority": true
+  },
+  {
+    "acquirer": {
+      "name": "Redwood Services",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Memphis",
+      "hqState": "TN",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Altas Partners",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Guaranteed Service",
+      "trade": "hvac",
+      "hqCity": "Manasquan",
+      "hqState": "NJ",
+      "website": null
+    },
+    "announcedDate": "2025-05-15",
+    "closedDate": "2025-05-15",
+    "dealValueUsd": null,
+    "summary": "Redwood Services partnered with Guaranteed Service of Manasquan, New Jersey, its 19th platform investment; the founder keeps an ownership interest.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.achrnews.com/articles/164629-redwood-services-makes-19th-acquisition",
+        "title": "Redwood Services Makes 19th Acquisition",
+        "publication": "ACHR News",
+        "publishedDate": "2025-05-15"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Redwood Services",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Memphis",
+      "hqState": "TN",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Altas Partners",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Sierra Platform",
+      "trade": "hvac",
+      "hqCity": "Las Vegas",
+      "hqState": "NV",
+      "website": null
+    },
+    "announcedDate": "2026-05-05",
+    "closedDate": "2026-05-05",
+    "dealValueUsd": null,
+    "summary": "Redwood Services acquired the Sierra Platform from SE Capital, adding five HVAC, plumbing and electrical companies in Nevada, Arizona, Idaho and Colorado with about 400 employees.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.kirkland.com/news/press-release/2026/05/kirkland-advises-altas-backed-redwood-services-on-acquisition-of-sierra-platform-from-se-capital",
+        "title": "Kirkland Advises Altas-Backed Redwood Services on Acquisition of Sierra Platform from SE Capital",
+        "publication": "Kirkland & Ellis",
+        "publishedDate": "2026-05-05"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Sila Services",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Philadelphia",
+      "hqState": "PA",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Goldman Sachs Alternatives",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Sullivan Super Service",
+      "trade": "plumbing",
+      "hqCity": "Pittsburgh",
+      "hqState": "PA",
+      "website": null
+    },
+    "announcedDate": "2025-01-20",
+    "closedDate": "2025-01-20",
+    "dealValueUsd": null,
+    "summary": "Sila Services acquired Sullivan Super Service Plumbing, Heating and Cooling, a Pittsburgh home-services provider founded in 1964.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.achrnews.com/articles/164001-sila-services-acquires-sullivan-super-service-to-strengthen-presence-in-western-pennsylvania",
+        "title": "Sila Services Acquires Sullivan Super Service to Strengthen Presence in Western Pennsylvania",
+        "publication": "ACHR News",
+        "publishedDate": "2025-01-20"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Sila Services",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Philadelphia",
+      "hqState": "PA",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Goldman Sachs Alternatives",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "NEOH (Simpson Heating & Air, Bonsky Heating & Cooling, Coblentz Plumbing and others)",
+      "trade": "hvac",
+      "hqCity": null,
+      "hqState": "OH",
+      "website": null,
+      "slug": "neoh"
+    },
+    "announcedDate": "2026-01-14",
+    "closedDate": "2026-01-14",
+    "dealValueUsd": null,
+    "summary": "Sila Services acquired NEOH, an Ohio home-services group of five brands plus a training academy, including Simpson Heating & Air, Bonsky Heating & Cooling and Coblentz Plumbing Solutions.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://pulse2.com/sila-services-expands-midwest-footprint-with-strategic-ohio-multi-brand-acquisition",
+        "title": "Sila Services Expands Midwest Footprint With Strategic Ohio Multi-Brand Acquisition",
+        "publication": "Pulse 2.0",
+        "publishedDate": "2026-01-14"
+      },
+      {
+        "url": "https://contractingbusiness.com/industry-news/news/55343997/sila-services-expands-ohio-hvac-footprint-with-multi-brand-acquisition",
+        "title": "Sila Services Expands Ohio HVAC Footprint with Multi-Brand Acquisition",
+        "publication": "Contracting Business",
+        "publishedDate": "2026-01-16"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Champions Group Holdings",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Irvine",
+      "hqState": "CA",
+      "website": null,
+      "slug": "champions-group-holdings"
+    },
+    "acquirerOwner": {
+      "name": "Odyssey Investment Partners",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Lex Cooling, Heating, Plumbing & Electrical",
+      "trade": "hvac",
+      "hqCity": null,
+      "hqState": "TX",
+      "website": null
+    },
+    "announcedDate": "2026-01-21",
+    "closedDate": "2026-01-21",
+    "dealValueUsd": null,
+    "summary": "Champions Group acquired Lex Cooling, Heating, Plumbing & Electrical, a North Texas residential services company founded in 2004.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.achrnews.com/articles/165723-champions-group-acquires-lex-cooling-heating-plumbing-and-electrical",
+        "title": "Champions Group Acquires Lex Cooling, Heating, Plumbing & Electrical",
+        "publication": "ACHR News",
+        "publishedDate": "2026-01-21"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Leap Partners",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Nashville",
+      "hqState": "TN",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Master Plumbers Heating and Cooling",
+      "trade": "plumbing",
+      "hqCity": "Greensboro",
+      "hqState": "NC",
+      "website": null
+    },
+    "announcedDate": "2025-03-12",
+    "closedDate": "2025-03-12",
+    "dealValueUsd": null,
+    "summary": "Leap Partners acquired Greensboro-based Master Plumbers Heating and Cooling, expanding its North Carolina presence.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.achrnews.com/articles/164285-leap-partners-acquires-north-carolina-contractor",
+        "title": "Leap Partners Acquires North Carolina Contractor",
+        "publication": "ACHR News",
+        "publishedDate": "2025-03-12"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Leap Partners",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Nashville",
+      "hqState": "TN",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Air Hawk Heating & Cooling",
+      "trade": "hvac",
+      "hqCity": "Odessa",
+      "hqState": "FL",
+      "website": null
+    },
+    "announcedDate": "2026-04-30",
+    "closedDate": "2026-04-30",
+    "dealValueUsd": null,
+    "summary": "Leap Partners acquired Air Hawk Heating & Cooling, an HVAC company in Odessa, Florida, in the Tampa Bay area; it keeps its brand and founder-led management.",
+    "iowa": false,
+    "confidence": "medium",
+    "sources": [
+      {
+        "url": "https://pubt.io/view/5A7FFC9AF170733443BF807BF179C733D2BF2A0F",
+        "title": "Leap Partners Grows Again in Florida",
+        "publication": "Public Technologies (press release)",
+        "publishedDate": "2026-04-30"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "The Chill Brothers",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": null,
+      "hqState": null,
+      "website": null,
+      "slug": "the-chill-brothers"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Tucker Hill Air, Plumbing & Electric",
+      "trade": "hvac",
+      "hqCity": "Phoenix",
+      "hqState": "AZ",
+      "website": null,
+      "slug": "tucker-hill-air-plumbing-and-electric-tempe"
+    },
+    "announcedDate": "2026-02-09",
+    "closedDate": "2026-02-09",
+    "dealValueUsd": null,
+    "summary": "The Chill Brothers acquired Tucker Hill Air, Plumbing & Electric, a Phoenix residential and light commercial HVAC, plumbing and electrical company, its first Arizona market.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://inbusinessphx.com/?p=189913",
+        "title": "Phoenix HVAC Operator Acquired by National Platform",
+        "publication": "Greater Phoenix In Business Magazine",
+        "publishedDate": "2026-02-09"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Southern Home Services",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": null,
+      "hqState": "FL",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Gryphon Investors",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Blazer Heating, Air & Plumbing",
+      "trade": "hvac",
+      "hqCity": "Mechanicsville",
+      "hqState": "VA",
+      "website": null
+    },
+    "announcedDate": "2026-05-20",
+    "closedDate": "2026-05-18",
+    "dealValueUsd": null,
+    "summary": "Gryphon-backed Southern Home Services acquired Blazer Heating, Air & Plumbing, a residential HVAC and plumbing company serving the Richmond, Virginia area since 1989.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://richmondbizsense.com/2026/05/21/mechanicsville-heating-and-plumbing-company-acquired-by-florida-firm/",
+        "title": "Mechanicsville heating and plumbing company acquired by Florida firm",
+        "publication": "Richmond BizSense",
+        "publishedDate": "2026-05-21"
+      },
+      {
+        "url": "https://www.pehub.com/gryphon-backed-southern-home-services-acquires-blazer-heating-air-plumbing/",
+        "title": "Gryphon-backed Southern Home Services acquires Blazer Heating, Air & Plumbing",
+        "publication": "PE Hub",
+        "publishedDate": "2026-05-20"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Presidential Heating & Air Conditioning",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": null,
+      "hqState": "MD",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Gryphon Investors",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Shipley Plumbing, Heating & Air Conditioning",
+      "trade": "plumbing",
+      "hqCity": null,
+      "hqState": "MD",
+      "website": null
+    },
+    "announcedDate": "2026-08-25",
+    "closedDate": "2026-08-25",
+    "dealValueUsd": null,
+    "summary": "Gryphon-backed Presidential Heating & Air Conditioning acquired Shipley Plumbing, Heating & Air Conditioning, a Montgomery County, Maryland home-services provider.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.pehub.com/gryphon-backed-presidential-heating-acquires-shipley-plumbing-in-maryland",
+        "title": "Gryphon-backed Presidential Heating acquires Shipley Plumbing in Maryland",
+        "publication": "PE Hub",
+        "publishedDate": "2026-08-25"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "PremiStar",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Deerfield",
+      "hqState": "IL",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Partners Group",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Armistead Mechanical",
+      "trade": "hvac",
+      "hqCity": null,
+      "hqState": "NJ",
+      "website": null
+    },
+    "announcedDate": "2026-04-21",
+    "closedDate": "2026-04-22",
+    "dealValueUsd": null,
+    "summary": "PremiStar, a Partners Group-owned commercial HVAC, plumbing and building-automation contractor, acquired Armistead Mechanical, extending its service area to New Jersey and New York's Hudson Valley.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.newswire.com/news/premistar-partners-with-armistead-mechanical-expanding-its-commercial-22765493",
+        "title": "PremiStar Partners with Armistead Mechanical, Expanding Its Commercial HVAC Footprint in New Jersey and New York",
+        "publication": "Newswire (company release)",
+        "publishedDate": "2026-04-21"
+      },
+      {
+        "url": "https://www.pkfod.com/insights/pkf-investment-banking-closes-sale-of-armistead-mechanical-inc-to-premistar-llc/",
+        "title": "PKF Investment Banking Closes Sale of Armistead Mechanical, Inc. to PremiStar, LLC",
+        "publication": "PKF O'Connor Davies",
+        "publishedDate": "2026-04-22"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "PremiStar",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Deerfield",
+      "hqState": "IL",
+      "website": null
+    },
+    "acquirerOwner": {
+      "name": "Partners Group",
+      "type": "pe_firm",
+      "ticker": null
+    },
+    "target": {
+      "name": "Mechanical Service & Systems (MSS)",
+      "trade": "hvac",
+      "hqCity": "Salt Lake City",
+      "hqState": "UT",
+      "website": null,
+      "slug": "mechanical-service-and-systems"
+    },
+    "announcedDate": "2026-06-10",
+    "closedDate": "2026-06-10",
+    "dealValueUsd": null,
+    "summary": "PremiStar acquired Mechanical Service & Systems of Salt Lake City, its first operation in Utah.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.newswire.com/news/premistar-partners-with-mechanical-service-systems-expanding-its-commercial",
+        "title": "PremiStar Partners with Mechanical Service & Systems, Expanding its Commercial HVAC Footprint to Utah",
+        "publication": "Newswire (company release)",
+        "publishedDate": "2026-06-10"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Foundral",
+      "type": "consolidator",
+      "ticker": null,
+      "hqCity": "Chicago",
+      "hqState": "IL",
+      "website": null
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "A. Hattersley & Sons",
+      "trade": "hvac",
+      "hqCity": "Fort Wayne",
+      "hqState": "IN",
+      "website": null
+    },
+    "announcedDate": "2026-06-01",
+    "closedDate": "2026-06-01",
+    "dealValueUsd": null,
+    "summary": "Foundral, a platform that buys union mechanical contractors, acquired A. Hattersley & Sons, a Fort Wayne mechanical contractor with roots dating to 1856.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://www.achrnews.com/articles/166265-foundral-acquires-indiana-mechanical-firm",
+        "title": "Foundral Acquires Indiana Mechanical Firm",
+        "publication": "ACHR News",
+        "publishedDate": "2026-06-01"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "EMCOR Group",
+      "type": "public_company",
+      "ticker": "EME",
+      "hqCity": "Norwalk",
+      "hqState": "CT",
+      "website": "https://www.emcorgroup.com"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Miller Electric Company",
+      "trade": "electrical",
+      "hqCity": "Jacksonville",
+      "hqState": "FL",
+      "website": null
+    },
+    "announcedDate": null,
+    "closedDate": "2025-02-03",
+    "dealValueUsd": 865000000,
+    "summary": "EMCOR completed its $865 million cash acquisition of Miller Electric, a Jacksonville-based electrical contractor serving the Southeast.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://emcorgroup.com/investor-relations/press-releases/2025-news/emcor-group-inc-completes-acquisition-of-miller-electric-company",
+        "title": "EMCOR Group, Inc. Completes Acquisition Of Miller Electric Company",
+        "publication": "EMCOR Group",
+        "publishedDate": "2025-02-03"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Comfort Systems USA",
+      "type": "public_company",
+      "ticker": "FIX",
+      "hqCity": "Houston",
+      "hqState": "TX",
+      "website": "https://www.comfortsystemsusa.com",
+      "slug": "comfort-systems-usa"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Feyen Zylstra",
+      "trade": "electrical",
+      "hqCity": "Grand Rapids",
+      "hqState": "MI",
+      "website": null,
+      "slug": "feyen-zylstra"
+    },
+    "announcedDate": null,
+    "closedDate": "2025-10-01",
+    "dealValueUsd": null,
+    "summary": "Comfort Systems USA acquired Feyen Zylstra, a Grand Rapids electrical contractor with industrial, technology and healthcare clients.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://finviz.com/news/243420/could-comfort-systems-acquisitions-fuel-a-multi-year-rally",
+        "title": "Could Comfort Systems' Acquisitions Fuel a Multi-Year Rally?",
+        "publication": "Zacks via Finviz",
+        "publishedDate": null
+      },
+      {
+        "url": "https://www.panabee.com/quote/brian-lane-on-new-acquisitions-and-market-focus-fix-102325",
+        "title": "Brian Lane on new acquisitions and market focus (Q3 2025 earnings call)",
+        "publication": "Panabee",
+        "publishedDate": "2025-10-23"
+      }
+    ],
+    "minority": false
+  },
+  {
+    "acquirer": {
+      "name": "Comfort Systems USA",
+      "type": "public_company",
+      "ticker": "FIX",
+      "hqCity": "Houston",
+      "hqState": "TX",
+      "website": "https://www.comfortsystemsusa.com",
+      "slug": "comfort-systems-usa"
+    },
+    "acquirerOwner": null,
+    "target": {
+      "name": "Meisner Electric",
+      "trade": "electrical",
+      "hqCity": "Boca Raton",
+      "hqState": "FL",
+      "website": null
+    },
+    "announcedDate": null,
+    "closedDate": "2025-10-01",
+    "dealValueUsd": null,
+    "summary": "Comfort Systems USA acquired Meisner Electric, a Boca Raton electrical contractor focused on healthcare, institutional and commercial work.",
+    "iowa": false,
+    "confidence": "high",
+    "sources": [
+      {
+        "url": "https://finviz.com/news/243420/could-comfort-systems-acquisitions-fuel-a-multi-year-rally",
+        "title": "Could Comfort Systems' Acquisitions Fuel a Multi-Year Rally?",
+        "publication": "Zacks via Finviz",
+        "publishedDate": null
+      },
+      {
+        "url": "https://www.panabee.com/quote/brian-lane-on-new-acquisitions-and-market-focus-fix-102325",
+        "title": "Brian Lane on new acquisitions and market focus (Q3 2025 earnings call)",
+        "publication": "Panabee",
+        "publishedDate": "2025-10-23"
+      }
+    ],
+    "minority": false
+  }
+]
