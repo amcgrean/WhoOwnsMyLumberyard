@@ -4,6 +4,7 @@ config({ path: ".env" });
 
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { isNonTradeName } from "@/lib/non-trade";
 import { companies, locations, tradeEnum } from "@/lib/db/schema";
 import { locationSlug } from "@/lib/slug";
 
@@ -134,7 +135,7 @@ async function main() {
   let skipped = 0;
   for (const p of all) {
     const name = p.displayName?.text ?? "";
-    if (!name) {
+    if (!name || isNonTradeName(name)) {
       skipped++;
       continue;
     }

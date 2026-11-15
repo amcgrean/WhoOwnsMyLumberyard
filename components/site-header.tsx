@@ -6,6 +6,7 @@ import { SITE_NAME } from "@/lib/constants";
 
 const NAV_LINKS = [
   { href: "/map", label: "Map" },
+  { href: "/news", label: "News" },
   { href: "/methodology", label: "Methodology" },
   { href: "/about", label: "About" },
   { href: "/submit", label: "Submit a tip" },

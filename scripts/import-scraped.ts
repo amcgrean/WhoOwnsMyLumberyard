@@ -6,6 +6,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { eq, and } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { isNonTradeName } from "@/lib/non-trade";
 import { companies, locations, ownershipEdges, sources, claimSources } from "@/lib/db/schema";
 import { locationSlug, slugify } from "@/lib/slug";
 import type { ScrapeOutput } from "./scrapers/_base";
@@ -175,6 +176,7 @@ async function main() {
   let updated = 0;
   const distinctBrands = new Set<string>();
   for (const r of parsed.rows) {
+    if (isNonTradeName(r.name)) continue;
     const company = await resolveCompany(r);
     distinctBrands.add(company.slug);
     const slug = locationSlug({ name: r.name, city: r.city, state: r.state });

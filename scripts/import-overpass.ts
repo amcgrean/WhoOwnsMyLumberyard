@@ -4,6 +4,7 @@ config({ path: ".env" });
 
 import { eq } from "drizzle-orm";
 import { db } from "@/lib/db";
+import { isNonTradeName } from "@/lib/non-trade";
 import { companies, locations, tradeEnum } from "@/lib/db/schema";
 import { locationSlug } from "@/lib/slug";
 
@@ -110,7 +111,7 @@ out center tags;`;
     const city = t["addr:city"] ?? "";
     const zip = t["addr:postcode"] ?? "";
     const stateCode = (t["addr:state"] || state).toUpperCase();
-    if (!name || !street || !city || !zip) {
+    if (!name || !street || !city || !zip || isNonTradeName(name)) {
       skipped++;
       continue;
     }

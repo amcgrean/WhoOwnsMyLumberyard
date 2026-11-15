@@ -3,6 +3,7 @@ import { SITE_NAME } from "@/lib/constants";
 
 const EXPLORE: ReadonlyArray<{ href: string; label: string }> = [
   { href: "/map", label: "Interactive map" },
+  { href: "/news", label: "Acquisitions in the news" },
   { href: "/search", label: "Search the record" },
   { href: "/state/iowa", label: "Iowa overview" },
   { href: "/state/iowa/hvac", label: "Iowa HVAC" },
