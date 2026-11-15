@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { companies, ownershipEdges } from "@/lib/db/schema";
 import type { Company, OwnershipEdge } from "@/lib/db/schema";
 import type { OwnershipBadgeKind } from "@/lib/constants";
+import { ownershipKind } from "@/lib/ownership-kind";
 
 const MAX_CHAIN_DEPTH = 10;
 
@@ -75,41 +76,34 @@ export async function getOwnedCompanies(ownerId: string): Promise<
 
 /**
  * Determine the ownership badge for a company based on its chain.
- * Rules:
- * - If any node up the chain is a public_company → "public"
- * - else if any is a pe_firm or family_office → "private_equity"
- * - else if any is a coop or relationship === "member_of" → "coop"
- * - else if root is family-controlled and large (consolidator with status active) → "family_mega"
- * - else if chain length === 1 (no parent) and yard → "independent"
- * - else "unknown"
+ * Rules live in `ownershipKind` (lib/ownership-kind.ts): unverified bucket →
+ * unknown; franchisee → franchise; public / PE / co-op / family-office anywhere
+ * in the ownership chain, in that order; a private chain on top → family_mega;
+ * no parent and a local business → independent.
  */
 export function classifyOwnership(chain: OwnershipNode[]): OwnershipBadgeKind {
   if (chain.length === 0) return "unknown";
-
-  // A franchisee — its own nearest parent link is a franchise affiliation. It
-  // is locally owned but operates under a national brand, so surface it as its
-  // own category rather than inheriting the brand's (often PE) ownership above.
-  if (chain[1]?.edge?.relationship === "franchise_of") return "franchise";
-
-  // Walk from the top down — ultimate owner first
-  for (let i = chain.length - 1; i >= 0; i--) {
-    const t = chain[i].company.type;
-    if (t === "public_company") return "public";
+  // Delegate to the shared classifier so the detail page agrees exactly with
+  // the list views (map, search, state + trade pages), which classify in SQL.
+  // Ownership types = the chain up to the first non-ownership hop.
+  const chainTypes: string[] = [];
+  let coop = false;
+  for (const node of chain.slice(1)) {
+    const rel = node.edge?.relationship;
+    if (rel === "member_of") {
+      coop = true;
+      break;
+    }
+    if (rel === "franchise_of") break;
+    chainTypes.push(node.company.type);
   }
-  for (const node of chain) {
-    if (node.company.type === "pe_firm") return "private_equity";
-    if (node.edge?.relationship === "member_of" || node.company.type === "coop") return "coop";
-  }
-  for (const node of chain) {
-    if (node.company.type === "family_office") return "family_mega";
-  }
-  // Family-owned mega: a consolidator at the top with no parent
-  const top = chain[chain.length - 1].company;
-  if (chain.length > 1 && top.type === "consolidator") return "family_mega";
-  if (chain.length === 1) {
-    return chain[0].company.type === "yard" ? "independent" : "unknown";
-  }
-  return "unknown";
+  return ownershipKind({
+    rootSlug: chain[0].company.slug,
+    rootType: chain[0].company.type,
+    chainTypes,
+    coop,
+    franchise: chain[1]?.edge?.relationship === "franchise_of",
+  });
 }
 
 /**

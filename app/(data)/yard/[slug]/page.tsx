@@ -17,14 +17,20 @@ import { OwnershipBadge } from "@/components/ownership-badge";
 import { TradeChip } from "@/components/trade-chip";
 import { Socials } from "@/components/socials";
 import { LocationCard } from "@/components/location-card";
-import { CitationRegistry, SourcesList } from "@/components/citation";
+import { CitationRegistry } from "@/components/citation";
 import {
   COMPANY_TYPE_LABELS,
   STATE_NAME_BY_CODE,
   TRADE_LABELS,
   stateSlug,
+  SERVICE_OPTIONS,
   type OwnershipBadgeKind,
 } from "@/lib/constants";
+import { formatMonthYear } from "@/lib/utils";
+
+const SERVICE_LABEL: Record<string, string> = Object.fromEntries(
+  SERVICE_OPTIONS.map((o) => [o.value, o.label])
+);
 
 export const revalidate = 3600; // 1 hour
 
@@ -135,6 +141,29 @@ export default async function YardPage({ params }: { params: Params }) {
   // Ownership chain rendered bottom-up: business ("On the sign") at the bottom,
   // ultimate owner at the top — reverse of the chain array (root-first).
   const ladder = [...chain].reverse();
+
+  // Role label per rung, from the business upward. Co-op membership and
+  // franchise affiliation are NOT ownership, so they get their own labels, and
+  // anything above such a hop owns the co-op/brand — not this business.
+  const roleById = new Map<string, string>();
+  {
+    let viaAffiliation: "member_of" | "franchise_of" | null = null;
+    let lastOwnerIdx = 0;
+    chain.forEach((node, i) => {
+      if (i === 0) return;
+      const rel = node.edge?.relationship;
+      if (rel === "member_of" || rel === "franchise_of") {
+        viaAffiliation = rel;
+        roleById.set(node.company.id, rel === "member_of" ? "Member of (co-op, not an owner)" : "Franchise brand");
+      } else if (viaAffiliation) {
+        roleById.set(node.company.id, viaAffiliation === "member_of" ? "Owns the co-op" : "Owns the brand");
+      } else {
+        lastOwnerIdx = i;
+        roleById.set(node.company.id, "Owned by");
+      }
+    });
+    if (lastOwnerIdx > 0) roleById.set(chain[lastOwnerIdx].company.id, "Ultimate owner");
+  }
 
   // A one-sentence, human callout explaining who owns this business.
   const calloutText =
@@ -257,9 +286,7 @@ export default async function YardPage({ params }: { params: Params }) {
               const isBottom = idx === ladder.length - 1;
               const roleLabel = isBottom
                 ? "On the sign"
-                : isTop
-                  ? "Ultimate owner"
-                  : "Operated by";
+                : (roleById.get(node.company.id) ?? (isTop ? "Ultimate owner" : "Owned by"));
               // Role label color: accent at the bottom (the local brand), PE-red for a
               // PE ultimate owner, muted otherwise.
               const roleColor = isBottom
@@ -314,7 +341,7 @@ export default async function YardPage({ params }: { params: Params }) {
                       {COMPANY_TYPE_LABELS[node.company.type]}
                       {node.company.ticker ? ` · ${node.company.ticker}` : ""}
                       {node.edge?.stakePct ? ` · ${node.edge.stakePct}% stake` : ""}
-                      {node.edge?.startDate ? ` · since ${node.edge.startDate}` : ""}
+                      {node.edge?.startDate ? ` · since ${formatMonthYear(node.edge.startDate)}` : ""}
                     </div>
                   </div>
                 </li>
@@ -346,15 +373,28 @@ export default async function YardPage({ params }: { params: Params }) {
                       ) : null}
                       {s.publication && s.title ? ", " : ""}
                       {s.title ? <>&ldquo;{s.title}.&rdquo; </> : null}
-                      {s.publishedDate ? <span>{s.publishedDate} </span> : null}
+                      {s.publishedDate ? <span>{formatMonthYear(s.publishedDate)}. </span> : null}
                       <a
                         href={s.url}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-[var(--color-accent)] hover:underline"
+                        className="break-words text-[var(--color-accent)] hover:underline"
                       >
                         {s.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                       </a>
+                      {s.archiveUrl ? (
+                        <>
+                          {" · "}
+                          <a href={s.archiveUrl} target="_blank" rel="noreferrer" className="text-[var(--color-accent)] hover:underline">
+                            archived copy
+                          </a>
+                        </>
+                      ) : null}
+                      {s.quote ? (
+                        <span className="mt-1 block border-l-2 border-[var(--color-rule)] pl-2 italic">
+                          &ldquo;{s.quote}&rdquo;
+                        </span>
+                      ) : null}
                     </span>
                   </li>
                 ))}
@@ -374,19 +414,19 @@ export default async function YardPage({ params }: { params: Params }) {
               {loc.addressLine2 ? `, ${loc.addressLine2}` : ""}
               <br />
               {loc.city}, {stateName} {loc.zip}
+              {locCitations.length > 0 ? (
+                <sup className="ml-[3px] text-[11px] font-semibold text-[var(--color-accent)]">
+                  {locCitations.map((n, i) => (
+                    <span key={n}>
+                      {i > 0 ? "," : ""}
+                      <a href={`#source-${n}`} className="citation-link" aria-label={`Source ${n}`}>
+                        {n}
+                      </a>
+                    </span>
+                  ))}
+                </sup>
+              ) : null}
             </div>
-            {locCitations.length > 0 ? (
-              <sup className="ml-[3px] text-[11px] font-semibold text-[var(--color-accent)]">
-                {locCitations.map((n, i) => (
-                  <span key={n}>
-                    {i > 0 ? "," : ""}
-                    <a href={`#source-${n}`} className="citation-link">
-                      {n}
-                    </a>
-                  </span>
-                ))}
-              </sup>
-            ) : null}
             {loc.phone ? (
               <div className="mt-2 text-[13px] text-[var(--color-muted)]">{loc.phone}</div>
             ) : null}
@@ -417,7 +457,7 @@ export default async function YardPage({ params }: { params: Params }) {
                       key={svc}
                       className="rounded-full border border-[var(--color-rule)] bg-[var(--color-paper2)] px-[10px] py-[3px] text-[12px] text-[var(--color-ink)]"
                     >
-                      {svc}
+                      {SERVICE_LABEL[svc] ?? svc.replace(/_/g, " ")}
                     </span>
                   ))}
                 </div>
@@ -522,8 +562,6 @@ export default async function YardPage({ params }: { params: Params }) {
         </section>
       ) : null}
 
-      {/* Full sourced footnotes */}
-      <SourcesList sources={registry.cited()} />
     </article>
   );
 }

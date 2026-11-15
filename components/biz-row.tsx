@@ -33,12 +33,12 @@ export function BizRow({
     <Link
       href={href}
       className={cn(
-        "flex items-center gap-3.5 rounded-xl border border-rule bg-paper px-[15px] py-[13px] transition-[border-color,box-shadow,transform] duration-150",
+        "flex flex-col items-start gap-2 rounded-xl border border-rule bg-paper px-[15px] py-[13px] transition-[border-color,box-shadow,transform] duration-150 sm:flex-row sm:items-center sm:gap-3.5",
         "hover:-translate-y-px hover:border-[color-mix(in_oklch,var(--color-accent)_50%,var(--color-rule))] hover:shadow-[0_6px_18px_-12px_rgba(30,30,20,0.5)]",
         className
       )}
     >
-      <div className="min-w-0 flex-1">
+      <div className="w-full min-w-0 flex-1">
         <div className="font-serif text-[16px] font-semibold leading-[1.25] text-ink">
           {name}
         </div>
@@ -46,7 +46,7 @@ export function BizRow({
           {city}, {state} &middot; {ownerLine}
         </div>
       </div>
-      <div className="flex max-w-[52%] shrink-0 flex-wrap items-center justify-end gap-[7px]">
+      <div className="flex shrink-0 flex-wrap items-center gap-[7px] sm:max-w-[52%] sm:justify-end">
         <TradeChip trade={trade} />
         <OwnershipBadge kind={badge} size="sm" />
       </div>

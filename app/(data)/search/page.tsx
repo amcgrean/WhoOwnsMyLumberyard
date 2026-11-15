@@ -6,6 +6,7 @@ import {
   type OwnershipBadgeKind,
 } from "@/lib/constants";
 import { BizRow } from "@/components/biz-row";
+import { kindFromRow } from "@/lib/ownership-sql";
 import { OwnershipBadge } from "@/components/ownership-badge";
 import { ResultsMap, type MapPoint } from "@/components/map/results-map";
 import { SearchField } from "./search-field";
@@ -20,22 +21,6 @@ export const metadata: Metadata = {
 type SearchParams = Promise<{ q?: string; trade?: string }>;
 
 const TRADES = Object.keys(TRADE_SHORT_LABELS) as Trade[];
-
-// Map a company's record type to the color-coded ownership badge shown on the
-// right of each Companies & Owners row. Best-effort from the type alone (the
-// search query doesn't walk the ownership graph); consolidators/holdcos read as
-// "unknown" until the chain is resolved on the detail page.
-const COMPANY_TYPE_BADGE: Record<string, OwnershipBadgeKind> = {
-  pe_firm: "private_equity",
-  public_company: "public",
-  coop: "coop",
-  family_office: "family_mega",
-  yard: "independent",
-};
-
-function companyBadge(type: string): OwnershipBadgeKind {
-  return COMPANY_TYPE_BADGE[type] ?? "unknown";
-}
 
 // PE firms, public companies, and family offices live under /owner; everything
 // else (local businesses, consolidators, holdcos, co-ops) under /company.
@@ -52,9 +37,9 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
   const activeTrade = TRADES.includes(trade as Trade) ? (trade as Trade) : null;
   const results = q ? await searchAll(q, 50) : [];
   const grouped = groupByKind(results);
-  const locations = activeTrade
-    ? grouped.location.filter((r) => r.trade === activeTrade)
-    : grouped.location;
+  const locations = (
+    activeTrade ? grouped.location.filter((r) => r.trade === activeTrade) : grouped.location
+  ).map((r) => ({ ...r, kind: kindFromRow(r) }));
   const companies = grouped.company;
 
   // Any matched businesses that carry coordinates get plotted on a map so a
@@ -69,6 +54,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       brand: r.displayName,
       owner: r.ownerName,
       franchise: r.franchiseOf,
+      kind: r.kind,
       trade: r.trade,
       lng: Number(r.lng),
       lat: Number(r.lat),
@@ -124,13 +110,12 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                         ? `Franchise of ${r.franchiseOf}`
                         : r.ownerName
                           ? `Owned by ${r.ownerName}`
-                          : r.zip ||
-                            (r.trade ? TRADE_SHORT_LABELS[r.trade] : "On the record")
+                          : r.kind === "unknown"
+                            ? "Ownership not yet verified"
+                            : r.zip || (r.trade ? TRADE_SHORT_LABELS[r.trade] : "On the record")
                     }
                     trade={r.trade}
-                    badge={
-                      r.franchiseOf ? "franchise" : r.ownerName ? "private_equity" : "independent"
-                    }
+                    badge={r.kind}
                   />
                 ))
               ) : (
@@ -169,7 +154,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
                         </div>
                       </div>
                       <div className="shrink-0">
-                        <OwnershipBadge kind={companyBadge(r.type)} size="sm" />
+                        <OwnershipBadge kind={kindFromRow(r)} size="sm" />
                       </div>
                     </Link>
                   );
