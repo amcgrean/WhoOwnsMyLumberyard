@@ -6,8 +6,10 @@ import { upsertCompany, upsertEdge, upsertAcquisition } from "./_helpers";
  * Private consolidator headquartered in Atlanta, GA, formed in 2009.
  * In late 2020, Bain Capital Private Equity announced an agreement to acquire
  * US LBM from Kelso & Company. Bain closed the acquisition in December 2020.
- * In December 2021, Bain Capital and Platinum Equity announced an agreement
- * for Platinum Equity to take a co-control stake; that closed in early 2022.
+ * On 2023-10-16, Platinum Equity announced an agreement to acquire a
+ * co-controlling stake (equal stakes, joint board) alongside Bain, expected to
+ * close by the end of Q1 2024. (Corrected 2026-11: an earlier version of this
+ * seed dated the deal to 2021–22 and cited a URL that does not exist.)
  *
  * NOTE: All ownership edges seeded here start with verified=false.
  */
@@ -40,7 +42,7 @@ export async function seedUsLbm() {
       "Global private investment firm; sponsor of one of the largest U.S. private-equity portfolios. Acquired US LBM from Kelso & Company in 2020.",
   });
 
-  // SOURCE: https://www.platinumequity.com/news/platinum-equity-and-bain-capital-private-equity-announce-strategic-partnership-to-co-own-us-lbm
+  // SOURCE: https://www.platinumequity.com/news/platinum-equity-to-acquire-co-controlling-stake-in-us-lbm/
   const platinum = await upsertCompany({
     name: "Platinum Equity",
     legalName: "Platinum Equity, LLC",
@@ -49,7 +51,7 @@ export async function seedUsLbm() {
     headquartersState: "CA",
     website: "https://www.platinumequity.com",
     description:
-      "Global private investment firm founded by Tom Gores. Co-control investor in US LBM alongside Bain Capital since 2022.",
+      "Global private investment firm founded by Tom Gores. Co-control investor in US LBM alongside Bain Capital (announced October 2023).",
   });
 
   // SOURCE: https://www.kelso.com/
@@ -80,17 +82,17 @@ export async function seedUsLbm() {
     ],
   });
 
-  // SOURCE: https://www.platinumequity.com/news/platinum-equity-and-bain-capital-private-equity-announce-strategic-partnership-to-co-own-us-lbm
+  // SOURCE: https://www.platinumequity.com/news/platinum-equity-to-acquire-co-controlling-stake-in-us-lbm/
   await upsertAcquisition({
     slug: "platinum-coinvest-us-lbm-2022",
     acquirerId: platinum.id,
     targetId: usLbm.id,
-    announcedDate: "2021-12-20",
-    closedDate: "2022-02-15",
+    announcedDate: "2023-10-16",
+    closedDate: null,
     summary:
       "Platinum Equity and Bain Capital Private Equity entered a co-control partnership to jointly own US LBM.",
     sources: [
-      "https://www.platinumequity.com/news/platinum-equity-and-bain-capital-private-equity-announce-strategic-partnership-to-co-own-us-lbm",
+      "https://www.platinumequity.com/news/platinum-equity-to-acquire-co-controlling-stake-in-us-lbm/",
     ],
   });
 
@@ -100,10 +102,9 @@ export async function seedUsLbm() {
     childId: usLbm.id,
     relationship: "controls",
     startDate: "2020-12-22",
-    note: "Bain Capital Private Equity acquired US LBM from Kelso in December 2020; entered a co-control partnership with Platinum Equity in early 2022.",
+    note: "Bain Capital Private Equity acquired US LBM from Kelso in December 2020; agreed a co-control partnership with Platinum Equity announced in October 2023.",
     sources: [
-      "https://www.uslbm.com/news/bain-capital-private-equity-completes-acquisition-of-us-lbm/",
-      "https://www.platinumequity.com/news/platinum-equity-and-bain-capital-private-equity-announce-strategic-partnership-to-co-own-us-lbm",
+      "https://www.baincapital.com/news/us-lbm-announces-joint-ownership-agreement-bain-capital-private-equity-and-platinum-equity",
     ],
   });
 
@@ -111,10 +112,10 @@ export async function seedUsLbm() {
     parentId: platinum.id,
     childId: usLbm.id,
     relationship: "controls",
-    startDate: "2022-02-15",
-    note: "Platinum Equity holds a co-control stake in US LBM alongside Bain Capital.",
+    startDate: null,
+    note: "Platinum Equity holds a co-control stake in US LBM alongside Bain Capital (announced 2023-10-16; expected to close by end of Q1 2024).",
     sources: [
-      "https://www.platinumequity.com/news/platinum-equity-and-bain-capital-private-equity-announce-strategic-partnership-to-co-own-us-lbm",
+      "https://www.platinumequity.com/news/platinum-equity-to-acquire-co-controlling-stake-in-us-lbm/",
     ],
   });
 
