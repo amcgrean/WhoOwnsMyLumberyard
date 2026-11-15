@@ -46,7 +46,7 @@ export const OWNERSHIP_BADGE_LABELS: Record<OwnershipBadgeKind, string> = {
   public: "Public Company",
   coop: "Co-op Member",
   franchise: "Franchise",
-  family_mega: "Family-Owned (Large)",
+  family_mega: "Private Chain",
   unknown: "Unverified",
 };
 
