@@ -35,6 +35,16 @@ function fmtUsd(n: number): string {
   return `$${n.toLocaleString("en-US")}`;
 }
 
+/** What the buyer is, in words: "Private-equity firm", "Owned by Bain Capital"... */
+function buyerLabel(n: NewsItem): string | undefined {
+  if (n.acquirer.ownerName) return `Buyer owned by ${n.acquirer.ownerName}`;
+  if (n.acquirer.type === "pe_firm") return "Private-equity firm";
+  if (n.acquirer.type === "public_company") return "Public company";
+  if (n.acquirer.kind === "family_mega") return "Large private company";
+  if (n.acquirer.kind === "independent") return "Independently owned buyer";
+  return undefined;
+}
+
 function hostOf(url: string): string {
   try {
     return new URL(url).hostname.replace(/^www\./, "");
@@ -85,7 +95,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Search 
         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-accent">In the news</p>
         <h1 className="mt-2 font-serif text-[34px] font-semibold leading-tight sm:text-[42px]">Who&rsquo;s buying the trades</h1>
         <p className="mt-3 max-w-2xl text-[16px] text-muted">
-          Acquisitions of lumberyards and plumbing, electrical, and HVAC companies since 2025: {all.length} deals, {iowaCount} touching Iowa.
+          {`Acquisitions of lumberyards and plumbing, electrical, and HVAC companies since 2025: ${all.length} deals, ${iowaCount} touching Iowa.`}{" "}
           Each one links to the press release or news coverage it&rsquo;s based on.
         </p>
       </header>
@@ -139,7 +149,7 @@ export default async function NewsPage({ searchParams }: { searchParams: Search 
                     </h3>
                     {n.summary ? <p className="mt-1.5 text-[15px] leading-relaxed text-ink/85">{n.summary}</p> : null}
                     <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
-                      <OwnershipBadge kind={n.acquirer.kind} size="sm" label={n.acquirer.ownerName ? `Buyer owned by ${n.acquirer.ownerName}` : undefined} />
+                      <OwnershipBadge kind={n.acquirer.kind} size="sm" label={buyerLabel(n)} />
                       {n.target.city ? (
                         <span className="text-[13px] text-muted">
                           {n.target.name} is based in {n.target.city}

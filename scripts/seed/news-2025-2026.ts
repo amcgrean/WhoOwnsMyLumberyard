@@ -5,7 +5,7 @@ config({ path: ".env" });
 import { readFileSync } from "node:fs";
 import { and, eq, isNull, notInArray } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { companies, ownershipEdges, type CompanyType, type Trade } from "@/lib/db/schema";
+import { companies, locations, ownershipEdges, type CompanyType, type Trade } from "@/lib/db/schema";
 import { slugify } from "@/lib/slug";
 import { linkSource, upsertAcquisition, upsertEdge } from "./_helpers";
 
@@ -27,7 +27,7 @@ import { linkSource, upsertAcquisition, upsertEdge } from "./_helpers";
 const DRY = process.argv.includes("--dry-run");
 const log = (msg: string) => console.log(`${DRY ? "[dry-run] " : ""}${msg}`);
 
-type Party = { name: string; type?: CompanyType; ticker?: string | null; hqCity?: string | null; hqState?: string | null; website?: string | null; trade?: Trade | null };
+type Party = { name: string; slug?: string; type?: CompanyType; ticker?: string | null; hqCity?: string | null; hqState?: string | null; website?: string | null; trade?: Trade | null };
 type Deal = {
   acquirer: Party;
   acquirerOwner?: Party | null;
@@ -42,27 +42,25 @@ type Deal = {
 
 const NOT_OWNERSHIP = ["member_of", "franchise_of"] as const;
 
-/** Same-named companies in different states are different businesses. */
-function sameState(c: { headquartersState: string | null }, p: Party) {
-  return !c.headquartersState || !p.hqState || c.headquartersState === p.hqState;
+/**
+ * Exact slug only: \`slug\` in the data file pins a party to an existing record
+ * (or names a new canonical one). No fuzzy name matching, which would attach
+ * deals to a single branch row of a multi-location company.
+ */
+async function findCompany(p: Party) {
+  return db.query.companies.findFirst({ where: eq(companies.slug, partySlug(p)) });
 }
 
-async function findCompany(p: Party) {
-  for (const slug of [slugify(p.name), slugify(`${p.name} ${p.hqState ?? ""}`)]) {
-    const c = await db.query.companies.findFirst({ where: eq(companies.slug, slug) });
-    if (c && sameState(c, p)) return c;
-  }
-  const byName = await db.query.companies.findMany({ where: eq(companies.name, p.name), limit: 5 });
-  return byName.find((c) => sameState(c, p));
+function partySlug(p: Party) {
+  return p.slug ?? slugify(p.name);
 }
 
 /** Existing company, or a new one with just the facts given. */
 async function ensureCompany(p: Party, fallbackType: CompanyType) {
   const found = await findCompany(p);
   if (found) return { company: found, created: false };
-  const taken = await db.query.companies.findFirst({ where: eq(companies.slug, slugify(p.name)), columns: { id: true } });
   const values = {
-    slug: taken ? slugify(`${p.name} ${p.hqState ?? "x"}`) : slugify(p.name),
+    slug: partySlug(p),
     name: p.name,
     type: p.type ?? fallbackType,
     ticker: p.ticker ?? null,
@@ -90,7 +88,13 @@ async function main() {
   for (const d of deals) {
     const acq = await ensureCompany(d.acquirer, "consolidator");
     const tgt = await ensureCompany(d.target, "yard");
-    if (d.acquirerOwner && acq.created) {
+    // A company first created as a deal's target may turn up later as a buyer
+    // (Flint Group, Kodiak): give it the buyer's type if it has no locations.
+    if (!acq.created && !DRY && acq.company.type === "yard" && d.acquirer.type && d.acquirer.type !== "yard") {
+      const hasLoc = await db.query.locations.findFirst({ where: eq(locations.companyId, acq.company.id), columns: { id: true } });
+      if (!hasLoc) await db.update(companies).set({ type: d.acquirer.type, updatedAt: new Date() }).where(eq(companies.id, acq.company.id));
+    }
+    if (d.acquirerOwner && (acq.created || (!DRY && !(await hasOwner(acq.company.id))))) {
       const owner = await ensureCompany(d.acquirerOwner, "pe_firm");
       log(`  + ${d.acquirerOwner.name} owns ${d.acquirer.name}`);
       if (!DRY) await upsertEdge({ parentId: owner.company.id, childId: acq.company.id, relationship: "controls", note: `${d.acquirerOwner.name} is the controlling owner of ${d.acquirer.name}.` });

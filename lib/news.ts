@@ -18,7 +18,7 @@ export type NewsItem = {
   closedDate: string | null;
   dealValueUsd: number | null;
   summary: string | null;
-  acquirer: { slug: string; name: string; kind: OwnershipBadgeKind; ownerName: string | null };
+  acquirer: { slug: string; name: string; type: string; kind: OwnershipBadgeKind; ownerName: string | null };
   target: { slug: string; name: string; trade: Trade | null; city: string | null; state: string | null };
   iowa: boolean;
   sources: NewsSource[];
@@ -62,7 +62,7 @@ export async function getNews(): Promise<NewsItem[]> {
       targetTrade: target.trade,
       targetCity: target.headquartersCity,
       targetState: target.headquartersState,
-      iowa: sql<boolean>`(${target.headquartersState} = 'IA' or exists (select 1 from locations l where l.company_id = ${target.id} and l.state = 'IA'))`,
+      iowa: sql<boolean>`(${target.headquartersState} = 'IA' or ${acquirer.headquartersState} = 'IA' or exists (select 1 from locations l where l.company_id = ${target.id} and l.state = 'IA'))`,
     })
     .from(acquisitions)
     .innerJoin(acquirer, eq(acquirer.id, acquisitions.acquirerId))
@@ -101,6 +101,7 @@ export async function getNews(): Promise<NewsItem[]> {
     acquirer: {
       slug: r.acquirerSlug,
       name: r.acquirerName,
+      type: r.acquirerType,
       ownerName: r.ownerName,
       kind: acquirerKind(r),
     },
